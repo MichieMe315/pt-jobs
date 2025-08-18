@@ -7,7 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'dev-secret-key-change-me')
 DEBUG = os.getenv("DJANGO_DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = ["*"]  # Railway gives dynamic domains
+ALLOWED_HOSTS = ["pt-jobs-production.up.railway.app", "localhost", "127.0.0.1"]
 
 # Installed apps
 INSTALLED_APPS = [
