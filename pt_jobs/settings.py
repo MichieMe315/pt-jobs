@@ -5,11 +5,11 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'dev-secret-key-change-me')
+DEBUG = os.getenv("DJANGO_DEBUG", "False") == "True"
 
-DEBUG = True
+ALLOWED_HOSTS = ["*"]  # Railway gives dynamic domains
 
-ALLOWED_HOSTS = ["*"]
-
+# Installed apps
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -21,8 +21,10 @@ INSTALLED_APPS = [
     'board',
 ]
 
+# Middleware
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # for serving static files
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -51,35 +53,36 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'pt_jobs.wsgi.application'
 
-# Database (Railway/Postgres with fallback to SQLite)
+# Database (Railway or fallback to SQLite)
 DATABASES = {
     "default": dj_database_url.config(
         env="DATABASE_URL",
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
         conn_max_age=600,
-        ssl_require=True,
+        ssl_require=False,
     )
 }
 
+# Password validation (optional)
 AUTH_PASSWORD_VALIDATORS = []
 
+# Localization
 LANGUAGE_CODE = 'en-ca'
 TIME_ZONE = 'America/Toronto'
 USE_I18N = True
 USE_TZ = True
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# Static files
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [BASE_DIR / "static"]
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
+# Authentication redirects
 LOGIN_REDIRECT_URL = 'board:dashboard'
 LOGOUT_REDIRECT_URL = 'board:home'
 
-# Static files settings (for local + Railway deployment)
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
-STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
-
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 
