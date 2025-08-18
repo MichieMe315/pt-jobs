@@ -94,5 +94,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # Configure database from environment (Railway/Postgres)
 DATABASES['default'] = dj_database_url.config(default=DATABASES['default'])
 
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_URL = "/static/"
+
+
 
 
