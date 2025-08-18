@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>All jobs</h2>
+<form method="get" class="search">
+  <input name="q" value="{{ q }}" placeholder="Keyword">
+  <input name="province" value="{{ province }}" placeholder="Province">
+  <button>Filter</button>
+</form>
+<ul class="cards">
+  {% for job in jobs %}
+  <li class="card">
+    <h4><a href="{% url 'board:job_detail' job.pk %}">{{ job.title }}</a></h4>
+    <p>{{ job.company.name }} — {{ job.city }}, {{ job.province }}</p>
+    <small>{{ job.get_employment_type_display }} • {{ job.get_remote_type_display }}</small>
+  </li>
+  {% empty %}
+  <li>No jobs match your filters.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

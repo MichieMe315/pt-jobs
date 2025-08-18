@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Find a physiotherapy job</h1>
+<form method="get" action="{% url 'board:job_list' %}" class="search">
+  <input name="q" value="{{ q }}" placeholder="Search title, clinic, city...">
+  <input name="province" value="{{ province }}" placeholder="Province (e.g., ON, BC)">
+  <button type="submit">Search</button>
+</form>
+<h3>Latest jobs</h3>
+<ul class="cards">
+  {% for job in jobs %}
+  <li class="card">
+    <h4><a href="{% url 'board:job_detail' job.pk %}">{{ job.title }}</a></h4>
+    <p>{{ job.company.name }} — {{ job.city }}, {{ job.province }}</p>
+    <small>{{ job.get_employment_type_display }} • {{ job.get_remote_type_display }}</small>
+  </li>
+  {% empty %}
+  <li>No jobs yet. Employers, <a href="{% url 'board:dashboard' %}">post one</a>!</li>
+  {% endfor %}
+</ul>
+{% endblock %}

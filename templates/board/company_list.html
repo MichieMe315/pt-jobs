@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Your companies</h2>
+<p><a class="btn" href="{% url 'board:company_create' %}">+ Add company</a></p>
+<ul class="cards">
+  {% for c in companies %}
+  <li class="card">
+    <h4>{{ c.name }}</h4>
+    <p>{{ c.website }}</p>
+    <p><a href="{% url 'board:company_edit' c.pk %}">Edit</a></p>
+  </li>
+  {% empty %}
+  <li>No companies yet.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

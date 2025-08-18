@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<article class="job-detail">
+  <header>
+    <h2>{{ job.title }}</h2>
+    <p><strong>{{ job.company.name }}</strong> — {{ job.city }}, {{ job.province }}</p>
+    <p>{{ job.get_employment_type_display }} • {{ job.get_remote_type_display }}</p>
+    {% if job.salary_min or job.salary_max %}
+      <p>Salary: ${{ job.salary_min|default:'?' }} - ${{ job.salary_max|default:'?' }}</p>
+    {% endif %}
+  </header>
+  <section>
+    <h3>About the role</h3>
+    <p style="white-space: pre-line">{{ job.description }}</p>
+  </section>
+
+  {% if can_apply %}
+  <section>
+    <h3>Apply now</h3>
+    <form method="post" action="{% url 'board:apply' job.pk %}">{% csrf_token %}
+      {{ form.as_p }}
+    </form>
+  </section>
+  {% elif user.is_authenticated %}
+    <p><em>Only job seekers can apply.</em></p>
+  {% else %}
+    <p><a href="{% url 'login' %}">Log in</a> as a job seeker to apply.</p>
+  {% endif %}
+
+</article>
+{% endblock %}

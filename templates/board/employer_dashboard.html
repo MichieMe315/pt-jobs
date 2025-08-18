@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Employer dashboard</h2>
+<p><a class="btn" href="{% url 'board:company_create' %}">+ Add company</a>
+   <a class="btn" href="{% url 'board:job_create' %}">+ Post job</a></p>
+
+<h3>Your companies</h3>
+<ul class="cards">
+  {% for c in companies %}
+    <li class="card">
+      <h4>{{ c.name }}</h4>
+      <p>{{ c.website }}</p>
+      <p><a href="{% url 'board:company_edit' c.pk %}">Edit</a></p>
+    </li>
+  {% empty %}
+    <li>No companies yet.</li>
+  {% endfor %}
+</ul>
+
+<h3>Your jobs</h3>
+<table class="table">
+  <tr><th>Job</th><th>Location</th><th>Type</th><th>Applications</th><th></th></tr>
+  {% for j in jobs %}
+  <tr>
+    <td>{{ j.title }}</td>
+    <td>{{ j.city }}, {{ j.province }}</td>
+    <td>{{ j.get_employment_type_display }}</td>
+    <td>{{ j.num_apps }}</td>
+    <td>
+      <a href="{% url 'board:job_edit' j.pk %}">Edit</a> |
+      <a href="{% url 'board:job_delete' j.pk %}" onclick="return confirm('Delete job?')">Delete</a>
+    </td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="5">No jobs yet.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}
