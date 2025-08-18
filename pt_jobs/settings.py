@@ -73,3 +73,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_REDIRECT_URL = 'board:dashboard'
 LOGOUT_REDIRECT_URL = 'board:home'
+
+# Static files settings for Railway
+import os
+
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
