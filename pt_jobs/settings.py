@@ -84,4 +84,15 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# Static files settings for deployment
+import os
+import dj_database_url
+
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Configure database from environment (Railway/Postgres)
+DATABASES['default'] = dj_database_url.config(default=DATABASES['default'])
+
+
 
