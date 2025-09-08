@@ -1,21 +1,97 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Home{% endblock %}
+
 {% block content %}
-<h1>Find a physiotherapy job</h1>
-<form method="get" action="{% url 'board:job_list' %}" class="search">
-  <input name="q" value="{{ q }}" placeholder="Search title, clinic, city...">
-  <input name="province" value="{{ province }}" placeholder="Province (e.g., ON, BC)">
-  <button type="submit">Search</button>
-</form>
-<h3>Latest jobs</h3>
-<ul class="cards">
-  {% for job in jobs %}
-  <li class="card">
-    <h4><a href="{% url 'board:job_detail' job.pk %}">{{ job.title }}</a></h4>
-    <p>{{ job.company.name }} — {{ job.city }}, {{ job.province }}</p>
-    <small>{{ job.get_employment_type_display }} • {{ job.get_remote_type_display }}</small>
-  </li>
-  {% empty %}
-  <li>No jobs yet. Employers, <a href="{% url 'board:dashboard' %}">post one</a>!</li>
-  {% endfor %}
-</ul>
+<div class="container py-4">
+  <div class="row">
+    <!-- Main column -->
+    <div class="col-lg-8">
+      <form method="get" action="{% url 'home' %}" class="row g-2 mb-3">
+        <div class="col-md-6">
+          <input type="text" name="q" class="form-control" placeholder="Keyword" value="{{ request.GET.q }}">
+        </div>
+        <div class="col-md-4">
+          <input type="text" name="location" class="form-control location-autocomplete" placeholder="Location" value="{{ request.GET.location }}">
+        </div>
+        <div class="col-md-2 d-grid">
+          <button class="btn btn-primary">Search</button>
+        </div>
+      </form>
+
+      <h5 class="mb-3">Latest Jobs</h5>
+      {% if latest_jobs %}
+        <div class="list-group">
+          {% for job in latest_jobs %}
+          <a href="{% url 'job_detail' job.id %}" class="list-group-item list-group-item-action">
+            <div class="d-flex w-100 justify-content-between">
+              <h6 class="mb-1">{{ job.title }}</h6>
+              {% if job.featured %}<span class="badge text-bg-warning">Featured</span>{% endif %}
+            </div>
+            <div class="small text-muted">
+              {{ job.employer.company_name|default:job.employer.name }} • {{ job.location }} • {{ job.posting_date|date:"M j, Y" }}
+            </div>
+            <div class="small">{{ job.description|truncatechars:140 }}</div>
+          </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p>No jobs yet.</p>
+      {% endif %}
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <div class="card mb-3 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Employers</h5>
+          <p class="card-text mb-3">Advertise your jobs to reach qualified Canadian candidates.</p>
+          <a href="{% url 'package_list' %}" class="btn btn-primary w-100">Post a Job</a>
+        </div>
+      </div>
+
+      <div class="card mb-3 shadow-sm">
+        <div class="card-body">
+          <h6 class="card-title">Featured Jobs</h6>
+          {% if featured_jobs %}
+            <ul class="list-unstyled mb-0">
+              {% for job in featured_jobs %}
+                <li class="mb-2">
+                  <a href="{% url 'job_detail' job.id %}">{{ job.title }}</a>
+                  <div class="small text-muted">{{ job.location }}</div>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <div class="text-muted small">No featured jobs right now.</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h6 class="card-title">Job Alerts</h6>
+          <form method="post" action="{% url 'job_alert_signup' %}">
+            {% csrf_token %}
+            <div class="mb-2">
+              <input type="email" name="email" class="form-control" placeholder="Your email">
+            </div>
+            <div class="mb-2">
+              <input type="text" name="q" class="form-control" placeholder="Keyword (optional)">
+            </div>
+            <div class="mb-2">
+              <input type="text" name="location" class="form-control location-autocomplete" placeholder="Location (optional)">
+            </div>
+            <button class="btn btn-outline-primary w-100" type="submit">Create Alert</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+  {% include "includes/places_autocomplete.html" %}
 {% endblock %}

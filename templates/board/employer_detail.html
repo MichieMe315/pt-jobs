@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ employer.company_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 860px;">
+  <div class="d-flex align-items-center mb-3">
+    {% if employer.logo %}
+      <img src="{{ employer.logo.url }}" alt="{{ employer.company_name }}" style="height:60px;width:60px;object-fit:contain;margin-right:1rem;">
+    {% endif %}
+    <div>
+      <h1 class="mb-1">{{ employer.company_name }}</h1>
+      <p class="mb-0">{{ employer.website }}</p>
+    </div>
+  </div>
+
+  <h5>About</h5>
+  <p>{{ employer.description|linebreaks }}</p>
+
+  <h5 class="mt-4">Open Jobs</h5>
+  {% if employer.job_set.all %}
+    <ul class="list-group">
+      {% for job in employer.job_set.all %}
+        <li class="list-group-item">
+          <a href="{% url 'job_detail' job.id %}">{{ job.title }}</a> – {{ job.location }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No active jobs.</p>
+  {% endif %}
+</div>
+{% endblock %}

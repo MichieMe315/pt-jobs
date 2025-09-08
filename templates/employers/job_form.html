@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}Post a Job · PT Jobs{% endblock %}
+{% block content %}
+<div class="container" style="max-width: 860px;">
+  <h1 class="mb-3">Post a Job</h1>
+  <div class="alert alert-info">
+    Credits left: <strong>{{ employer.credits_left }}</strong>
+  </div>
+
+  <form method="post" action="{% url 'post_job' %}">
+    {% csrf_token %}
+
+    <!-- Title -->
+    <div class="mb-3">
+      <label class="form-label" for="{{ form.title.id_for_label }}">Job Title</label>
+      {{ form.title }}
+      {% for err in form.title.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+    </div>
+
+    <!-- Description -->
+    <div class="mb-3">
+      <label class="form-label" for="{{ form.description.id_for_label }}">Job Description</label>
+      {{ form.description }}
+      {% for err in form.description.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+    </div>
+
+    <!-- Location -->
+    <div class="mb-3">
+      <label class="form-label" for="{{ form.location.id_for_label }}">Location</label>
+      {{ form.location }}
+      {% for err in form.location.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+    </div>
+
+    <!-- Compensation -->
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label" for="{{ form.compensation_type.id_for_label }}">Salary type</label>
+        {{ form.compensation_type }}
+        {% for err in form.compensation_type.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="{{ form.salary_min.id_for_label }}">Salary min</label>
+        {{ form.salary_min }}
+        {% for err in form.salary_min.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="{{ form.salary_max.id_for_label }}">Salary max</label>
+        {{ form.salary_max }}
+        {% for err in form.salary_max.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+      </div>
+    </div>
+
+    <div class="mb-3 mt-3">
+      <label class="form-label" for="{{ form.percent_split.id_for_label }}">Percentage split</label>
+      {{ form.percent_split }}
+      {% for err in form.percent_split.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+    </div>
+
+    <!-- Job type + relocation -->
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label" for="{{ form.job_type.id_for_label }}">Job type</label>
+        {{ form.job_type }}
+        {% for err in form.job_type.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+      </div>
+      <div class="col-md-6 d-flex align-items-center">
+        <div class="form-check mt-4">
+          {{ form.relocation_assistance }}
+          <label class="form-check-label" for="{{ form.relocation_assistance.id_for_label }}">Relocation assistance provided</label>
+        </div>
+        {% for err in form.relocation_assistance.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+      </div>
+    </div>
+
+    <!-- Dates -->
+    <div class="row g-3 mt-1">
+      <div class="col-md-6">
+        <label class="form-label" for="{{ form.posting_date.id_for_label }}">Posting Date</label>
+        {{ form.posting_date }}
+        {% for err in form.posting_date.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="{{ form.expiry_date.id_for_label }}">Expiry Date</label>
+        {{ form.expiry_date }}
+        {% for err in form.expiry_date.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+      </div>
+    </div>
+
+    <!-- Apply methods -->
+    <div class="row g-3 mt-1">
+      <div class="col-md-6">
+        <label class="form-label" for="{{ form.application_email.id_for_label }}">Application Email</label>
+        {{ form.application_email }}
+        {% for err in form.application_email.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="{{ form.external_apply_url.id_for_label }}">External Apply URL</label>
+        {{ form.external_apply_url }}
+        {% for err in form.external_apply_url.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+      </div>
+    </div>
+
+    <!-- Active -->
+    <div class="form-check mt-3">
+      {{ form.is_active }}
+      <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Active</label>
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+      <button class="btn btn-primary">Publish Job</button>
+      <a href="{% url 'employer_dashboard' %}?tab=jobs" class="btn btn-link">Cancel</a>
+    </div>
+  </form>
+</div>
+
+{% block extra_scripts %}
+<script>
+  // Live cap for expiry date based on posting date + duration_days
+  function iso(d) {
+    const z = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`;
+  }
+  function addDays(base, days) {
+    const d = new Date(base.getTime());
+    d.setDate(d.getDate() + days);
+    return d;
+  }
+  function syncExpiryCap() {
+    const p = document.getElementById("id_posting_date");
+    const e = document.getElementById("id_expiry_date");
+    if (!p || !e) return;
+
+    const dur = {{ duration_days|default:30 }};
+    const pVal = p.value ? new Date(p.value + 'T00:00:00') : new Date();
+    const cap = addDays(pVal, dur);
+    const capIso = iso(cap);
+
+    e.setAttribute("max", capIso);
+    e.setAttribute("data-max", capIso);
+
+    if (e.value) {
+      const ev = new Date(e.value + 'T00:00:00');
+      if (ev > cap) e.value = capIso;
+      if (ev < pVal) e.value = iso(pVal);
+    } else {
+      e.value = capIso;
+    }
+  }
+  document.addEventListener("change", (ev) => {
+    if (ev.target && ev.target.id === "id_posting_date") syncExpiryCap();
+    if (ev.target && ev.target.id === "id_compensation_type") toggleCompFields();
+  });
+  document.addEventListener("DOMContentLoaded", () => {
+    syncExpiryCap();
+    toggleCompFields();
+  });
+
+  // Toggle salary vs percent fields
+  function toggleCompFields() {
+    const ctype = document.getElementById("id_compensation_type")?.value;
+    const smin = document.getElementById("id_salary_min");
+    const smax = document.getElementById("id_salary_max");
+    const pct  = document.getElementById("id_percent_split");
+    const percentMode = (ctype === "percent");
+    if (smin) smin.disabled = percentMode;
+    if (smax) smax.disabled = percentMode;
+    if (pct)  pct.disabled  = !percentMode;
+  }
+</script>
+{% endblock %}
+{% endblock %}

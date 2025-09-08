@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Thanks!</h1>
+<p>{{ who }} registration received. We will be in touch shortly.</p>
+<p><a class="btn" href="{% url 'job_list' %}">Back to Jobs</a></p>
+{% endblock %}

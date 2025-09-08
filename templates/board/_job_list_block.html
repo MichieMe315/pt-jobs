@@ -1,0 +1,27 @@
+{% comment %} expects `jobs` page or queryset {% endcomment %}
+{% if jobs %}
+  <div class="vstack gap-2">
+    {% for job in jobs %}
+      <a class="text-decoration-none text-reset" href="{% url 'job_detail' job.pk %}">
+        <div class="bg-white border rounded p-3 job-card d-flex gap-3 align-items-start">
+          {% if job.employer.logo %}
+            <img class="rounded border" src="{{ job.employer.logo.url }}" alt="{{ job.employer.name }}">
+          {% else %}
+            <div class="rounded border d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:#fafafa;">🏥</div>
+          {% endif %}
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-center gap-2">
+              <strong>{{ job.title }}</strong>
+              {% if job.featured %}<span class="badge badge-featured">Featured</span>{% endif %}
+            </div>
+            <div class="text-muted small">{{ job.employer.name }} • {{ job.location }}</div>
+            <div class="small mt-1 text-muted">{{ job.description|striptags|truncatechars:160 }}</div>
+          </div>
+          <div class="text-nowrap small text-muted">{{ job.posting_date }}</div>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="bg-white border rounded p-4 text-center text-muted">No jobs found.</div>
+{% endif %}

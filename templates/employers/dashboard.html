@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% block title %}Employer Dashboard · PT Jobs{% endblock %}
+{% block content %}
+<div class="container">
+  <h1 class="mb-3">Welcome, {{ employer.company_name|default:employer.name }}</h1>
+
+  <!-- Tabs -->
+  <ul class="nav nav-tabs">
+    <li class="nav-item"><a class="nav-link {% if tab == 'dashboard' %}active{% endif %}" href="?tab=dashboard">Dashboard</a></li>
+    <li class="nav-item"><a class="nav-link {% if tab == 'jobs' %}active{% endif %}" href="?tab=jobs">Job Postings</a></li>
+    <li class="nav-item"><a class="nav-link {% if tab == 'products' %}active{% endif %}" href="?tab=products">Purchased Products</a></li>
+    <li class="nav-item"><a class="nav-link {% if tab == 'invoices' %}active{% endif %}" href="?tab=invoices">Invoices</a></li>
+    <li class="nav-item"><a class="nav-link {% if tab == 'profile' %}active{% endif %}" href="?tab=profile">Employer Profile</a></li>
+  </ul>
+
+  {% if tab in 'dashboard jobs' %}
+  <form class="mt-3 row gy-2 gx-2 align-items-end">
+    <input type="hidden" name="tab" value="{{ tab }}">
+    <div class="col-auto">
+      <label class="form-label">Range</label>
+      <select name="range" class="form-select">
+        <option value="today" {% if preset == 'today' %}selected{% endif %}>Today</option>
+        <option value="last7" {% if preset == 'last7' %}selected{% endif %}>Last 7 days</option>
+        <option value="last30" {% if preset == 'last30' %}selected{% endif %}>Last 30 days</option>
+        <option value="custom" {% if preset == 'custom' %}selected{% endif %}>Custom</option>
+      </select>
+    </div>
+    <div class="col-auto">
+      <label class="form-label">From</label>
+      <input type="date" name="from" class="form-control" value="{{ start_dt|date:'Y-m-d' }}">
+    </div>
+    <div class="col-auto">
+      <label class="form-label">To</label>
+      <input type="date" name="to" class="form-control" value="{{ end_dt|date:'Y-m-d' }}">
+    </div>
+    <div class="col-auto">
+      <button class="btn btn-outline-primary">Apply</button>
+    </div>
+  </form>
+  {% endif %}
+
+  <div class="mt-3">
+    {% if tab == 'dashboard' %}
+      <div class="row g-3">
+        <div class="col-sm-6 col-lg-3">
+          <div class="card"><div class="card-body">
+            <div class="text-muted small">Job views</div>
+            <div class="fs-3 fw-semibold">{{ views_total }}</div>
+          </div></div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="card"><div class="card-body">
+            <div class="text-muted small">Applications (email)</div>
+            <div class="fs-3 fw-semibold">{{ applications_total }}</div>
+          </div></div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="card"><div class="card-body">
+            <div class="text-muted small">Apply clicks (URL)</div>
+            <div class="fs-3 fw-semibold">{{ clicks_total }}</div>
+          </div></div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="card"><div class="card-body">
+            <div class="text-muted small">Jobs posted</div>
+            <div class="fs-3 fw-semibold">{{ employer.jobs.count }}</div>
+          </div></div>
+        </div>
+      </div>
+
+      <div class="mt-3 card">
+        <div class="card-body d-flex flex-wrap gap-3 align-items-center">
+          <div class="me-auto">
+            <div class="fw-semibold">Your Posting Package</div>
+            {% if active_package %}
+              <div>{{ active_package.name }} — Duration: {{ active_package.duration_days }} days — Jobs: {{ active_package.max_jobs }}</div>
+              {% if credits_total != None and credits_used != None %}
+                <div class="text-muted small">Credits used: {{ credits_used }} / {{ credits_total }} {% if credits_left != None %} ({{ credits_left }} left){% endif %}</div>
+              {% endif %}
+            {% else %}
+              <div class="text-muted">No active package linked. <a href="{% url 'package_list' %}">Buy a package</a></div>
+            {% endif %}
+          </div>
+          <!-- Post a Job button -> consumes 1 credit on save -->
+          <a class="btn btn-primary" href="{% url 'post_job' %}">Post a Job</a>
+        </div>
+      </div>
+
+    {% elif tab == 'jobs' %}
+      <form class="row gy-2 gx-2 align-items-end mt-2">
+        <input type="hidden" name="tab" value="jobs">
+        <input type="hidden" name="range" value="{{ preset }}">
+        <input type="hidden" name="from" value="{{ start_dt|date:'Y-m-d' }}">
+        <input type="hidden" name="to" value="{{ end_dt|date:'Y-m-d' }}">
+        <div class="col-auto">
+          <label class="form-label">Status</label>
+          <select name="status" class="form-select">
+            <option value="all" {% if status == 'all' %}selected{% endif %}>All</option>
+            <option value="active" {% if status == 'active' %}selected{% endif %}>Active</option>
+            <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Not active</option>
+            <option value="featured" {% if status == 'featured' %}selected{% endif %}>Featured</option>
+          </select>
+        </div>
+        <div class="col-auto">
+          <label class="form-label">Keyword</label>
+          <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Title, location…">
+        </div>
+        <div class="col-auto">
+          <button class="btn btn-outline-primary">Filter</button>
+        </div>
+        <div class="col-auto ms-auto">
+          <!-- Post a Job button here as well -->
+          <a class="btn btn-primary" href="{% url 'post_job' %}">Post a Job</a>
+        </div>
+      </form>
+
+      <div class="table-responsive mt-3">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Status</th>
+              <th>Dates</th>
+              <th>Location</th>
+              <th>Views</th>
+              <th>Applications</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for j in jobs %}
+              <tr>
+                <td>{{ j.title }}</td>
+                <td>{% if j.is_active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-secondary">Expired</span>{% endif %}</td>
+                <td>{{ j.posting_date|date:"Y-m-d" }} — {{ j.expiry_date|date:"Y-m-d"|default:"—" }}</td>
+                <td>{{ j.location }}</td>
+                <td>{{ j.view_count|default:0 }}</td>
+                <td>
+                  <a href="{% url 'applications_list' j.id %}">{{ j.applications.count|default:0 }}</a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="6" class="text-muted">No jobs yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+    {% elif tab == 'products' %}
+      <div class="card mt-3">
+        <div class="card-body">
+          <h5 class="card-title">Purchased Products</h5>
+          {% if active_package %}
+            <div class="mb-1"><strong>{{ active_package.name }}</strong></div>
+            <div class="text-muted small">Duration: {{ active_package.duration_days }} days • Jobs included: {{ active_package.max_jobs }}</div>
+            {% if credits_total != None %}
+              <div class="mt-2">Credits: {{ credits_used|default:0 }} used / {{ credits_total }} total{% if credits_left != None %} — <strong>{{ credits_left }} left</strong>{% endif %}</div>
+            {% endif %}
+          {% else %}
+            <p class="mb-0 text-muted">No products yet. <a href="{% url 'package_list' %}">Browse packages</a>.</p>
+          {% endif %}
+        </div>
+      </div>
+
+    {% elif tab == 'invoices' %}
+      <div class="card mt-3">
+        <div class="card-body">
+          <h5 class="card-title">Invoices</h5>
+          {% if invoices %}
+            <ul class="list-group list-group-flush">
+              {% for inv in invoices %}
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>#{{ inv.number }} — {{ inv.created_at|date:"Y-m-d" }}</span>
+                  <span>${{ inv.total_display }}</span>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="mb-0 text-muted">No invoices yet.</p>
+          {% endif %}
+        </div>
+      </div>
+
+    {% elif tab == 'profile' %}
+      <div class="card mt-3">
+        <div class="card-body d-flex flex-wrap align-items-center gap-3">
+          <div class="me-auto">
+            <h5 class="card-title mb-1">Employer Profile</h5>
+            <div class="text-muted small mb-2">Edit your company details and logo.</div>
+          </div>
+          <a class="btn btn-primary" href="{% url 'employer_profile_edit' %}">Edit Profile</a>
+        </div>
+        <div class="card-body pt-0">
+          <dl class="row">
+            <dt class="col-sm-3">Company</dt><dd class="col-sm-9">{{ employer.company_name|default:"—" }}</dd>
+            <dt class="col-sm-3">Contact</dt><dd class="col-sm-9">{{ employer.name }}</dd>
+            <dt class="col-sm-3">Email</dt><dd class="col-sm-9">{{ employer.email }}</dd>
+            <dt class="col-sm-3">Location</dt><dd class="col-sm-9">{{ employer.location }}</dd>
+            <dt class="col-sm-3">Website</dt><dd class="col-sm-9">{{ employer.website|default:"—" }}</dd>
+          </dl>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

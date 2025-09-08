@@ -1,0 +1,32 @@
+{% comment %}
+Loads Google Maps Places API and attaches Autocomplete to any input
+with the CSS class "location-autocomplete".
+Remember to set GOOGLE_MAPS_API_KEY in settings.py (or env) later.
+{% endcomment %}
+<script
+  src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_MAPS_API_KEY|default:'' }}&libraries=places"
+  async
+  defer></script>
+<script>
+  (function attachPlaces() {
+    function init() {
+      const inputs = document.querySelectorAll('input.location-autocomplete');
+      inputs.forEach(function (el) {
+        if (el.dataset.hasAutocomplete) return;
+        try {
+          const ac = new google.maps.places.Autocomplete(el, {
+            types: ["(cities)"],
+            // componentRestrictions: { country: "ca" }, // uncomment to restrict to Canada
+          });
+          el.dataset.hasAutocomplete = "1";
+        } catch (e) {
+          // ignore if Google not ready yet
+        }
+      });
+    }
+    // run when the script is ready
+    window.addEventListener("load", init);
+    // also re-run on htmx/turbo/nav updates (harmless if not present)
+    document.addEventListener("htmx:afterSettle", init);
+  })();
+</script>

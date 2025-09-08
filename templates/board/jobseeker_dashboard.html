@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Job Seeker Dashboard</h1>
+
+<section class="card">
+  <h2>{{ jobseeker.first_name }} {{ jobseeker.last_name }}</h2>
+  <p><strong>Email:</strong> {{ jobseeker.email }} | <strong>Phone:</strong> {{ jobseeker.phone }}</p>
+  <p><strong>Location:</strong> {{ jobseeker.city }}, {{ jobseeker.province }}</p>
+  <p><strong>Experience:</strong> {{ jobseeker.years_experience }} years{% if jobseeker.profession %} | <strong>Profession:</strong> {{ jobseeker.get_profession_display }}{% endif %}</p>
+  {% if jobseeker.linkedin_url %}<p><a href="{{ jobseeker.linkedin_url }}" target="_blank" rel="noopener">LinkedIn</a></p>{% endif %}
+  {% if jobseeker.portfolio_url %}<p><a href="{{ jobseeker.portfolio_url }}" target="_blank" rel="noopener">Portfolio</a></p>{% endif %}
+  {% if jobseeker.license_number %}<p><strong>License:</strong> {{ jobseeker.license_number }}</p>{% endif %}
+</section>
+
+<section class="card">
+  <h3>Your Applications</h3>
+  {% if applications %}
+    <ul class="list">
+      {% for app in applications %}
+        <li>
+          <a href="{% url 'job_detail' app.job.pk %}">{{ app.job.title }}</a>
+          <small> — {{ app.job.employer.name }} | {{ app.submitted_at|date:"Y-m-d" }}</small>
+          <span class="pill">{{ app.get_status_display }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No applications yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

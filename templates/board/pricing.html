@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Posting Packages</h1>
+
+<form method="get" action="#">
+  <label for="employer">Choose Employer (for testing):</label>
+  <select id="employer" name="employer_id">
+    {% for e in employers %}
+      <option value="{{ e.id }}">{{ e.company_name }} ({{ e.email }})</option>
+    {% endfor %}
+  </select>
+</form>
+
+<ul>
+  {% for p in packages %}
+    <li>
+      <strong>{{ p.name }}</strong> — {{ p.num_jobs }} job(s), {{ p.duration_days }} days
+      — ${{ p.price_cents|floatformat:-2 }}
+      <br>
+      <a
+        href="{% url 'board:checkout' p.id employers.first.id %}"
+        onclick="
+          const sel = document.getElementById('employer');
+          if (sel && sel.value) { this.href = this.href.replace('/{{ employers.first.id }}/', '/' + sel.value + '/'); }
+        "
+      >
+        Buy with Stripe
+      </a>
+    </li>
+  {% empty %}
+    <li>No packages configured yet. Add some in the admin.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

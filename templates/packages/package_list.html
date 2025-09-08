@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Posting Packages · PT Jobs{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1 class="mb-3">Posting Packages</h1>
+  {% if packages %}
+    <div class="row g-3">
+      {% for p in packages %}
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100">
+            {% if p.main_image %}
+              <img src="{{ p.main_image.url }}" class="card-img-top" alt="{{ p.name }}">
+            {% endif %}
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">{{ p.name }}</h5>
+              <div class="mb-2 text-muted small">
+                Duration: {{ p.duration_days }} days • Jobs included: {{ p.max_jobs }}
+                {% if p.is_featured_package %}<span class="badge text-bg-warning ms-2">Featured</span>{% endif %}
+              </div>
+              {% if p.description %}<p class="card-text">{{ p.description }}</p>{% endif %}
+              <div class="mt-auto d-flex justify-content-between align-items-center">
+                <div class="fw-semibold">${{ p.price_display }}</div>
+                <a class="btn btn-primary" href="{% url 'checkout_start' p.code %}">Choose</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>No packages available.</p>
+  {% endif %}
+</div>
+{% endblock %}

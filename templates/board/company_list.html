@@ -1,16 +1,37 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
+{% block title %}Companies{% endblock %}
+
 {% block content %}
-<h2>Your companies</h2>
-<p><a class="btn" href="{% url 'board:company_create' %}">+ Add company</a></p>
-<ul class="cards">
-  {% for c in companies %}
-  <li class="card">
-    <h4>{{ c.name }}</h4>
-    <p>{{ c.website }}</p>
-    <p><a href="{% url 'board:company_edit' c.pk %}">Edit</a></p>
-  </li>
-  {% empty %}
-  <li>No companies yet.</li>
-  {% endfor %}
-</ul>
+<div class="container py-4">
+  <h1 class="mb-3">Companies</h1>
+
+  {% if employers %}
+    <div class="row row-cols-1 row-cols-md-2 g-3">
+      {% for e in employers %}
+        <div class="col">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body">
+              <div class="d-flex align-items-center gap-3 mb-2">
+                {% if e.logo %}
+                  <img src="{{ e.logo.url }}" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:8px;">
+                {% else %}
+                  <div style="width:56px;height:56px;border-radius:8px;background:#eee;"></div>
+                {% endif %}
+                <div>
+                  <div class="fw-semibold">{{ e.company_name|default:e.name }}</div>
+                  <div class="small text-muted">{{ e.location }}</div>
+                </div>
+              </div>
+              <div class="small text-muted mb-2">{{ e.description|default:"" |truncatechars:140 }}</div>
+              <div class="small">Active jobs: <strong>{{ e.active_jobs }}</strong></div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>No companies with active jobs yet.</p>
+  {% endif %}
+</div>
 {% endblock %}

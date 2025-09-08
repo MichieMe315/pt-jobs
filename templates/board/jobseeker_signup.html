@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Job Seeker Sign Up · PT Jobs{% endblock %}
+{% block content %}
+<div class="container" style="max-width: 760px;">
+  <h1 class="mb-3">Job Seeker Sign Up</h1>
+  <form method="post" enctype="multipart/form-data" class="card card-body">
+    {% csrf_token %}
+
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Email</label>
+        {{ form.email }}
+        {% for e in form.email.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Password</label>
+        {{ form.password }}
+        {% for e in form.password.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">First name</label>
+        {{ form.first_name }}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Last name</label>
+        {{ form.last_name }}
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Are you a Registered professional in Canada?</label>
+        {{ form.registration_status }}
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">What type of opportunity are you interested in?</label>
+        {{ form.opportunity_type }}
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Where are you currently located?</label>
+        {{ form.current_location }}
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Are you open to relocating?</label>
+        {{ form.open_to_relocation }}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">If yes, where?</label>
+        {{ form.relocation_where }}
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Do you require sponsorship to work in Canada?</label>
+        {{ form.need_sponsorship }}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Are you seeking immigration to Canada?</label>
+        {{ form.seeking_immigration }}
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Resume</label>
+        {{ form.resume }}
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Position desired</label>
+        {{ form.position_desired }}
+      </div>
+    </div>
+
+    <!-- Hidden legacy fields (keep in form to avoid errors if referenced) -->
+    {{ form.city }}{{ form.province }}{{ form.is_registered_canada }}
+
+    <button class="btn btn-primary mt-3">Create account</button>
+  </form>
+</div>
+{% endblock %}
