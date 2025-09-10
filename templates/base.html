@@ -1,141 +1,67 @@
 {% load static %}
-{% load board_extras %}
 <!doctype html>
-<html lang="en" data-bs-theme="dark">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}PT Jobs{% endblock %}</title>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}PT Jobs{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Google Font (optional) -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Bootswatch Slate (kept) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/slate/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Bootswatch: Slate (Bootstrap 5.3) — NO integrity attribute (prevents accidental blocking) -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/slate/bootstrap.min.css"
-      rel="stylesheet"
-    >
+  <!-- Our overrides -->
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="{% url 'home' %}">PT Jobs</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topnav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="topnav">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link" href="{% url 'job_list' %}">Jobs</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'employer_list' %}">Employers</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'package_list' %}">Posting Packages</a></li>
+      </ul>
 
-    <!-- Minimal custom overrides -->
-    <link href="{% static 'css/theme.css' %}" rel="stylesheet">
-
-    {% block extra_head %}{% endblock %}
-  </head>
-  <body style="--bs-body-font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'">
-
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg fixed-top shadow-sm bg-dark" data-bs-theme="dark">
-      <div class="container">
-        <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'home' %}">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-activity" viewBox="0 0 16 16" aria-hidden="true">
-            <path d="M6 2a.5.5 0 0 1 .474.342L9.28 10.5l1.246-3.49A.5.5 0 0 1 11 6.5h3.5a.5.5 0 0 1 0 1H11.28l-1.526 4.273a.5.5 0 0 1-.948-.026L6.72 5.5 5.474 8.99A.5.5 0 0 1 5 9.333H1.5a.5.5 0 0 1 0-1h3.28l1.526-4.273A.5.5 0 0 1 6 2Z"/>
-          </svg>
-          <strong>Physiotherapy Jobs Canada</strong>
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNav"
-                aria-controls="topNav" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="topNav">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item"><a class="nav-link" href="{% url 'job_list' %}">Jobs</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'employer_list' %}">Employers</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'package_list' %}">Packages</a></li>
-            {% if request.user.is_authenticated and request.user|has_employer %}
-              <li class="nav-item">
-                <a class="nav-link fw-semibold" href="{% url 'employer_dashboard' %}">Dashboard</a>
-              </li>
+      <ul class="navbar-nav ms-auto">
+        {% if request.user.is_authenticated %}
+          <li class="nav-item">
+            {% if request.user.employer %}
+              <a class="nav-link" href="{% url 'employer_dashboard' %}">Dashboard</a>
+            {% elif request.user.jobseeker %}
+              <a class="nav-link" href="{% url 'jobseeker_dashboard' %}">Dashboard</a>
             {% endif %}
-          </ul>
+          </li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
+        {% else %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'employer_signup' %}">Employer Sign-up</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'jobseeker_signup' %}">Job Seeker Sign-up</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
 
-          <ul class="navbar-nav ms-auto">
-            {% if request.user.is_authenticated %}
-              <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="acctMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  {% if request.user.first_name %}{{ request.user.first_name }}{% else %}Account{% endif %}
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="acctMenu">
-                  {% if request.user|has_employer %}
-                    <li><a class="dropdown-item" href="{% url 'employer_dashboard' %}">Employer Dashboard</a></li>
-                    <li><a class="dropdown-item" href="{% url 'employer_profile_edit' %}">Edit Employer Profile</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                  {% endif %}
-                  <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
-                </ul>
-              </li>
-            {% else %}
-              <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="signinMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  Sign in / Sign up
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="signinMenu">
-                  <li><a class="dropdown-item" href="{% url 'login' %}">Login</a></li>
-                  <li><a class="dropdown-item" href="{% url 'password_reset' %}">Forgot password?</a></li>
-                  <li><hr class="dropdown-divider"></li>
-                  <li class="dropdown-header">Create an account</li>
-                  <li><a class="dropdown-item" href="{% url 'employer_signup' %}">Employer sign up</a></li>
-                  <li><a class="dropdown-item" href="{% url 'jobseeker_signup' %}">Job seeker sign up</a></li>
-                </ul>
-              </li>
-            {% endif %}
-          </ul>
-        </div>
-      </div>
-    </nav>
+<main class="py-4">
+  <div class="container">
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} mb-3">{{ message }}</div>
+    {% endfor %}
+  </div>
+  {% block content %}{% endblock %}
+</main>
 
-    <!-- Main -->
-    <main class="pb-5" style="padding-top: 5.25rem;">
-      {% if messages %}
-        <div class="container">
-          {% for message in messages %}
-            {% if message.tags == "error" %}
-              {% with "danger" as level %}
-                <div class="alert alert-{{ level }} alert-dismissible fade show mt-3" role="alert">
-                  {{ message }}
-                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-              {% endwith %}
-            {% else %}
-              <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show mt-3" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-              </div>
-            {% endif %}
-          {% endfor %}
-        </div>
-      {% endif %}
+<footer class="py-4 mt-4 border-top">
+  <div class="container text-muted small">
+    &copy; {{ now|date:"Y" }} PT Jobs
+    <span class="ms-3"><a class="link-light" href="{% url 'password_reset' %}">Forgot password?</a></span>
+  </div>
+</footer>
 
-      {% block content %}{% endblock %}
-    </main>
-
-    <footer class="py-4 border-top bg-dark-subtle">
-      <div class="container d-flex flex-wrap gap-2 justify-content-between align-items-center">
-        <div class="text-muted small">© {{ now|date:"Y" }} Physiotherapy Jobs Canada</div>
-        <div class="small">
-          <a class="text-decoration-none me-3" href="{% url 'job_list' %}">Browse Jobs</a>
-          <a class="text-decoration-none me-3" href="{% url 'package_list' %}">Post a Job</a>
-          {% if request.user.is_authenticated and request.user|has_employer %}
-            <a class="text-decoration-none" href="{% url 'employer_dashboard' %}">Dashboard</a>
-          {% else %}
-            <a class="text-decoration-none" href="{% url 'employer_signup' %}">Employer Sign Up</a>
-          {% endif %}
-        </div>
-      </div>
-    </footer>
-
-    <!-- Bootstrap JS (no integrity to avoid SRI issues) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script>
-      setTimeout(() => {
-        document.querySelectorAll('.alert:not(.alert-danger)').forEach(a => {
-          const alert = bootstrap.Alert.getOrCreateInstance(a);
-          alert.close();
-        });
-      }, 6000);
-    </script>
-
-    {% block extra_scripts %}{% endblock %}
-  </body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>

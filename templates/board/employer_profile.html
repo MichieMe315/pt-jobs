@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}{{ employer.company_name|default:employer.name }} · Employer Profile{% endblock %}
+{% block content %}
+<div class="container" style="max-width: 980px;">
+  <div class="d-flex align-items-center gap-3 my-3">
+    {% if employer.logo %}
+      <img src="{{ employer.logo.url }}" alt="" style="width:72px;height:72px;object-fit:cover;border-radius:12px;">
+    {% endif %}
+    <div>
+      <h1 class="mb-1">{{ employer.company_name|default:employer.name }}</h1>
+      <div class="text-muted">{{ employer.location }}</div>
+      {% if employer.website %}
+        <div><a href="{{ employer.website }}" target="_blank" rel="noopener">Website</a></div>
+      {% endif %}
+    </div>
+  </div>
+
+  <ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+      <a class="nav-link active" data-bs-toggle="tab" href="#overview">Overview</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-bs-toggle="tab" href="#jobs">Open Jobs ({{ jobs|length }})</a>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+    <div id="overview" class="tab-pane fade show active">
+      {% if employer.description %}
+        <p>{{ employer.description|linebreaks }}</p>
+      {% else %}
+        <p class="text-muted">No company description provided.</p>
+      {% endif %}
+    </div>
+
+    <div id="jobs" class="tab-pane fade">
+      {% if jobs %}
+        <div class="list-group">
+          {% for j in jobs %}
+            <a class="list-group-item list-group-item-action" href="{% url 'job_detail' j.id %}">
+              <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">{{ j.title }}</h5>
+                <small class="text-muted">{{ j.posting_date }} → {{ j.expiry_date }}</small>
+              </div>
+              <p class="mb-1 text-muted">{{ j.location }}</p>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-muted">No open jobs right now.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

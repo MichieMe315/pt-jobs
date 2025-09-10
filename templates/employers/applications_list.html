@@ -1,34 +1,47 @@
 {% extends "base.html" %}
-{% block title %}Applications · {{ job.title }}{% endblock %}
+{% block title %}Applications · {{ job.title }} · PT Jobs{% endblock %}
 {% block content %}
 <div class="container">
-  <h1 class="mb-3">Applications — {{ job.title }}</h1>
-
-  <div class="table-responsive">
-    <table class="table align-middle">
-      <thead>
-        <tr>
-          <th>When</th>
-          <th>Applicant</th>
-          <th>Email</th>
-          <th>Resume</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for a in applications %}
-          <tr>
-            <td>{{ a.created_at|date:"Y-m-d H:i" }}</td>
-            <td>{{ a.name|default:"—" }}</td>
-            <td>{{ a.email|default:"—" }}</td>
-            <td>{% if a.resume %}<a href="{{ a.resume.url }}" target="_blank">Download</a>{% else %}—{% endif %}</td>
-          </tr>
-        {% empty %}
-          <tr><td colspan="4" class="text-muted">No applications yet.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <h1 class="mb-3">Applications</h1>
+  <div class="mb-3 text-muted">
+    Job: <strong>{{ job.title }}</strong> · {{ job.location }}
   </div>
 
-  <a class="btn btn-link" href="{% url 'employer_dashboard' %}?tab=jobs">Back to Jobs</a>
+  {% if applications %}
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>Received</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Message</th>
+            <th>Resume</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in applications %}
+            <tr>
+              <td>{{ a.created_at|date:"Y-m-d H:i" }}</td>
+              <td>{{ a.name }}</td>
+              <td><a href="mailto:{{ a.email }}">{{ a.email }}</a></td>
+              <td>{{ a.phone|default:"—" }}</td>
+              <td style="max-width:420px;">{{ a.message|default:"" }}</td>
+              <td>
+                {% if a.resume %}
+                  <a href="{{ a.resume.url }}" target="_blank" rel="noopener">Download</a>
+                {% else %}—{% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="text-muted">No applications yet.</p>
+  {% endif %}
+
+  <a class="btn btn-outline-secondary mt-3" href="{% url 'employer_dashboard' %}?tab=jobs">Back to jobs</a>
 </div>
 {% endblock %}

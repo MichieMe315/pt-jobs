@@ -1,29 +1,40 @@
 from django import forms
-from django.contrib.auth.models import User
-from .models import UserProfile
+from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.core.exceptions import ValidationError
+from django.apps import apps
 
-class RegisterForm(forms.ModelForm):
-    username = forms.CharField()
-    email = forms.EmailField()
-    password = forms.CharField(widget=forms.PasswordInput)
-    role = forms.ChoiceField(choices=UserProfile.ROLE_CHOICES)
+User = get_user_model()
 
-    class Meta:
-        model = User
-        fields = ['username', 'email', 'password']
+def get_profile(user):
+    UserProfile = apps.get_model("accounts", "UserProfile")
+    return UserProfile.objects.filter(user=user).first()
 
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        user.set_password(self.cleaned_data['password'])
-        if commit:
-            user.save()
-            UserProfile.objects.create(
-                user=user,
-                role=self.cleaned_data['role']
+class ApprovedAuthenticationForm(AuthenticationForm):
+    """
+    Extends Django's AuthenticationForm to enforce is_approved=True before allowing login.
+    Shows a friendly error if pending.
+    """
+    def confirm_login_allowed(self, user):
+        super().confirm_login_allowed(user)  # keep default active/is_staff checks
+        profile = get_profile(user)
+        if not profile or not getattr(profile, "is_approved", False):
+            raise ValidationError(
+                "Your account is pending approval. Please wait for an admin to approve it.",
+                code="inactive",
             )
-        return user
 
-class ProfileForm(forms.ModelForm):
-    class Meta:
-        model = UserProfile
-        fields = ['role', 'company_name', 'website', 'bio']
+class BaseSignupForm(UserCreationForm):
+    first_name = forms.CharField(max_length=150, required=False)
+    last_name = forms.CharField(max_length=150, required=False)
+    email = forms.EmailField(required=True)
+
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = ("username", "first_name", "last_name", "email")
+
+class EmployerSignUpForm(BaseSignupForm):
+    pass
+
+class JobSeekerSignUpForm(BaseSignupForm):
+    pass

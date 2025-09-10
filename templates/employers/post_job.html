@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Post a Job · PT Jobs{% endblock %}
+{% block content %}
+<div class="container" style="max-width: 860px;">
+  <h1 class="mb-3">Post a Job</h1>
+
+  <form method="post" enctype="multipart/form-data" class="card">
+    <div class="card-body">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+
+      <div class="row g-3">
+        <div class="col-md-8">
+          <label class="form-label">Job Title</label>
+          {{ form.title }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Job Type</label>
+          {{ form.job_type }}
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">Job Description</label>
+          {{ form.description }}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Location</label>
+          {{ form.location }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Relocation assistance provided?</label>
+          {{ form.relocation_assistance }}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Salary type</label>
+          {{ form.compensation_type }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Min</label>
+          {{ form.salary_min }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Max</label>
+          {{ form.salary_max }}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Posting date</label>
+          {{ form.posting_date }}
+        </div>
+        <!-- Expiry is enforced by package duration; no manual input -->
+        <!-- Removed expiry_date field from UI on purpose -->
+
+        <div class="col-md-6">
+          <div class="form-text mt-4">
+            This job will auto-expire {{ duration_days }} day(s) after the posting date.
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Apply by Email</label>
+          {{ form.application_email }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Apply URL</label>
+          {{ form.external_apply_url }}
+        </div>
+      </div>
+    </div>
+    <div class="card-footer d-flex justify-content-end" style="gap:8px;">
+      <a class="btn btn-outline-secondary" href="{% url 'employer_dashboard' %}">Cancel</a>
+      <button class="btn btn-primary">Publish Job</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

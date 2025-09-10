@@ -8,10 +8,9 @@
       <h5 class="card-title">{{ package.name }}</h5>
       <div class="text-muted small mb-2">
         Duration: {{ package.duration_days }} days • Jobs included: {{ package.max_jobs }}
-        {% if package.is_featured_package %}<span class="badge text-bg-warning ms-2">Featured</span>{% endif %}
       </div>
       {% if package.description %}<p>{{ package.description }}</p>{% endif %}
-      <p class="mb-0">Price: <strong>${{ package.price_display }}</strong></p>
+      <p class="mb-0">Price: <strong>{{ package.price_display }}</strong></p>
     </div>
   </div>
 

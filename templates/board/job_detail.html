@@ -1,64 +1,30 @@
 {% extends "base.html" %}
 {% block title %}{{ job.title }} · PT Jobs{% endblock %}
 {% block content %}
-<div class="container" style="max-width: 900px;">
-  <div class="d-flex justify-content-between align-items-start mb-3">
+<div class="container" style="max-width: 840px;">
+  <div class="d-flex align-items-center gap-3 my-3">
+    {% if job.employer.logo %}
+      <img src="{{ job.employer.logo.url }}" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:10px;">
+    {% endif %}
     <div>
       <h1 class="mb-1">{{ job.title }}</h1>
-      <div class="text-muted">{{ job.location }} · {{ job.posting_date|date:"M j, Y" }}</div>
-      {% if job.featured %}<span class="badge text-bg-warning mt-2">Featured</span>{% endif %}
-    </div>
-    {% if job.employer.logo %}
-      <img src="{{ job.employer.logo.url }}" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:8px;">
-    {% endif %}
-  </div>
-
-  <div class="card mb-4">
-    <div class="card-body d-flex flex-wrap gap-4">
-      <div>
-        <div class="text-muted small">Compensation</div>
-        <div class="fw-semibold">
-          {% if job.compensation_type == "percent" %}
-            {% if job.percent_split %}{{ job.percent_split }}% split{% else %}—{% endif %}
-          {% else %}
-            {% if job.salary_min or job.salary_max %}
-              ${{ job.salary_min|default_if_none:"" }}{% if job.salary_min and job.salary_max %}–{% endif %}{{ job.salary_max|default_if_none:"" }}
-              {% if job.compensation_type == "hourly" %}/hour{% elif job.compensation_type == "yearly" %}/year{% endif %}
-            {% else %}—{% endif %}
-          {% endif %}
-        </div>
-      </div>
-      <div>
-        <div class="text-muted small">Job type</div>
-        <div class="fw-semibold">{{ job.get_job_type_display|default:"—" }}</div>
-      </div>
-      <div>
-        <div class="text-muted small">Relocation assistance</div>
-        <div class="fw-semibold">{{ job.relocation_assistance|yesno:"Yes,No" }}</div>
-      </div>
-      <div>
-        <div class="text-muted small">Expires</div>
-        <div class="fw-semibold">{{ job.expiry_date|date:"M j, Y" }}</div>
+      <div class="text-muted small">
+        <a href="{% url 'employer_public_profile' job.employer.id %}">{{ job.employer.company_name|default:job.employer.name }}</a>
+        · {{ job.location }}
       </div>
     </div>
   </div>
 
-  <div class="job-description">
-    {{ job.description|linebreaks }}
+  <div class="card mb-3">
+    <div class="card-body">
+      {{ job.description|linebreaks }}
+    </div>
   </div>
 
-  <div class="mt-4 d-flex gap-2 flex-wrap">
-    {% if job.external_apply_url %}
-      <a class="btn btn-primary" href="{% url 'track_apply_click' job.id %}"
-         onclick="setTimeout(()=>window.location='{{ job.external_apply_url }}',50);return true;">Apply on site</a>
-    {% endif %}
-    {% if job.application_email %}
-      <a class="btn btn-outline-primary" href="mailto:{{ job.application_email }}">Apply by Email</a>
-    {% endif %}
-    <a class="btn btn-success" href="{% url 'job_apply' job.id %}">Apply Online</a>
-    <a class="btn btn-outline-secondary" href="{% url 'job_list' %}">Back to Jobs</a>
+  <div class="text-muted small mb-4">
+    Posted: {{ job.posting_date }} · Expires: {{ job.expiry_date }}
   </div>
 
-  <img src="{% url 'track_view' job.id %}" width="1" height="1" alt="" style="opacity:0;">
+  <!-- Apply controls would go here -->
 </div>
 {% endblock %}

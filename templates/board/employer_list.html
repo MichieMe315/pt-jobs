@@ -11,7 +11,7 @@
             <div class="card-body">
               <div class="d-flex align-items-center gap-3 mb-2">
                 {% if e.logo %}
-                  <img src="{{ e.logo.url }}" alt="" style="width:48px;height:48px;object-fit:cover;border-radius:8px;">
+                  <img src="{{ e.logo.url }}" alt="" class="employer-logo">
                 {% endif %}
                 <div>
                   <div class="fw-semibold">{{ e.company_name|default:e.name }}</div>
@@ -19,7 +19,7 @@
                 </div>
               </div>
               <div class="small text-muted mb-2">
-                Active jobs: {{ e.jobs_count }}
+                Active jobs: {{ e.jobs_count|default:"0" }}
               </div>
               {% if e.description %}
                 <div class="small">{{ e.description|truncatechars:140 }}</div>

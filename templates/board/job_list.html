@@ -1,97 +1,111 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Jobs · PT Jobs{% endblock %}
+
 {% block content %}
 <div class="container">
-  <h1 class="mb-3">Jobs</h1>
 
-  <form method="get" class="card card-body mb-3">
-    <div class="row g-2">
-      <div class="col-md-5">
-        <input class="form-control" type="text" name="q" placeholder="Search job titles or descriptions" value="{{ q }}">
-      </div>
-      <div class="col-md-4">
-        <input class="form-control" type="text" name="location" placeholder="City, province, or region" value="{{ location }}">
-      </div>
-      <div class="col-md-3">
-        <select class="form-select" name="job_type">
-          <option value="">All job types</option>
-          <option value="full_time" {% if job_type == "full_time" %}selected{% endif %}>Full-time</option>
-          <option value="part_time" {% if job_type == "part_time" %}selected{% endif %}>Part-time</option>
-          <option value="contractor" {% if job_type == "contractor" %}selected{% endif %}>Contractor</option>
-          <option value="resident" {% if job_type == "resident" %}selected{% endif %}>Resident</option>
-          <option value="intern" {% if job_type == "intern" %}selected{% endif %}>Intern</option>
-          <option value="locum" {% if job_type == "locum" %}selected{% endif %}>Locum</option>
-        </select>
-      </div>
+  <!-- FULL-WIDTH SEARCH BAR AT TOP -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <form class="row g-2 align-items-end" method="get" action="{% url 'job_list' %}">
+        <div class="col-md-6">
+          <label class="form-label">Keyword</label>
+          <input type="text" name="q" class="form-control" placeholder="e.g., Physiotherapist" value="{{ q }}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Location</label>
+          <input type="text" name="location" class="form-control" placeholder="City or region" value="{{ location }}">
+        </div>
+        <div class="col-md-2 d-grid">
+          <button class="btn btn-primary">Search</button>
+        </div>
+      </form>
     </div>
-    <div class="mt-2 d-flex gap-2">
-      <button class="btn btn-primary">Search</button>
-      <a class="btn btn-outline-secondary" href="{% url 'job_list' %}">Reset</a>
+  </div>
+
+  <div class="row g-4">
+    <!-- Main column -->
+    <div class="col-lg-8">
+      {% if q or location %}
+        <h1 class="h5 mb-3">Jobs
+          <span class="text-muted small">
+            {% if q %} matching “{{ q }}”{% endif %}{% if location %}{% if q %},{% endif %} in {{ location }}{% endif %}
+          </span>
+        </h1>
+      {% else %}
+        <h1 class="h5 mb-3">All jobs</h1>
+      {% endif %}
+
+      {% if jobs %}
+        <div class="list-group">
+          {% for job in jobs %}
+            <a class="list-group-item list-group-item-action py-3" href="{% url 'job_detail' job.id %}">
+              <div class="d-flex w-100 justify-content-between align-items-start gap-3">
+                <div class="d-flex align-items-center gap-3">
+                  {% if job.employer.logo %}
+                    <img src="{{ job.employer.logo.url }}" alt="" class="employer-logo">
+                  {% endif %}
+                  <div>
+                    <div class="fw-semibold job-card-title">{{ job.title }}</div>
+                    <div class="text-muted small job-meta">
+                      {% if job.employer.company_name %}{{ job.employer.company_name }}{% else %}{{ job.employer.name }}{% endif %}
+                      • {{ job.location }}
+                      {% if job.featured %} • <span class="badge bg-warning text-dark">Featured</span>{% endif %}
+                    </div>
+                    {% if job.description %}
+                      <div class="small text-muted mt-1">{{ job.description|striptags|truncatewords:26 }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="text-end text-muted small">
+                  {{ job.posting_date|date:"M j, Y" }}
+                </div>
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="alert alert-info">No jobs found.</div>
+      {% endif %}
     </div>
-  </form>
 
-  {% if jobs %}
-    <div class="list-group">
-      {% for job in jobs %}
-        <a href="{% url 'job_detail' job.id %}" class="list-group-item list-group-item-action py-3">
-          <div class="d-flex align-items-center gap-3">
-            {% if job.employer.logo %}
-              <img src="{{ job.employer.logo.url }}"
-                   alt="{{ job.employer.company_name|default:job.employer.name }}"
-                   style="width:56px;height:56px;object-fit:cover;border-radius:10px;flex:0 0 56px;">
-            {% else %}
-              <div style="width:56px;height:56px;border-radius:10px;background:#3a3f44;display:flex;align-items:center;justify-content:center;flex:0 0 56px;">
-                <span class="text-muted small">No<br>Logo</span>
-              </div>
-            {% endif %}
+    <!-- Right column -->
+    <div class="col-lg-4">
+      <div class="card mb-4">
+        <div class="card-body">
+          <h3 class="h6 mb-2">Employers</h3>
+          <p class="text-muted mb-3">Advertise your jobs to get qualified candidates.</p>
+          <a class="btn btn-success w-100" href="{% url 'package_list' %}">Post a job</a>
+        </div>
+      </div>
 
-            <div class="flex-grow-1">
-              <div class="d-flex align-items-center gap-2 flex-wrap">
-                <h5 class="mb-0">{{ job.title }}</h5>
-                {% if job.featured %}<span class="badge text-bg-warning">Featured</span>{% endif %}
-              </div>
-              <div class="text-muted small mt-1">
-                {{ job.employer.company_name|default:job.employer.name }} • {{ job.location }}
-                • Posted {{ job.posting_date|date:"M j, Y" }} • Expires {{ job.expiry_date|date:"M j, Y" }}
-              </div>
-
-              <div class="mt-1">
-                {# Hourly compensation #}
-                {% if job.compensation_type == "hourly" %}
-                  {% if job.salary_min or job.salary_max %}
-                    <span class="badge text-bg-secondary">
-                      ${{ job.salary_min|default_if_none:"" }}{% if job.salary_min and job.salary_max %}–{% endif %}{{ job.salary_max|default_if_none:"" }}/hour
-                    </span>
-                  {% endif %}
-                {% endif %}
-
-                {# Yearly compensation #}
-                {% if job.compensation_type == "yearly" %}
-                  {% if job.salary_min or job.salary_max %}
-                    <span class="badge text-bg-secondary">
-                      ${{ job.salary_min|default_if_none:"" }}{% if job.salary_min and job.salary_max %}–{% endif %}{{ job.salary_max|default_if_none:"" }}/year
-                    </span>
-                  {% endif %}
-                {% endif %}
-
-                {# Percent split #}
-                {% if job.compensation_type == "percent" %}
-                  {% if job.percent_split %}
-                    <span class="badge text-bg-secondary">{{ job.percent_split }}% split</span>
-                  {% endif %}
-                {% endif %}
-
-                {% if job.job_type %}
-                  <span class="badge text-bg-secondary">{{ job.get_job_type_display }}</span>
-                {% endif %}
-              </div>
+      {% if featured_jobs %}
+        <div class="card">
+          <div class="card-body">
+            <h3 class="h6 mb-3">Featured jobs</h3>
+            <div class="list-group list-group-flush">
+              {% for f in featured_jobs %}
+                <a class="list-group-item list-group-item-action" href="{% url 'job_detail' f.id %}">
+                  <div class="d-flex align-items-start gap-2">
+                    {% if f.employer.logo %}
+                      <img src="{{ f.employer.logo.url }}" alt="" class="employer-logo">
+                    {% endif %}
+                    <div>
+                      <div class="fw-semibold">{{ f.title }}</div>
+                      <div class="text-muted small">
+                        {% if f.employer.company_name %}{{ f.employer.company_name }}{% else %}{{ f.employer.name }}{% endif %}
+                        • {{ f.location }}
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              {% endfor %}
             </div>
           </div>
-        </a>
-      {% endfor %}
+        </div>
+      {% endif %}
     </div>
-  {% else %}
-    <div class="alert alert-info">No jobs match your filters.</div>
-  {% endif %}
+  </div>
 </div>
 {% endblock %}

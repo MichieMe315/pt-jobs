@@ -1,48 +1,67 @@
 {% extends "base.html" %}
-{% block title %}Employer Sign Up · PT Jobs{% endblock %}
+{% block title %}Employer Sign-up · PT Jobs{% endblock %}
 {% block content %}
-<div class="container" style="max-width: 760px;">
-  <h1 class="mb-3">Employer Sign Up</h1>
+<div class="container" style="max-width: 720px;">
+  <h1 class="mb-3">Create Employer Account</h1>
   <form method="post" enctype="multipart/form-data" class="card card-body">
     {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
     <div class="row g-3">
-      <div class="col-md-6">
-        <label class="form-label">Email</label>
-        {{ form.email }}
-      </div>
-      <div class="col-md-6">
-        <label class="form-label">Password</label>
-        {{ form.password }}
-      </div>
       <div class="col-md-6">
         <label class="form-label">Contact name</label>
         {{ form.contact_name }}
+        {{ form.contact_name.errors }}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Email</label>
+        {{ form.email }}
+        {{ form.email.errors }}
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Password</label>
+        {{ form.password }}
+        {{ form.password.errors }}
       </div>
       <div class="col-md-6">
         <label class="form-label">Company name</label>
         {{ form.company_name }}
+        {{ form.company_name.errors }}
       </div>
+
       <div class="col-md-6">
         <label class="form-label">Phone</label>
         {{ form.contact_phone }}
+        {{ form.contact_phone.errors }}
       </div>
       <div class="col-md-6">
         <label class="form-label">Website</label>
         {{ form.website }}
+        {{ form.website.errors }}
       </div>
-      <div class="col-12">
-        <label class="form-label">Location</label>
+
+      <div class="col-md-12">
+        <label class="form-label">Location (City, Province)</label>
         {{ form.location }}
+        {{ form.location.errors }}
       </div>
-      <div class="col-12">
+
+      <div class="col-md-6">
         <label class="form-label">Logo</label>
         {{ form.logo }}
+        {{ form.logo.errors }}
       </div>
-      <div class="col-12">
-        <label class="form-label">Description</label>
+      <div class="col-md-12">
+        <label class="form-label">Company description</label>
         {{ form.description }}
+        {{ form.description.errors }}
       </div>
     </div>
+
     <button class="btn btn-primary mt-3">Create account</button>
   </form>
 </div>
