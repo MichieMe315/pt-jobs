@@ -1,77 +1,78 @@
 {% extends "base.html" %}
 {% block title %}Post a Job · PT Jobs{% endblock %}
 {% block content %}
-<div class="container" style="max-width: 860px;">
+<div class="container my-4" style="max-width: 820px;">
   <h1 class="mb-3">Post a Job</h1>
 
-  <form method="post" enctype="multipart/form-data" class="card">
-    <div class="card-body">
-      {% csrf_token %}
-      {{ form.non_field_errors }}
+  <form method="post" enctype="multipart/form-data" class="card card-body">
+    {% csrf_token %}
 
-      <div class="row g-3">
-        <div class="col-md-8">
-          <label class="form-label">Job Title</label>
-          {{ form.title }}
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Job Type</label>
-          {{ form.job_type }}
-        </div>
+    <div class="mb-3">
+      <label class="form-label">Job title</label>
+      {{ form.title }}
+    </div>
 
-        <div class="col-12">
-          <label class="form-label">Job Description</label>
-          {{ form.description }}
-        </div>
+    <div class="mb-3">
+      <label class="form-label">Job description</label>
+      {{ form.description }}
+    </div>
 
-        <div class="col-md-6">
-          <label class="form-label">Location</label>
-          {{ form.location }}
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Relocation assistance provided?</label>
-          {{ form.relocation_assistance }}
-        </div>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Location</label>
+        {{ form.location }}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Job type</label>
+        {{ form.job_type }}
+      </div>
+    </div>
 
-        <div class="col-md-4">
-          <label class="form-label">Salary type</label>
-          {{ form.compensation_type }}
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Min</label>
-          {{ form.salary_min }}
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Max</label>
-          {{ form.salary_max }}
-        </div>
+    <div class="row g-3 mt-0">
+      <div class="col-md-4">
+        <label class="form-label">Compensation type</label>
+        {{ form.compensation_type }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Compensation min</label>
+        {{ form.salary_min }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Compensation max</label>
+        {{ form.salary_max }}
+      </div>
+    </div>
 
-        <div class="col-md-6">
-          <label class="form-label">Posting date</label>
-          {{ form.posting_date }}
-        </div>
-        <!-- Expiry is enforced by package duration; no manual input -->
-        <!-- Removed expiry_date field from UI on purpose -->
-
-        <div class="col-md-6">
-          <div class="form-text mt-4">
-            This job will auto-expire {{ duration_days }} day(s) after the posting date.
-          </div>
-        </div>
-
-        <div class="col-md-6">
-          <label class="form-label">Apply by Email</label>
-          {{ form.application_email }}
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Apply URL</label>
-          {{ form.external_apply_url }}
+    <div class="row g-3 mt-0">
+      <div class="col-md-6">
+        <label class="form-label">Is relocation assistance provided?</label>
+        {{ form.relocation_assistance_provided }}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Posting expiry date</label>
+        {{ form.expiry_date }}
+        <div class="form-text">
+          <!-- No extra helper text; browser min/max enforce the window -->
         </div>
       </div>
     </div>
-    <div class="card-footer d-flex justify-content-end" style="gap:8px;">
-      <a class="btn btn-outline-secondary" href="{% url 'employer_dashboard' %}">Cancel</a>
-      <button class="btn btn-primary">Publish Job</button>
+
+    <hr/>
+
+    <div class="row g-3 mt-0">
+      <div class="col-md-6">
+        <label class="form-label">Applications email (optional)</label>
+        {{ form.application_email }}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">External apply URL (optional)</label>
+        {{ form.external_apply_url }}
+      </div>
+    </div>
+
+    <div class="mt-3 d-flex gap-2">
+      <button class="btn btn-primary">Publish job</button>
+      <a href="{% url 'employer_dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
     </div>
   </form>
 </div>

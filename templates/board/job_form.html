@@ -1,157 +1,89 @@
 {% extends "base.html" %}
-{% load static form_extras %}
+{% load static %}
 
-{% block title %}{% if form.instance.pk %}Edit Job{% else %}Add New Job{% endif %}{% endblock %}
+{% block title %}Post a Job{% endblock %}
 
 {% block content %}
-<div class="container py-4" style="max-width: 980px;">
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <h1 class="mb-0">{% if form.instance.pk %}Edit Job{% else %}Add New Job{% endif %}</h1>
-    <a class="btn btn-outline-secondary" href="{% url 'job_list' %}">Back to Jobs</a>
+<div class="container my-4">
+  <div class="row">
+    <div class="col-lg-9">
+      <h1 class="mb-3">Post a Job</h1>
+
+      <div class="alert alert-info mb-4">
+        <strong>Expiry:</strong> Pick any date up to <strong>{{ max_expiry }}</strong> ({{ duration_days }}-day package limit).
+      </div>
+
+      <form method="post" enctype="multipart/form-data" novalidate id="job-form">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger">
+            {{ form.non_field_errors }}
+          </div>
+        {% endif %}
+
+        {% for field in form %}
+          <div class="mb-3">
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}
+              <div class="form-text">{{ field.help_text|safe }}</div>
+            {% endif %}
+            {% for error in field.errors %}
+              <div class="invalid-feedback d-block">{{ error }}</div>
+            {% endfor %}
+          </div>
+        {% endfor %}
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">Publish Job</button>
+          <a href="{% url 'employer_dashboard' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+
+    <div class="col-lg-3">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title mb-2">Tips</h5>
+          <ul class="mb-0">
+            <li>Use a clear, specific title</li>
+            <li>Include location or “Remote”</li>
+            <li>List benefits &amp; schedule</li>
+            <li>Provide apply email or URL</li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </div>
-
-  {% if messages %}
-    {% for message in messages %}
-      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-    {% endfor %}
-  {% endif %}
-
-  {% if form.errors and not form.non_field_errors %}
-    <div class="alert alert-danger">Please fix the errors below.</div>
-  {% endif %}
-  {% if form.non_field_errors %}
-    <div class="alert alert-danger">
-      {% for err in form.non_field_errors %}{{ err }}<br>{% endfor %}
-    </div>
-  {% endif %}
-
-  <form method="post" enctype="multipart/form-data" class="card card-body">
-    {% csrf_token %}
-
-    <!-- Admin/Staff can choose Employer; otherwise your view can set/limit this -->
-    <h5 class="mb-3">Basics</h5>
-    <div class="row g-3">
-      {% if form.employer %}
-      <div class="col-md-6">
-        <label class="form-label">Employer</label>
-        {{ form.employer|as_widget:"class:form-select" }}
-        {% for e in form.employer.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
-      </div>
-      {% endif %}
-
-      {% if form.featured %}
-      <div class="col-md-6">
-        <label class="form-label">Featured Job</label>
-        {{ form.featured|as_widget:"class:form-check-input" }}
-        {% for e in form.featured.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
-      </div>
-      {% endif %}
-
-      {% if form.posting_package %}
-      <div class="col-md-6">
-        <label class="form-label">Posting Package</label>
-        {{ form.posting_package|as_widget:"class:form-select" }}
-        {% for e in form.posting_package.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
-      </div>
-      {% endif %}
-
-      {% if form.product %}
-      <div class="col-md-6">
-        <label class="form-label">Product (Package)</label>
-        {{ form.product|as_widget:"class:form-select" }}
-        {% for e in form.product.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
-      </div>
-      {% endif %}
-
-      <div class="col-md-12">
-        <label class="form-label">Job Title</label>
-        {{ form.title|as_widget:"class:form-control placeholder:Enter a clear job title" }}
-        {% for e in form.title.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
-      </div>
-
-      <div class="col-12">
-        <label class="form-label">Job Description</label>
-        {{ form.description|as_widget:"class:form-control rows:10 placeholder:Describe responsibilities, qualifications, perks, etc." }}
-        {% for e in form.description.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
-      </div>
-
-      <div class="col-md-4">
-        <label class="form-label">Job Type</label>
-        {{ form.job_type|as_widget:"class:form-select" }}
-        {% for e in form.job_type.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
-      </div>
-
-      <div class="col-md-8">
-        <label class="form-label">Location</label>
-        {{ form.location|as_widget:"class:form-control location-autocomplete placeholder:Start typing a location" }}
-        {% for e in form.location.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
-      </div>
-    </div>
-
-    <hr class="my-4">
-
-    <h5 class="mb-3">Compensation</h5>
-    <div class="row g-3">
-      <div class="col-md-3">
-        <label class="form-label">Salary From</label>
-        {{ form.salary_min|as_widget:"class:form-control placeholder:Min" }}
-        {% for e in form.salary_min.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
-      </div>
-      <div class="col-md-3">
-        <label class="form-label">Salary To</label>
-        {{ form.salary_max|as_widget:"class:form-control placeholder:Max" }}
-        {% for e in form.salary_max.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
-      </div>
-      <div class="col-md-3">
-        <label class="form-label">Salary Type</label>
-        {{ form.salary_type|as_widget:"class:form-select" }}
-        {% for e in form.salary_type.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
-      </div>
-      <div class="col-md-3">
-        <label class="form-label">Relocation Assistance?</label>
-        {{ form.relocation_assistance|as_widget:"class:form-select" }}
-        {% for e in form.relocation_assistance.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
-      </div>
-    </div>
-
-    <hr class="my-4">
-
-    <h5 class="mb-3">How to Apply</h5>
-    <div class="row g-3">
-      <div class="col-md-6">
-        <label class="form-label">How to apply (email or URL)</label>
-        {{ form.how_to_apply|as_widget:"class:form-control placeholder:hr@company.com or https://apply.link" }}
-        {% for e in form.how_to_apply.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
-      </div>
-      {% if form.apply_via == None %}
-      {# If your form uses a separate field to choose email/url, render it here #}
-      {% endif %}
-    </div>
-
-    <hr class="my-4">
-
-    <h5 class="mb-3">Dates</h5>
-    <div class="row g-3">
-      <div class="col-md-6">
-        <label class="form-label">Posting Date</label>
-        {{ form.posting_date|as_widget:"class:form-control type:date" }}
-        {% for e in form.posting_date.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
-      </div>
-      <div class="col-md-6">
-        <label class="form-label">Expiration Date</label>
-        {{ form.expiration_date|as_widget:"class:form-control type:date" }}
-        {% for e in form.expiration_date.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
-      </div>
-    </div>
-
-    <div class="mt-4 d-flex gap-2">
-      <button class="btn btn-primary">{% if form.instance.pk %}Save Changes{% else %}Create Job{% endif %}</button>
-      <a class="btn btn-outline-secondary" href="{% url 'job_list' %}">Cancel</a>
-    </div>
-  </form>
 </div>
-{% endblock %}
 
-{% block extra_js %}
-  {% include "includes/places_autocomplete.html" %}
+<script>
+(function () {
+  // Clamp expiry client-side without showing validation errors.
+  const exp = document.getElementById("id_expiry_date");
+  if (!exp) return;
+
+  // Helper to clamp a yyyy-mm-dd string to [min, max]
+  function clampDate() {
+    const min = exp.getAttribute("min");
+    const max = exp.getAttribute("max");
+    const val = exp.value;
+    if (!val) return;
+
+    // ISO yyyy-mm-dd compares lexicographically correctly
+    if (min && val < min) exp.value = min;
+    if (max && val > max) exp.value = max;
+  }
+
+  exp.addEventListener("change", clampDate);
+  exp.addEventListener("blur", clampDate);
+
+  // Also clamp right before submit in case of programmatic changes
+  const form = document.getElementById("job-form");
+  if (form) {
+    form.addEventListener("submit", clampDate);
+  }
+})();
+</script>
 {% endblock %}

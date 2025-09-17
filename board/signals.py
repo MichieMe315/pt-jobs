@@ -1,44 +1,26 @@
-from django.dispatch import receiver
-from django.db.models.signals import post_save
+from __future__ import annotations
+
+from django.conf import settings
 from django.core.mail import send_mail
-from .models import JobSeeker, Employer, Job
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
-ADMIN_NOTIFY_EMAIL = None  # set to an admin email string if you want real mail
-
-def _admin_email():
-    return ADMIN_NOTIFY_EMAIL or "admin@example.com"
+from .models import JobSeeker, Employer
 
 @receiver(post_save, sender=JobSeeker)
 def notify_admin_new_jobseeker(sender, instance: JobSeeker, created, **kwargs):
     if not created:
         return
-    subject = "New Job Seeker registration"
-    name = instance.full_name or instance.email
-    body = f"A new job seeker has registered:\n\nName: {name}\nEmail: {instance.email}\nStatus: {instance.registration_status}\n"
-    try:
-        send_mail(subject, body, _admin_email(), [_admin_email()], fail_silently=True)
-    except Exception:
-        pass
+    subject = "New Job Seeker Signup"
+    name = instance.full_name  # safe property on the model
+    body = f"A new job seeker signed up:\n\nName: {name}\nEmail: {instance.email}\nLocation: {instance.current_location}\n"
+    send_mail(subject, body, getattr(settings, "DEFAULT_FROM_EMAIL", None), [a[1] for a in settings.ADMINS] if hasattr(settings, "ADMINS") else [instance.email])
 
 @receiver(post_save, sender=Employer)
 def notify_admin_new_employer(sender, instance: Employer, created, **kwargs):
     if not created:
         return
-    subject = "New Employer registration"
-    who = instance.company_name or instance.name or instance.email
-    body = f"Employer registered: {who} ({instance.email})"
-    try:
-        send_mail(subject, body, _admin_email(), [_admin_email()], fail_silently=True)
-    except Exception:
-        pass
-
-@receiver(post_save, sender=Job)
-def notify_admin_new_job(sender, instance: Job, created, **kwargs):
-    if not created:
-        return
-    subject = "New Job posted"
-    body = f"Job: {instance.title} by {instance.employer}"
-    try:
-        send_mail(subject, body, _admin_email(), [_admin_email()], fail_silently=True)
-    except Exception:
-        pass
+    subject = "New Employer Signup"
+    company = instance.company_name or instance.name
+    body = f"A new employer signed up:\n\nCompany: {company}\nEmail: {instance.email}\nLocation: {instance.location}\n"
+    send_mail(subject, body, getattr(settings, "DEFAULT_FROM_EMAIL", None), [a[1] for a in settings.ADMINS] if hasattr(settings, "ADMINS") else [instance.email])

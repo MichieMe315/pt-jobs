@@ -1,30 +1,39 @@
 {% extends "base.html" %}
 {% block title %}{{ job.title }} · PT Jobs{% endblock %}
 {% block content %}
-<div class="container" style="max-width: 840px;">
-  <div class="d-flex align-items-center gap-3 my-3">
-    {% if job.employer.logo %}
-      <img src="{{ job.employer.logo.url }}" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:10px;">
-    {% endif %}
-    <div>
-      <h1 class="mb-1">{{ job.title }}</h1>
-      <div class="text-muted small">
-        <a href="{% url 'employer_public_profile' job.employer.id %}">{{ job.employer.company_name|default:job.employer.name }}</a>
-        · {{ job.location }}
-      </div>
+<div class="container my-4">
+  <div class="mb-2">
+    <a href="{% url 'job_list' %}">&larr; Back to Jobs</a>
+  </div>
+
+  <h1 class="mb-1">{{ job.title }}</h1>
+  <div class="text-muted mb-3">
+    {{ job.employer.company_name|default:job.employer.name }} · {{ job.location }}
+    {% if job.job_type %} · {{ job.get_job_type_display }}{% endif %}
+  </div>
+
+  {% if job.compensation_type %}
+    <div class="mb-3">
+      <strong>{{ job.get_compensation_type_display }}:</strong>
+      {% if job.compensation_type == "split" %}
+        {% if job.percent_split %} {{ job.percent_split|floatformat:-2 }}% split{% else %} Percent split{% endif %}
+      {% else %}
+        {% if job.salary_min %}${{ job.salary_min|floatformat:-2 }}{% endif %}
+        {% if job.salary_min and job.salary_max %} – {% endif %}
+        {% if job.salary_max %}${{ job.salary_max|floatformat:-2 }}{% endif %}
+      {% endif %}
+      {% if job.relocation_assistance_provided %}
+        <span class="ms-2 badge bg-success">Relocation assistance provided</span>
+      {% endif %}
     </div>
-  </div>
+  {% endif %}
 
-  <div class="card mb-3">
-    <div class="card-body">
-      {{ job.description|linebreaks }}
-    </div>
-  </div>
+  <article class="mb-4">
+    {{ job.description|linebreaks }}
+  </article>
 
-  <div class="text-muted small mb-4">
-    Posted: {{ job.posting_date }} · Expires: {{ job.expiry_date }}
+  <div class="d-flex gap-2">
+    <a class="btn btn-primary" href="{% url 'job_apply' job.id %}">Apply</a>
   </div>
-
-  <!-- Apply controls would go here -->
 </div>
 {% endblock %}

@@ -7,57 +7,49 @@ urlpatterns = [
     path("", views.home, name="home"),
     path("jobs/", views.job_list, name="job_list"),
     path("jobs/<int:pk>/", views.job_detail, name="job_detail"),
+    path("jobs/<int:pk>/apply/", views.job_apply, name="job_apply"),
+    path("jobs/<int:pk>/save/", views.save_job, name="save_job"),
+    path("jobs/<int:pk>/unsave/", views.unsave_job, name="unsave_job"),
 
-    # Employers (public)
+    # Employers (public directory + profile)
     path("employers/", views.employer_list, name="employer_list"),
     path("employers/<int:pk>/", views.employer_public_profile, name="employer_public_profile"),
 
-    # Packages & checkout stub
-    path("packages/", views.package_list, name="package_list"),
-    path("checkout/<slug:code>/", views.checkout_start, name="checkout_start"),
-
-    # Signups
+    # Signups & alerts
     path("signup/employer/", views.employer_signup, name="employer_signup"),
     path("signup/jobseeker/", views.jobseeker_signup, name="jobseeker_signup"),
-
-    # Alerts
     path("alerts/signup/", views.job_alert_signup, name="job_alert_signup"),
 
     # Auth
-    path("login/", auth_views.LoginView.as_view(template_name="registration/login.html"), name="login"),
+    path("login/", auth_views.LoginView.as_view(
+        template_name="registration/login.html",
+        redirect_authenticated_user=True
+    ), name="login"),
     path("logout/", views.logout_view, name="logout"),
     path("post-login/", views.post_login_redirect, name="post_login_redirect"),
 
-    # Password reset (use Django auth views)
-    path(
-        "password-reset/",
-        auth_views.PasswordResetView.as_view(template_name="registration/password_reset_form.html"),
-        name="password_reset",
-    ),
-    path(
-        "password-reset/done/",
-        auth_views.PasswordResetDoneView.as_view(template_name="registration/password_reset_done.html"),
-        name="password_reset_done",
-    ),
-    path(
-        "reset/<uidb64>/<token>/",
-        auth_views.PasswordResetConfirmView.as_view(template_name="registration/password_reset_confirm.html"),
-        name="password_reset_confirm",
-    ),
-    path(
-        "reset/done/",
-        auth_views.PasswordResetCompleteView.as_view(template_name="registration/password_reset_complete.html"),
-        name="password_reset_complete",
-    ),
-
-    # Employer dashboards/actions
+    # Employer dashboard + actions
     path("employer/dashboard/", views.employer_dashboard, name="employer_dashboard"),
     path("employer/post-job/", views.post_job, name="post_job"),
-    path("employer/applications/<int:job_id>/", views.applications_list, name="applications_list"),
+    path("employer/jobs/<int:pk>/edit/", views.edit_job, name="edit_job"),
+    path("employer/jobs/<int:job_id>/applications/", views.applications_list, name="applications_list"),
     path("employer/profile/edit/", views.employer_profile_edit, name="employer_profile_edit"),
     path("employer/purchases/", views.purchased_products, name="purchased_products"),
     path("employer/invoices/", views.invoices_list, name="invoices_list"),
+    path("employer/invoices/<int:pk>/", views.invoice_detail, name="invoice_detail"),
 
     # Jobseeker dashboard
     path("jobseeker/dashboard/", views.jobseeker_dashboard, name="jobseeker_dashboard"),
+    path("jobseeker/upload-resume/", views.upload_resume, name="upload_resume"),
+
+    # Packages (listing + checkouts)
+    path("packages/", views.package_list, name="package_list"),
+
+    # Stripe checkout (unchanged; discount via ?discount=CODE)
+    path("packages/<str:code>/checkout/", views.checkout_start, name="checkout_start"),
+
+    # PayPal: page + server APIs for order create/capture
+    path("packages/<str:code>/paypal/", views.checkout_paypal, name="checkout_paypal"),
+    path("api/paypal/create-order/<str:code>/", views.paypal_create_order, name="paypal_create_order"),
+    path("api/paypal/capture-order/<str:code>/", views.paypal_capture_order, name="paypal_capture_order"),
 ]

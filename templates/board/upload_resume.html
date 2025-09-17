@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Upload Resume{% endblock %}
+{% block content %}
+<div class="container my-4" style="max-width: 640px;">
+  <h1 class="h4 mb-3">Upload new resume</h1>
+  <form method="post" enctype="multipart/form-data" class="card card-body">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-primary">Upload</button>
+  </form>
+</div>
+{% endblock %}

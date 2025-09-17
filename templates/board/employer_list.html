@@ -1,34 +1,32 @@
 {% extends "base.html" %}
-{% block title %}Employers · PT Jobs{% endblock %}
+{% block title %}Employers{% endblock %}
 {% block content %}
-<div class="container">
-  <h1 class="mb-3">Employers</h1>
+<div class="container my-4">
+  <h1 class="mb-4">Employers</h1>
+
   {% if employers %}
-    <div class="row g-3">
-      {% for e in employers %}
-        <div class="col-md-6 col-lg-4">
-          <div class="card h-100">
-            <div class="card-body">
-              <div class="d-flex align-items-center gap-3 mb-2">
-                {% if e.logo %}
-                  <img src="{{ e.logo.url }}" alt="" class="employer-logo">
-                {% endif %}
-                <div>
-                  <div class="fw-semibold">{{ e.company_name|default:e.name }}</div>
-                  <div class="text-muted small">{{ e.location }}</div>
+  <div class="row row-cols-2 row-cols-md-4 row-cols-lg-5 g-3">
+    {% for e in employers %}
+      <div class="col">
+        <a href="{% url 'employer_public_profile' e.id %}" class="text-decoration-none">
+          <div class="card h-100 text-center">
+            <div class="p-3">
+              {% if e.logo %}
+                <img src="{{ e.logo.url }}" alt="{{ e.company_name|default:e.name }}" class="img-fluid rounded" style="width:56px;height:56px;object-fit:cover;">
+              {% else %}
+                <div class="bg-secondary rounded d-inline-flex align-items-center justify-content-center" style="width:56px;height:56px;color:#fff;">
+                  {{ e.company_name|default:e.name|first|upper }}
                 </div>
-              </div>
-              <div class="small text-muted mb-2">
-                Active jobs: {{ e.jobs_count|default:"0" }}
-              </div>
-              {% if e.description %}
-                <div class="small">{{ e.description|truncatechars:140 }}</div>
               {% endif %}
             </div>
+            <div class="card-body pt-0">
+              <div class="card-title h6 mb-0 text-truncate">{{ e.company_name|default:e.name }}</div>
+            </div>
           </div>
-        </div>
-      {% endfor %}
-    </div>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
   {% else %}
     <p>No employers to show.</p>
   {% endif %}

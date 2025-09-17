@@ -1,0 +1,13 @@
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">Get new jobs by email</h5>
+    <form method="post" action="{% url 'job_alert_signup' %}" class="vstack gap-2">
+      {% csrf_token %}
+      <input type="email" name="email" class="form-control" placeholder="Your email" required>
+      <input type="text" name="q" class="form-control" placeholder="Keywords (optional)" value="{{ q }}">
+      <input type="text" name="location" class="form-control" placeholder="Location (optional)" value="{{ location }}">
+      <button class="btn btn-primary w-100">Create alert</button>
+    </form>
+    <p class="small text-muted mb-0 mt-2">You can unsubscribe at any time.</p>
+  </div>
+</div>
