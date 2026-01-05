@@ -1,53 +1,21 @@
-# -------------------------
-# Python / Django
-# -------------------------
+# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 
-# -------------------------
-# Virtual env
-# -------------------------
+# Virtualenv
 venv/
 .env
+.env.*
 
-# -------------------------
-# Django runtime
-# -------------------------
+# Local DB / backups / media (never deploy)
 db.sqlite3
-db.sqlite3-journal
-
-# -------------------------
-# Collected static files
-# NEVER COMMIT THESE
-# -------------------------
-staticfiles/
-
-# -------------------------
-# Media uploads
-# -------------------------
+_backup/
 media/
 
-# -------------------------
-# OS junk
-# -------------------------
+# OS / editor
 .DS_Store
 Thumbs.db
-
-# -------------------------
-# Zip backups / temp files
-# -------------------------
-*.zip
-_backup/
-
-# -------------------------
-# Editor / IDE
-# -------------------------
 .vscode/
 .idea/
-
-# -------------------------
-# Logs
-# -------------------------
-*.log
