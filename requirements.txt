@@ -1,8 +1,10 @@
 Django==5.2.5
 gunicorn==23.0.0
-dj-database-url>=2.2
-psycopg[binary]>=3.2
-psycopg2-binary==2.9.10
 whitenoise==6.9.0
+
+dj-database-url==3.0.1
+psycopg[binary]==3.2.3
+
 django-import-export==4.1.1
 requests==2.32.3
+stripe==11.1.1
