@@ -9,4 +9,5 @@ tzdata==2025.2
 whitenoise==6.9.0
 dj-database-url>=2.2
 psycopg[binary]>=3.2
+django-import-export==4.1.1
 
