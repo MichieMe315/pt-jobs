@@ -1,23 +1,45 @@
 from pathlib import Path
 import os
 
-# ------------------------------------------------------------------------------
-# Core
-# ------------------------------------------------------------------------------
+import dj_database_url
+from django.contrib.messages import constants as messages
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-insecure-secret-key")
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-insecure-please-change-this")
+
+# In Railway set DJANGO_DEBUG="0"
 DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
 
-ALLOWED_HOSTS = [
-    "127.0.0.1",
-    "localhost",
-    # Add your prod hostnames or IPs here, e.g. "physiotherapyjobscanada.com"
-] + os.environ.get("DJANGO_ALLOWED_HOSTS", "").split()
+# Hosts
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
-# ------------------------------------------------------------------------------
-# Installed apps
-# ------------------------------------------------------------------------------
+# Railway public domain (Railway sets this on the web service once you generate a domain)
+railway_public_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN")
+if railway_public_domain:
+    ALLOWED_HOSTS.append(railway_public_domain)
+
+# Optional: comma-separated extra hosts you want
+# e.g. DJANGO_ALLOWED_HOSTS="physiotherapyjobscanada.ca,www.physiotherapyjobscanada.ca"
+extra_hosts = os.environ.get("DJANGO_ALLOWED_HOSTS", "")
+if extra_hosts:
+    ALLOWED_HOSTS += [h.strip() for h in extra_hosts.split(",") if h.strip()]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+]
+
+# Add Railway https domain to CSRF if present
+if railway_public_domain:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{railway_public_domain}")
+
+# Optional: comma-separated extra CSRF trusted origins
+# e.g. DJANGO_CSRF_TRUSTED_ORIGINS="https://physiotherapyjobscanada.ca,https://www.physiotherapyjobscanada.ca"
+extra_csrf = os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "")
+if extra_csrf:
+    CSRF_TRUSTED_ORIGINS += [o.strip() for o in extra_csrf.split(",") if o.strip()]
+
 INSTALLED_APPS = [
     # Django
     "django.contrib.admin",
@@ -26,17 +48,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     # Third-party
-    "import_export",  # admin import/export
-
+    "import_export",
     # Local
     "board",
 ]
 
-# ------------------------------------------------------------------------------
-# Middleware / URL / Templates
-# ------------------------------------------------------------------------------
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -52,15 +69,16 @@ ROOT_URLCONF = "pt_jobs.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        # Project-level templates: put your *.html under BASE_DIR / "templates"
         "DIRS": [BASE_DIR / "templates"],
-        "APP_DIRS": True,  # also load app templates (e.g., board/templates/…)
+        "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                # inject SiteSettings everywhere
+                "board.context_processors.site_settings",
             ],
         },
     },
@@ -68,103 +86,62 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "pt_jobs.wsgi.application"
 
-# ------------------------------------------------------------------------------
-# Database
-# ------------------------------------------------------------------------------
-# SQLite for local/dev. Swap to Postgres for production via env vars if needed.
-if os.environ.get("DATABASE_URL"):
-    # Optional: dj_database_url parse if you use it. Otherwise configure manually.
-    # import dj_database_url
-    # DATABASES = {"default": dj_database_url.parse(os.environ["DATABASE_URL"], conn_max_age=600)}
-    raise RuntimeError("DATABASE_URL provided, but no parser configured in settings.py. Add dj_database_url or manual config.")
-else:
+# ------------------------------------------------------------
+# DATABASES (Railway Postgres via DATABASE_URL, local fallback)
+# ------------------------------------------------------------
+DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
+
+if DATABASE_URL:
+    # Railway Postgres usually requires SSL
     DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
+        "default": dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=True,
+        )
+    }
+else:
+    # Local/dev fallback
+    DATABASES = {
+        "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}
     }
 
-# ------------------------------------------------------------------------------
-# Password validation
-# ------------------------------------------------------------------------------
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", "OPTIONS": {"min_length": 8}},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-# ------------------------------------------------------------------------------
-# Internationalization
-# ------------------------------------------------------------------------------
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "America/Toronto"
 USE_I18N = True
 USE_TZ = True
 
-# ------------------------------------------------------------------------------
-# Static & Media
-# ------------------------------------------------------------------------------
+MESSAGE_TAGS = {
+    messages.DEBUG: "secondary",
+    messages.INFO: "info",
+    messages.SUCCESS: "success",
+    messages.WARNING: "warning",
+    messages.ERROR: "danger",
+}
+
+LOGIN_URL = "login"
+LOGOUT_REDIRECT_URL = "/"
+
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [
-    BASE_DIR / "static",  # place your project-level static here if you have any
-]
-STATIC_ROOT = BASE_DIR / "staticfiles"  # collectstatic destination
+STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# ------------------------------------------------------------------------------
-# Auth
-# ------------------------------------------------------------------------------
-# Allow login using either email OR username (case-insensitive)
-AUTHENTICATION_BACKENDS = [
-    "board.auth_backends.EmailOrUsernameModelBackend",
-    "django.contrib.auth.backends.ModelBackend",
-]
-
-LOGIN_URL = "login"
-LOGIN_REDIRECT_URL = "post_login_redirect"
-LOGOUT_REDIRECT_URL = "home"
-
-# ------------------------------------------------------------------------------
-# Email
-# ------------------------------------------------------------------------------
-# Configure these in your environment for real email sending.
-EMAIL_BACKEND = os.environ.get("DJANGO_EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "no-reply@example.com")
-
-# SMTP example (uncomment and set env vars if you use SMTP):
-# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-# EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.sendgrid.net")
-# EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
-# EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
-# EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
-# EMAIL_USE_TLS = True
-
-# ------------------------------------------------------------------------------
-# Stripe (keys pulled from environment; safe test defaults)
-# ------------------------------------------------------------------------------
-STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY", "pk_test_123")
-STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "sk_test_123")
-
-# ------------------------------------------------------------------------------
-# Django Import-Export
-# ------------------------------------------------------------------------------
-IMPORT_EXPORT_USE_TRANSACTIONS = True
-
-# ------------------------------------------------------------------------------
-# Security/dev niceties
-# ------------------------------------------------------------------------------
-CSRF_TRUSTED_ORIGINS = [
-    "http://127.0.0.1",
-    "http://localhost",
-    # add prod origins like "https://physiotherapyjobscanada.com"
-]
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https") if os.environ.get("USE_PROXY_SSL", "") else None
-
-# ------------------------------------------------------------------------------
-# Default primary key type
-# ------------------------------------------------------------------------------
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Email
+DEFAULT_FROM_EMAIL = os.environ.get(
+    "DEFAULT_FROM_EMAIL",
+    "no-reply@physiotherapyjobscanada.ca"
+)
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+EMAIL_SUBJECT_PREFIX = "[PT Jobs] "
