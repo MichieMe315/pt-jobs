@@ -1,219 +1,314 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Optional
+from typing import Any, Optional
+import os
+import re
 
 from django import forms
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.core.validators import EmailValidator
 
-from .models import Employer, JobSeeker, Job, PostingPackage
+from .models import (
+    Employer,
+    JobSeeker,
+    Resume,
+    Job,
+    Application,
+    JobAlert,
+)
+
+DEFAULT_INPUT_CLASS = "form-control"
+DEFAULT_SELECT_CLASS = "form-select"
+DEFAULT_TEXTAREA_CLASS = "form-control"
+DEFAULT_FILE_CLASS = "form-control"
 
 
-# -------- helpers --------
+class StyledFormMixin:
+    def _apply_uniform_styling(self) -> None:
+        for _, field in self.fields.items():
+            widget = field.widget
+            existing = widget.attrs.get("class", "")
+
+            if isinstance(widget, forms.Textarea):
+                widget.attrs["class"] = f"{existing} {DEFAULT_TEXTAREA_CLASS}".strip()
+            elif isinstance(widget, (forms.Select, forms.SelectMultiple)):
+                widget.attrs["class"] = f"{existing} {DEFAULT_SELECT_CLASS}".strip()
+            elif isinstance(widget, forms.FileInput):
+                widget.attrs["class"] = f"{existing} {DEFAULT_FILE_CLASS}".strip()
+            else:
+                widget.attrs["class"] = f"{existing} {DEFAULT_INPUT_CLASS}".strip()
+
+
+_URL_RE = re.compile(r"(https?://|www\.)", re.IGNORECASE)
+_EMAIL_RE = re.compile(r"[\w\.-]+@[\w\.-]+\.\w+", re.IGNORECASE)
+
+
+def validate_no_links_or_emails(value: str) -> None:
+    if not value:
+        return
+    if _URL_RE.search(value) or _EMAIL_RE.search(value):
+        raise ValidationError("Please remove links and email addresses from this field.")
+
+
+class LoginForm(AuthenticationForm, StyledFormMixin):
+    def __init__(self, request=None, *args: Any, **kwargs: Any):
+        super().__init__(request, *args, **kwargs)
+        self.fields["username"].label = "Email"
+        self._apply_uniform_styling()
+
+
+class EmployerSignUpForm(UserCreationForm, StyledFormMixin):
+    email = forms.EmailField(required=True, validators=[EmailValidator()])
+
+    name = forms.CharField(required=False)
+    company_name = forms.CharField(required=True)
+
+    company_description = forms.CharField(
+        required=False,
+        widget=forms.Textarea,
+        validators=[validate_no_links_or_emails],
+    )
+    phone = forms.CharField(required=False)
+    website = forms.URLField(required=False)
+    location = forms.CharField(required=True)
+    logo = forms.ImageField(required=False)
+
+    class Meta:
+        model = User
+        fields = ("email", "password1", "password2")
+
+    def __init__(self, *args: Any, **kwargs: Any):
+        super().__init__(*args, **kwargs)
+        self.fields["email"].label = "Email"
+        self._apply_uniform_styling()
+
+    def clean_email(self):
+        email = (self.cleaned_data.get("email") or "").strip().lower()
+        if User.objects.filter(username=email).exists() or User.objects.filter(email=email).exists():
+            raise ValidationError("An account with this email already exists.")
+        return email
+
+    def save(self, commit: bool = True) -> User:
+        user = super().save(commit=False)
+        email = self.cleaned_data["email"]
+        user.username = email
+        user.email = email
+        if commit:
+            user.save()
+
+        Employer.objects.create(
+            user=user,
+            email=user.email,
+            company_name=self.cleaned_data.get("company_name") or "",
+            description=self.cleaned_data.get("company_description") or "",
+            phone=self.cleaned_data.get("phone") or "",
+            website=self.cleaned_data.get("website") or None,
+            location=self.cleaned_data.get("location") or "",
+            logo=self.cleaned_data.get("logo"),
+            is_approved=False,
+        )
+        return user
+
+
 YES_NO_CHOICES = (("yes", "Yes"), ("no", "No"))
 
-REGISTRATION_STATUS_CHOICES = (
-    ("yes", "Yes"),
-    ("no", "No"),
-    ("canadian_new_grad", "Canadian New Grad"),
-    ("completed_credentialing", "Completed Credentialing"),
-    ("completed_pce", "Completed PCE"),
+OPPORTUNITY_CHOICES = (
+    ("Full-time", "Full-time"),
+    ("Part-time", "Part-time"),
+    ("Contractor", "Contractor"),
+    ("Casual", "Casual"),
+    ("Locum", "Locum"),
+    ("Temporary", "Temporary"),
 )
 
-OPPORTUNITY_TYPE_CHOICES = (
-    ("full_time", "Full-time"),
-    ("part_time", "Part-time"),
-    ("contractor", "Contractor"),
-    ("resident", "Resident"),
-    ("intern", "Intern"),
-    ("locum", "Locum"),
-)
 
-def _coerce_yes_no_to_bool(val) -> bool:
-    """Accept 'yes'/'no' strings, True/False, or truthy/falsey."""
-    if isinstance(val, bool):
-        return val
-    s = (str(val or "")).strip().lower()
-    if s in ("yes", "y", "true", "1"):
-        return True
-    if s in ("no", "n", "false", "0"):
-        return False
-    # If required=True, this will be caught separately; default False here
-    return False
+class JobSeekerSignUpForm(UserCreationForm, StyledFormMixin):
+    email = forms.EmailField(required=True, validators=[EmailValidator()])
 
+    position_desired = forms.CharField(required=True)
+    is_registered_canada = forms.ChoiceField(choices=[("", "Select…")] + list(YES_NO_CHOICES), required=True)
+    opportunity_type = forms.ChoiceField(choices=[("", "Select…")] + list(OPPORTUNITY_CHOICES), required=True)
+    current_location = forms.CharField(required=True)
+    open_to_relocate = forms.ChoiceField(choices=[("", "Select…")] + list(YES_NO_CHOICES), required=True)
+    relocate_where = forms.CharField(required=False)
+    requires_sponsorship = forms.ChoiceField(choices=[("", "Select…")] + list(YES_NO_CHOICES), required=True)
+    seeking_immigration = forms.ChoiceField(choices=[("", "Select…")] + list(YES_NO_CHOICES), required=True)
 
-# ================= Employer Sign-up =================
-class EmployerSignUpForm(forms.Form):
-    # Account
-    email = forms.EmailField(widget=forms.EmailInput(attrs={"class": "form-control", "autocomplete": "email"}))
-    password = forms.CharField(
-        widget=forms.PasswordInput(attrs={"class": "form-control", "autocomplete": "new-password"})
-    )
+    resume = forms.FileField(required=False)
 
-    # Profile
-    contact_name = forms.CharField(max_length=120, widget=forms.TextInput(attrs={"class": "form-control"}))
-    company_name = forms.CharField(max_length=200, required=False, widget=forms.TextInput(attrs={"class": "form-control"}))
-    contact_phone = forms.CharField(max_length=50, required=False, widget=forms.TextInput(attrs={"class": "form-control"}))
-    website = forms.URLField(required=False, widget=forms.URLInput(attrs={"class": "form-control"}))
-    location = forms.CharField(max_length=200, widget=forms.TextInput(attrs={"class": "form-control"}))
-    logo = forms.ImageField(required=False, widget=forms.ClearableFileInput(attrs={"class": "form-control"}))
-    description = forms.CharField(
-        required=False,
-        widget=forms.Textarea(attrs={"class": "form-control", "rows": 6}),
-    )
+    class Meta:
+        model = User
+        fields = ("first_name", "last_name", "email", "password1", "password2")
 
+    def __init__(self, *args: Any, **kwargs: Any):
+        super().__init__(*args, **kwargs)
+        self.fields["email"].label = "Email"
+        self._apply_uniform_styling()
 
-# ================= Job Seeker Sign-up =================
-class JobSeekerSignUpForm(forms.Form):
-    # Account
-    first_name = forms.CharField(max_length=80, widget=forms.TextInput(attrs={"class": "form-control"}))
-    last_name = forms.CharField(max_length=80, widget=forms.TextInput(attrs={"class": "form-control"}))
-    email = forms.EmailField(widget=forms.EmailInput(attrs={"class": "form-control", "autocomplete": "email"}))
-    password = forms.CharField(
-        widget=forms.PasswordInput(attrs={"class": "form-control", "autocomplete": "new-password"})
-    )
-
-    # Profile
-    position_desired = forms.CharField(  # text field (placed above the forced dropdown in template)
-        max_length=200,
-        required=False,
-        widget=forms.TextInput(attrs={"class": "form-control"}),
-    )
-
-    opportunity_type = forms.ChoiceField(  # forced dropdown
-        choices=(("", "— Select —"),) + OPPORTUNITY_TYPE_CHOICES,
-        required=True,
-        widget=forms.Select(attrs={"class": "form-select"}),
-    )
-
-    current_location = forms.CharField(max_length=200, required=False, widget=forms.TextInput(attrs={"class": "form-control"}))
-
-    registration_status = forms.ChoiceField(  # forced dropdown
-        choices=(("", "— Select —"),) + REGISTRATION_STATUS_CHOICES,
-        required=True,
-        widget=forms.Select(attrs={"class": "form-select"}),
-    )
-
-    open_to_relocation = forms.ChoiceField(  # forced dropdown
-        choices=(("", "— Select —"),) + YES_NO_CHOICES,
-        required=True,
-        widget=forms.Select(attrs={"class": "form-select"}),
-    )
-    relocation_where = forms.CharField(max_length=200, required=False, widget=forms.TextInput(attrs={"class": "form-control"}))
-
-    need_sponsorship = forms.ChoiceField(  # forced dropdown
-        choices=(("", "— Select —"),) + YES_NO_CHOICES,
-        required=True,
-        widget=forms.Select(attrs={"class": "form-select"}),
-    )
-
-    seeking_immigration = forms.ChoiceField(  # forced dropdown
-        choices=(("", "— Select —"),) + YES_NO_CHOICES,
-        required=True,
-        widget=forms.Select(attrs={"class": "form-select"}),
-    )
-
-    resume = forms.FileField(required=False, widget=forms.ClearableFileInput(attrs={"class": "form-control"}))
-
-    # normalize booleans
-    def clean_open_to_relocation(self):
-        return _coerce_yes_no_to_bool(self.cleaned_data.get("open_to_relocation"))
-
-    def clean_need_sponsorship(self):
-        return _coerce_yes_no_to_bool(self.cleaned_data.get("need_sponsorship"))
-
-    def clean_seeking_immigration(self):
-        return _coerce_yes_no_to_bool(self.cleaned_data.get("seeking_immigration"))
+    def clean_email(self):
+        email = (self.cleaned_data.get("email") or "").strip().lower()
+        if User.objects.filter(username=email).exists() or User.objects.filter(email=email).exists():
+            raise ValidationError("An account with this email already exists.")
+        return email
 
     def clean(self):
-        cd = super().clean()
-        # If they said “yes” to relocation, nudge for a location (optional)
-        if cd.get("open_to_relocation") is True and not (cd.get("relocation_where") or "").strip():
-            self.add_error("relocation_where", "Please tell us where you’re open to relocate.")
-        return cd
+        cleaned = super().clean()
+        if cleaned.get("open_to_relocate") == "no":
+            cleaned["relocate_where"] = ""
+        return cleaned
+
+    def save(self, commit: bool = True) -> User:
+        user = super().save(commit=False)
+        email = self.cleaned_data["email"]
+        user.username = email
+        user.email = email
+        if commit:
+            user.save()
+
+        def _to_bool(v: str) -> bool:
+            return True if v == "yes" else False
+
+        js = JobSeeker.objects.create(
+            user=user,
+            email=user.email,
+            first_name=self.cleaned_data.get("first_name") or "",
+            last_name=self.cleaned_data.get("last_name") or "",
+            position_desired=self.cleaned_data.get("position_desired") or "",
+            is_registered_canada=_to_bool(self.cleaned_data.get("is_registered_canada", "no")),
+            opportunity_type=self.cleaned_data.get("opportunity_type") or "",
+            current_location=self.cleaned_data.get("current_location") or "",
+            open_to_relocate=_to_bool(self.cleaned_data.get("open_to_relocate", "no")),
+            relocate_where=self.cleaned_data.get("relocate_where") or "",
+            requires_sponsorship=_to_bool(self.cleaned_data.get("requires_sponsorship", "no")),
+            seeking_immigration=_to_bool(self.cleaned_data.get("seeking_immigration", "no")),
+            is_approved=False,
+        )
+
+        f = self.files.get("resume") if hasattr(self, "files") and self.files else None
+        if f:
+            f.name = os.path.basename(f.name)
+            Resume.objects.create(jobseeker=js, file=f)
+
+        return user
 
 
-# ================= Job Form (Post / Edit) =================
-class JobForm(forms.ModelForm):
-    # Force dropdown for relocation assistance
-    relocation_assistance_provided = forms.ChoiceField(
-        choices=(("", "— Select —"),) + YES_NO_CHOICES,
+class ResumeUploadForm(StyledFormMixin, forms.ModelForm):
+    class Meta:
+        model = Resume
+        fields = ("file",)
+
+    def __init__(self, *args: Any, **kwargs: Any):
+        super().__init__(*args, **kwargs)
+        self.fields["file"].label = "Upload Resume"
+        self._apply_uniform_styling()
+
+    def clean_file(self):
+        f = self.cleaned_data.get("file")
+        if f:
+            f.name = os.path.basename(f.name)
+        return f
+
+
+JOB_TYPE_CHOICES = (
+    ("Full-time", "Full-time"),
+    ("Part-time", "Part-time"),
+    ("Contractor", "Contractor"),
+    ("Casual", "Casual"),
+    ("Locum", "Locum"),
+    ("Temporary", "Temporary"),
+)
+
+APPLY_VIA_CHOICES = (
+    ("email", "Email"),
+    ("url", "URL"),
+)
+
+# Values MUST match your template logic + your current model reality:
+# Hourly / Salary / Other
+# Labels match contract UI: Hourly / Yearly / Split
+COMP_TYPE_CHOICES = (
+    ("Hourly", "Hourly"),
+    ("Salary", "Yearly"),
+    ("Other", "Split"),
+)
+
+
+class JobForm(StyledFormMixin, forms.ModelForm):
+    relocation_assistance = forms.TypedChoiceField(
+        choices=[("", "Select…"), ("yes", "Yes"), ("no", "No")],
         required=True,
-        widget=forms.Select(attrs={"class": "form-select"}),
-        label="Is relocation assistance provided?",
+        coerce=lambda v: True if str(v).lower() in ("yes", "true", "1") else False,
+        empty_value=None,
     )
+
+    def __init__(self, *args: Any, **kwargs: Any):
+        self.max_expiry_date: Optional[date] = kwargs.pop("max_expiry_date", None)
+        super().__init__(*args, **kwargs)
+
+        self.fields["job_type"].choices = [("", "Select…")] + list(JOB_TYPE_CHOICES)
+        self.fields["apply_via"].choices = [("", "Select…")] + list(APPLY_VIA_CHOICES)
+        self.fields["compensation_type"].choices = [("", "Select…")] + list(COMP_TYPE_CHOICES)
+
+        for fname in ("job_type", "apply_via", "compensation_type", "relocation_assistance"):
+            if fname in self.fields:
+                self.fields[fname].required = True
+                self.fields[fname].widget.attrs["required"] = "required"
+
+        # Ensure initial shows yes/no for TypedChoiceField
+        if self.instance and getattr(self.instance, "pk", None):
+            self.initial["relocation_assistance"] = "yes" if bool(getattr(self.instance, "relocation_assistance", False)) else "no"
+
+        self._apply_uniform_styling()
+
+    def clean_description(self):
+        desc = self.cleaned_data.get("description") or ""
+        validate_no_links_or_emails(desc)
+        return desc
+
+    def clean_expiry_date(self):
+        d = self.cleaned_data.get("expiry_date")
+        if d and self.max_expiry_date and d > self.max_expiry_date:
+            raise ValidationError("Expiry date exceeds the maximum allowed for your posting duration.")
+        return d
 
     class Meta:
         model = Job
-        fields = [
+        fields = (
             "title",
             "description",
-            "location",
             "job_type",
             "compensation_type",
-            "salary_min",
-            "salary_max",
-            # intentionally OMITTED to simplify: "percent_split", "application_instructions",
-            "application_email",
-            "external_apply_url",
-            "relocation_assistance_provided",
+            "compensation_min",
+            "compensation_max",
+            "location",
+            "apply_via",
+            "apply_email",
+            "apply_url",
+            "relocation_assistance",
             "expiry_date",
-        ]
-        widgets = {
-            "title": forms.TextInput(attrs={"class": "form-control"}),
-            "description": forms.Textarea(attrs={"rows": 7, "class": "form-control"}),
-            "location": forms.TextInput(attrs={"class": "form-control"}),
-            "job_type": forms.Select(attrs={"class": "form-select"}),  # alignment
-            "compensation_type": forms.Select(attrs={"class": "form-select"}),
-            "salary_min": forms.NumberInput(attrs={"step": "1", "class": "form-control"}),
-            "salary_max": forms.NumberInput(attrs={"step": "1", "class": "form-control"}),
-            "application_email": forms.EmailInput(attrs={"class": "form-control"}),
-            "external_apply_url": forms.URLInput(attrs={"class": "form-control"}),
-            "expiry_date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
-        }
-
-    def __init__(self, *args, min_expiry: Optional[date] = None, max_expiry: Optional[date] = None, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._min_expiry = min_expiry
-        self._max_expiry = max_expiry
-
-        # No helper text ("Max allowed is...") -> ensure clean UI
-        self.fields["expiry_date"].help_text = ""
-
-        # Client-side min/max for date picker
-        if self._min_expiry:
-            self.fields["expiry_date"].widget.attrs["min"] = self._min_expiry.isoformat()
-        if self._max_expiry:
-            self.fields["expiry_date"].widget.attrs["max"] = self._max_expiry.isoformat()
-
-    # normalize relocation yes/no to bool for model
-    def clean_relocation_assistance_provided(self):
-        return _coerce_yes_no_to_bool(self.cleaned_data.get("relocation_assistance_provided"))
-
-    def clean_expiry_date(self):
-        dt = self.cleaned_data.get("expiry_date")
-        if dt is None:
-            return dt
-        # Hard stop on bounds
-        if self._min_expiry and dt < self._min_expiry:
-            raise ValidationError(f"Expiry cannot be before {self._min_expiry.isoformat()}.")
-        if self._max_expiry and dt > self._max_expiry:
-            raise ValidationError(f"Expiry cannot be after {self._max_expiry.isoformat()}.")
-        return dt
+        )
 
 
-# Optional: Admin form for PostingPackage (unchanged fields)
-class PostingPackageAdminForm(forms.ModelForm):
+class JobApplicationForm(StyledFormMixin, forms.ModelForm):
     class Meta:
-        model = PostingPackage
-        fields = [
-            "name",
-            "code",
-            "description",
-            "duration_days",
-            "max_jobs",
-            "price_cents",
-            "allows_featured",
-            "is_active",
-            "order",
-        ]
+        model = Application
+        fields = ("cover_letter",)
+
+    def __init__(self, *args: Any, **kwargs: Any):
+        super().__init__(*args, **kwargs)
+        self.fields["cover_letter"].required = False
+        self.fields["cover_letter"].widget = forms.Textarea(attrs={"rows": 6})
+        self._apply_uniform_styling()
+
+
+class JobAlertForm(StyledFormMixin, forms.ModelForm):
+    class Meta:
+        model = JobAlert
+        fields = ("email",)
+
+    def __init__(self, *args: Any, **kwargs: Any):
+        super().__init__(*args, **kwargs)
+        self._apply_uniform_styling()
