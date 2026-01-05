@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout · {{ package.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 720px;">
+  <h1 class="h4 mb-3">Checkout</h1>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-2">{{ package.name }}</h2>
+      <p class="mb-1">Credits included: {{ package.credits }}</p>
+      <p class="mb-1">Duration: {{ package.duration_days }} days</p>
+      <p class="mb-0">Price: <strong>${{ package.price }}</strong></p>
+    </div>
+  </div>
+
+  <form method="post" action="{% url 'checkout_start' package.id %}">
+    {% csrf_token %}
+
+    <div class="mb-3">
+      <label for="discount_code" class="form-label">Discount code (optional)</label>
+      <input
+        type="text"
+        name="discount_code"
+        id="discount_code"
+        class="form-control"
+      >
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label d-block">Payment method</label>
+      <div class="form-check">
+        <input
+          class="form-check-input"
+          type="radio"
+          name="payment_method"
+          id="pm_card"
+          value="card"
+          checked
+        >
+        <label class="form-check-label" for="pm_card">
+          Credit card (Stripe)
+        </label>
+      </div>
+      <div class="form-check">
+        <input
+          class="form-check-input"
+          type="radio"
+          name="payment_method"
+          id="pm_paypal"
+          value="paypal"
+        >
+        <label class="form-check-label" for="pm_paypal">
+          PayPal
+        </label>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+      Continue to payment
+    </button>
+  </form>
+</div>
+{% endblock %}

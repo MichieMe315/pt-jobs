@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}{{ employer.company_name|default:employer.name }} · Employer{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-body text-center">
+          {% if employer.logo %}
+            <img src="{{ employer.logo.url }}" alt="{{ employer.company_name|default:employer.name }}" class="img-fluid mb-3" style="max-height: 140px;">
+          {% endif %}
+          <h3 class="h5 mb-1">{{ employer.company_name|default:employer.name }}</h3>
+          {% if employer.location %}<div class="text-muted small">{{ employer.location }}</div>{% endif %}
+          {% if employer.website %}
+            <div class="mt-2"><a href="{{ employer.website }}" target="_blank" rel="noopener">Website</a></div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-8">
+      <div class="card mb-3">
+        <div class="card-header fw-semibold">About</div>
+        <div class="card-body">
+          {% if employer.description %}
+            <div style="white-space: pre-wrap;">{{ employer.description }}</div>
+          {% else %}
+            <div class="text-muted">No description provided.</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header fw-semibold">Active jobs</div>
+        <div class="list-group list-group-flush">
+          {% if jobs %}
+            {% for job in jobs %}
+              <a href="{% url 'job_detail' job.pk %}" class="list-group-item list-group-item-action">
+                <div class="fw-semibold">{{ job.title }}</div>
+                <div class="small text-muted">
+                  {% if job.location %}{{ job.location }} · {% endif %}Posted {{ job.posting_date }}
+                </div>
+              </a>
+            {% endfor %}
+          {% else %}
+            <div class="list-group-item text-muted">No active jobs.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

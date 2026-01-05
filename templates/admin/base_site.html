@@ -1,0 +1,42 @@
+{% extends "admin/base.html" %}
+{% load i18n static %}
+
+{% block title %}
+  {% if subtitle %}{{ subtitle }} | {% endif %}
+  {{ title }} | {% trans 'PT Jobs Admin' %}
+{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <style>
+    /* Remove sticky modals/backdrops */
+    .modal-backdrop,
+    .offcanvas-backdrop {
+      display: none !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+    body.modal-open,
+    body.offcanvas-open {
+      overflow: auto !important;
+      padding-right: 0 !important;
+    }
+  </style>
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <script>
+    (function(){
+      function killAdminOverlays() {
+        try { document.body.classList.remove('modal-open','offcanvas-open'); } catch(e){}
+        try {
+          document.querySelectorAll('.modal-backdrop,.offcanvas-backdrop')
+            .forEach(el=>el.remove());
+        } catch(e){}
+      }
+      document.addEventListener('DOMContentLoaded', killAdminOverlays);
+      window.addEventListener('load', killAdminOverlays);
+    })();
+  </script>
+{% endblock %}

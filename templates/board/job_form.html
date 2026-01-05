@@ -1,89 +1,163 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Post a Job{% endblock %}
-
 {% block content %}
-<div class="container my-4">
-  <div class="row">
-    <div class="col-lg-9">
-      <h1 class="mb-3">Post a Job</h1>
+<div class="container py-4" style="max-width: 860px;">
+  <h2 class="mb-4">
+    {% if mode == "edit" %}Edit Job{% elif mode == "duplicate" %}Duplicate Job{% else %}Post a Job{% endif %}
+  </h2>
 
-      <div class="alert alert-info mb-4">
-        <strong>Expiry:</strong> Pick any date up to <strong>{{ max_expiry }}</strong> ({{ duration_days }}-day package limit).
-      </div>
+  <form method="POST" class="card p-4 shadow-sm" novalidate>
+    {% csrf_token %}
 
-      <form method="post" enctype="multipart/form-data" novalidate id="job-form">
-        {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
 
-        {% if form.non_field_errors %}
-          <div class="alert alert-danger">
-            {{ form.non_field_errors }}
-          </div>
-        {% endif %}
-
-        {% for field in form %}
-          <div class="mb-3">
-            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
-            {% if field.help_text %}
-              <div class="form-text">{{ field.help_text|safe }}</div>
-            {% endif %}
-            {% for error in field.errors %}
-              <div class="invalid-feedback d-block">{{ error }}</div>
-            {% endfor %}
-          </div>
-        {% endfor %}
-
-        <div class="d-flex gap-2">
-          <button type="submit" class="btn btn-primary">Publish Job</button>
-          <a href="{% url 'employer_dashboard' %}" class="btn btn-secondary">Cancel</a>
-        </div>
-      </form>
+    <div class="mb-3">
+      <label class="form-label">Job Title *</label>
+      {{ form.title }}
+      {% for error in form.title.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
     </div>
 
-    <div class="col-lg-3">
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title mb-2">Tips</h5>
-          <ul class="mb-0">
-            <li>Use a clear, specific title</li>
-            <li>Include location or “Remote”</li>
-            <li>List benefits &amp; schedule</li>
-            <li>Provide apply email or URL</li>
-          </ul>
+    <div class="mb-3">
+      <label class="form-label">Job Description *</label>
+      {{ form.description }}
+      {% for error in form.description.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Job Type *</label>
+      {{ form.job_type }}
+      {% for error in form.job_type.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Compensation Type *</label>
+      {{ form.compensation_type }}
+      {% for error in form.compensation_type.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+    </div>
+
+    <div class="row g-2 mb-3">
+      <div class="col-md-6">
+        <label class="form-label">Min *</label>
+        <div class="input-group">
+          <span class="input-group-text" id="compMinPrefix"></span>
+          {{ form.compensation_min }}
         </div>
+        {% for error in form.compensation_min.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Max *</label>
+        <div class="input-group">
+          <span class="input-group-text" id="compMaxPrefix"></span>
+          {{ form.compensation_max }}
+        </div>
+        {% for error in form.compensation_max.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
       </div>
     </div>
-  </div>
+
+    <div class="mb-3">
+      <label class="form-label">Location *</label>
+      {{ form.location }}
+      {% for error in form.location.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Apply Via *</label>
+      {{ form.apply_via }}
+      {% for error in form.apply_via.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+    </div>
+
+    <div class="mb-3" id="applyEmailWrap">
+      <label class="form-label">Apply Email</label>
+      {{ form.apply_email }}
+      {% for error in form.apply_email.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+    </div>
+
+    <div class="mb-3" id="applyUrlWrap">
+      <label class="form-label">Apply URL</label>
+      {{ form.apply_url }}
+      {% for error in form.apply_url.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Is relocation assistance provided? *</label>
+      {{ form.relocation_assistance }}
+      {% for error in form.relocation_assistance.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Expiry Date</label>
+      <input
+        type="date"
+        id="expiry_date"
+        name="expiry_date"
+        class="form-control"
+        value="{{ form.expiry_date.value|default_if_none:'' }}"
+        {% if max_expiry_iso %} data-max="{{ max_expiry_iso }}"{% endif %}
+      />
+      {% for error in form.expiry_date.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+    </div>
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary" type="submit" name="action" value="publish">Publish</button>
+      <button class="btn btn-outline-secondary" type="submit" name="action" value="draft">Save Draft</button>
+      <a class="btn btn-light ms-auto" href="{% url 'employer_dashboard' %}">Cancel</a>
+    </div>
+  </form>
 </div>
 
 <script>
-(function () {
-  // Clamp expiry client-side without showing validation errors.
-  const exp = document.getElementById("id_expiry_date");
-  if (!exp) return;
+document.addEventListener("DOMContentLoaded", function() {
+  const applyVia = document.querySelector("select[name='apply_via']");
+  const emailWrap = document.getElementById("applyEmailWrap");
+  const urlWrap = document.getElementById("applyUrlWrap");
 
-  // Helper to clamp a yyyy-mm-dd string to [min, max]
-  function clampDate() {
-    const min = exp.getAttribute("min");
-    const max = exp.getAttribute("max");
-    const val = exp.value;
-    if (!val) return;
+  const compType = document.querySelector("select[name='compensation_type']");
+  const minPrefix = document.getElementById("compMinPrefix");
+  const maxPrefix = document.getElementById("compMaxPrefix");
 
-    // ISO yyyy-mm-dd compares lexicographically correctly
-    if (min && val < min) exp.value = min;
-    if (max && val > max) exp.value = max;
+  const expiry = document.getElementById("expiry_date");
+
+  function toggleApply() {
+    const v = (applyVia?.value || "");
+    if (emailWrap) emailWrap.style.display = (v === "email") ? "" : "none";
+    if (urlWrap) urlWrap.style.display = (v === "url") ? "" : "none";
   }
 
-  exp.addEventListener("change", clampDate);
-  exp.addEventListener("blur", clampDate);
-
-  // Also clamp right before submit in case of programmatic changes
-  const form = document.getElementById("job-form");
-  if (form) {
-    form.addEventListener("submit", clampDate);
+  function setPrefixes() {
+    // stored values: Hourly / Salary / Other
+    const v = (compType?.value || "");
+    let sym = "";
+    if (v === "Hourly" || v === "Salary") sym = "$";
+    if (v === "Other") sym = "%";
+    if (minPrefix) minPrefix.textContent = sym;
+    if (maxPrefix) maxPrefix.textContent = sym;
   }
-})();
+
+  function defaultExpiryToMax() {
+    if (!expiry) return;
+    const max = expiry.getAttribute("data-max");
+    if (!max) return;
+
+    expiry.max = max;
+
+    // Default to LAST DAY if empty
+    if (!expiry.value) expiry.value = max;
+
+    expiry.addEventListener("change", () => {
+      if (expiry.value && expiry.value > max) expiry.value = max;
+    });
+  }
+
+  applyVia?.addEventListener("change", toggleApply);
+  compType?.addEventListener("change", setPrefixes);
+
+  toggleApply();
+  setPrefixes();
+  defaultExpiryToMax();
+});
 </script>
 {% endblock %}

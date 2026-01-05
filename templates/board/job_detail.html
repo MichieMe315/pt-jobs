@@ -1,39 +1,198 @@
 {% extends "base.html" %}
-{% block title %}{{ job.title }} · PT Jobs{% endblock %}
+{% block title %}{{ job.title }} – {{ job.employer.company_name }}{% endblock %}
+
 {% block content %}
 <div class="container my-4">
-  <div class="mb-2">
-    <a href="{% url 'job_list' %}">&larr; Back to Jobs</a>
-  </div>
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="card mb-3 bg-dark text-white">
+        <div class="card-body">
 
-  <h1 class="mb-1">{{ job.title }}</h1>
-  <div class="text-muted mb-3">
-    {{ job.employer.company_name|default:job.employer.name }} · {{ job.location }}
-    {% if job.job_type %} · {{ job.get_job_type_display }}{% endif %}
-  </div>
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <h1 class="h4 mb-0 fw-bold">{{ job.title }}</h1>
+            {% if job.posting_date %}
+              <div class="small">Posted {{ job.posting_date|date:"M j, Y" }}</div>
+            {% endif %}
+          </div>
 
-  {% if job.compensation_type %}
-    <div class="mb-3">
-      <strong>{{ job.get_compensation_type_display }}:</strong>
-      {% if job.compensation_type == "split" %}
-        {% if job.percent_split %} {{ job.percent_split|floatformat:-2 }}% split{% else %} Percent split{% endif %}
-      {% else %}
-        {% if job.salary_min %}${{ job.salary_min|floatformat:-2 }}{% endif %}
-        {% if job.salary_min and job.salary_max %} – {% endif %}
-        {% if job.salary_max %}${{ job.salary_max|floatformat:-2 }}{% endif %}
-      {% endif %}
-      {% if job.relocation_assistance_provided %}
-        <span class="ms-2 badge bg-success">Relocation assistance provided</span>
-      {% endif %}
+          {% if job.location %}
+            <p class="mb-1 small">
+              {{ job.location }}
+              {% if job.relocation_assistance %}
+                · <strong>Relocation assistance available</strong>
+              {% endif %}
+            </p>
+          {% endif %}
+
+          <hr class="border-secondary">
+
+          <ul class="list-unstyled small mb-2">
+            {% if job.job_type %}
+              <li>{{ job.get_job_type_display }}</li>
+            {% endif %}
+
+            {% if job.compensation_type == "Hourly" %}
+              {% if job.compensation_min and job.compensation_max %}
+                <li>Hourly ${{ job.compensation_min }} – ${{ job.compensation_max }}</li>
+              {% else %}
+                <li>Hourly</li>
+              {% endif %}
+
+            {% elif job.compensation_type == "Salary" %}
+              {% if job.compensation_min and job.compensation_max %}
+                <li>Yearly ${{ job.compensation_min }} – ${{ job.compensation_max }}</li>
+              {% else %}
+                <li>Yearly</li>
+              {% endif %}
+
+            {% elif job.compensation_type == "Other" %}
+              {% if job.compensation_min and job.compensation_max %}
+                <li>Split {{ job.compensation_min|floatformat:"0" }}% – {{ job.compensation_max|floatformat:"0" }}%</li>
+              {% else %}
+                <li>Split</li>
+              {% endif %}
+            {% endif %}
+          </ul>
+
+          <hr class="border-secondary">
+
+          <div class="job-description">
+            {{ job.description|linebreaks }}
+          </div>
+
+          <div class="mt-4">
+            {% if request.user.is_authenticated and request.user.jobseeker %}
+              <a href="{% url 'apply_to_job' job.id %}" class="btn btn-primary">Apply</a>
+            {% else %}
+              <a href="{% url 'login' %}?next={% url 'apply_to_job' job.id %}" class="btn btn-primary">Apply</a>
+            {% endif %}
+          </div>
+
+        </div>
+      </div>
     </div>
-  {% endif %}
 
-  <article class="mb-4">
-    {{ job.description|linebreaks }}
-  </article>
+    <!-- RIGHT SIDEBAR: Employer Card + Share + Job Alerts -->
+    <div class="col-lg-4">
 
-  <div class="d-flex gap-2">
-    <a class="btn btn-primary" href="{% url 'job_apply' job.id %}">Apply</a>
+      <!-- Employer card (NO EMAILS) -->
+      <div class="card mb-3">
+        <div class="card-body">
+          <h3 class="h6 fw-bold mb-2">Employer</h3>
+
+          <div class="d-flex align-items-start gap-3">
+            {% if job.employer.logo %}
+              <img
+                src="{{ job.employer.logo.url }}"
+                alt="{{ job.employer.company_name }}"
+                style="max-height:52px; max-width:140px; object-fit:contain;"
+              >
+            {% endif %}
+
+            <div>
+              <div class="fw-bold">{{ job.employer.company_name }}</div>
+
+              {% if job.employer.location %}
+                <div class="text-muted small">{{ job.employer.location }}</div>
+              {% endif %}
+
+              {% if job.employer.website %}
+                <div class="small mt-1">
+                  <a href="{{ job.employer.website }}" target="_blank" rel="noopener">Website</a>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="mt-3">
+            <a href="{% url 'employer_detail' job.employer.id %}" class="btn btn-outline-secondary btn-sm w-100">
+              View employer profile
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-3">
+        <div class="card-body">
+          <h3 class="h6 fw-bold mb-2">Share this job</h3>
+
+          {% with share_url=request.build_absolute_uri share_title=job.title %}
+            <div class="d-grid gap-2">
+
+              {% if not sitesettings or sitesettings.share_whatsapp or sitesettings.share_whatsapp == None %}
+                <a class="btn btn-outline-light btn-sm"
+                   target="_blank" rel="noopener"
+                   href="https://wa.me/?text={{ share_title|urlencode }}%20{{ share_url|urlencode }}">
+                  WhatsApp
+                </a>
+              {% endif %}
+
+              {% if not sitesettings or sitesettings.share_email or sitesettings.share_email == None %}
+                <a class="btn btn-outline-light btn-sm"
+                   href="mailto:?subject={{ share_title|urlencode }}&body={{ share_url|urlencode }}">
+                  Email
+                </a>
+              {% endif %}
+
+              {% if not sitesettings or sitesettings.share_twitter or sitesettings.share_twitter == None %}
+                <a class="btn btn-outline-light btn-sm"
+                   target="_blank" rel="noopener"
+                   href="https://twitter.com/intent/tweet?text={{ share_title|urlencode }}&url={{ share_url|urlencode }}">
+                  X (Twitter)
+                </a>
+              {% endif %}
+
+              {% if not sitesettings or sitesettings.share_facebook or sitesettings.share_facebook == None %}
+                <a class="btn btn-outline-light btn-sm"
+                   target="_blank" rel="noopener"
+                   href="https://www.facebook.com/sharer/sharer.php?u={{ share_url|urlencode }}">
+                  Facebook
+                </a>
+              {% endif %}
+
+              {% if not sitesettings or sitesettings.share_linkedin or sitesettings.share_linkedin == None %}
+                <a class="btn btn-outline-light btn-sm"
+                   target="_blank" rel="noopener"
+                   href="https://www.linkedin.com/sharing/share-offsite/?url={{ share_url|urlencode }}">
+                  LinkedIn
+                </a>
+              {% endif %}
+
+              {% if not sitesettings or sitesettings.share_reddit or sitesettings.share_reddit == None %}
+                <a class="btn btn-outline-light btn-sm"
+                   target="_blank" rel="noopener"
+                   href="https://www.reddit.com/submit?url={{ share_url|urlencode }}&title={{ share_title|urlencode }}">
+                  Reddit
+                </a>
+              {% endif %}
+
+            </div>
+          {% endwith %}
+        </div>
+      </div>
+
+      <!-- Job alerts -->
+      <div class="card">
+        <div class="card-body">
+          <h3 class="h6 fw-bold mb-2">Get Job Alerts</h3>
+
+          <form method="post" action="{% url 'job_alert_signup' %}">
+            {% csrf_token %}
+            {% if job_alert_form %}
+              <div class="mb-2">
+                {{ job_alert_form.email }}
+              </div>
+            {% else %}
+              <div class="mb-2">
+                <input type="email" name="email" class="form-control" placeholder="Email address" required>
+              </div>
+            {% endif %}
+            <button class="btn btn-primary w-100 fw-bold" type="submit">Sign up</button>
+          </form>
+        </div>
+      </div>
+
+    </div>
   </div>
 </div>
 {% endblock %}

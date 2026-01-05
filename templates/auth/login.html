@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Login · PT Jobs{% endblock %}
+{% block content %}
+<h1>Login</h1>
+{# Show approval banner for unapproved users in dashboards, not here #}
+<form method="post" action="">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  <div>
+    <label for="id_username">Email</label>
+    {{ form.username }}
+  </div>
+  <div>
+    <label for="id_password">Password</label>
+    {{ form.password }}
+  </div>
+  <button type="submit">Sign in</button>
+</form>
+<p>
+  New Employer? <a href="{% url 'employer_signup' %}">Create an employer account</a><br>
+  New Job Seeker? <a href="{% url 'jobseeker_signup' %}">Create a job seeker account</a>
+</p>
+{% endblock %}

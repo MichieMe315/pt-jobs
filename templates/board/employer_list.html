@@ -1,26 +1,32 @@
 {% extends "base.html" %}
-{% block title %}Employers{% endblock %}
+{% block title %}Employers · PT Jobs{% endblock %}
 {% block content %}
 <div class="container my-4">
-  <h1 class="mb-4">Employers</h1>
+  <h1 class="h4 mb-3">Employers</h1>
 
   {% if employers %}
-  <div class="row row-cols-2 row-cols-md-4 row-cols-lg-5 g-3">
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
     {% for e in employers %}
       <div class="col">
-        <a href="{% url 'employer_public_profile' e.id %}" class="text-decoration-none">
-          <div class="card h-100 text-center">
-            <div class="p-3">
-              {% if e.logo %}
-                <img src="{{ e.logo.url }}" alt="{{ e.company_name|default:e.name }}" class="img-fluid rounded" style="width:56px;height:56px;object-fit:cover;">
-              {% else %}
-                <div class="bg-secondary rounded d-inline-flex align-items-center justify-content-center" style="width:56px;height:56px;color:#fff;">
-                  {{ e.company_name|default:e.name|first|upper }}
-                </div>
-              {% endif %}
-            </div>
-            <div class="card-body pt-0">
-              <div class="card-title h6 mb-0 text-truncate">{{ e.company_name|default:e.name }}</div>
+        <a href="{% url 'employer_detail' e.pk %}" class="text-decoration-none text-reset">
+          <div class="card h-100">
+            <div class="card-body d-flex align-items-center">
+              <div class="me-3" style="width:56px;height:56px;">
+                {% if e.logo %}
+                  <img src="{{ e.logo.url }}" alt="{{ e.company_name }}" style="width:56px;height:56px;object-fit:cover;border-radius:8px;">
+                {% else %}
+                  <div class="d-inline-flex align-items-center justify-content-center bg-light border"
+                       style="width:56px;height:56px;border-radius:8px;font-weight:600;">
+                    {{ e.company_name|first|upper }}
+                  </div>
+                {% endif %}
+              </div>
+              <div class="flex-grow-1">
+                <div class="fw-semibold">{{ e.company_name }}</div>
+                {% if e.location %}
+                  <div class="text-muted small">{{ e.location }}</div>
+                {% endif %}
+              </div>
             </div>
           </div>
         </a>
@@ -28,7 +34,7 @@
     {% endfor %}
   </div>
   {% else %}
-    <p>No employers to show.</p>
+    <p class="text-muted">No employers yet.</p>
   {% endif %}
 </div>
 {% endblock %}

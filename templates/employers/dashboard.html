@@ -1,177 +1,57 @@
 {% extends "base.html" %}
 {% block title %}Employer Dashboard · PT Jobs{% endblock %}
 {% block content %}
-<div class="container my-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h3 mb-0">
-      {{ employer.company_name|default:employer.name }}
-      {% if not employer.is_approved %}
-        <span class="badge bg-warning text-dark ms-2">Pending approval</span>
-      {% endif %}
-    </h1>
-    <div class="d-flex gap-2">
-      <a href="{% url 'post_job' %}" class="btn btn-primary">Post a Job</a>
-      <a href="{% url 'employer_profile_edit' %}" class="btn btn-outline-secondary">Edit Profile</a>
-    </div>
+<h1>Employer Dashboard</h1>
+
+{% if not user.employer.is_approved %}
+  <div class="banner warning">Your employer profile is pending approval. You can explore but cannot post or purchase yet.</div>
+{% endif %}
+
+<section class="metrics">
+  <div class="metric">
+    <div class="label">Credits Remaining</div>
+    <div class="value">{{ user.employer.credits|default:0 }}</div>
   </div>
+  {% if user.employer.credits|default:0 > 0 %}
+    <a class="btn" href="{% url 'job_create' %}">Post a Job</a>
+  {% endif %}
+</section>
 
-  <!-- Summary -->
-  <div class="row g-3 mb-3">
-    <div class="col-md-4">
-      <div class="card h-100">
-        <div class="card-body">
-          <div class="text-muted small">Active Credits</div>
-          <div class="display-6">{{ credits_active_left }}</div>
-          <div class="text-muted small">Across non-expired purchases</div>
-        </div>
-      </div>
-    </div>
-  </div>
+<h2>Active Jobs</h2>
+<table>
+  <thead><tr><th>Title</th><th>Posting</th><th>Expiry</th><th>Actions</th></tr></thead>
+  <tbody>
+  {% for job in active_jobs %}
+    <tr>
+      <td><a href="{% url 'job_detail' job.id %}">{{ job.title }}</a></td>
+      <td>{{ job.posting_date }}</td>
+      <td>{{ job.expiry_date }}</td>
+      <td>
+        <a href="{% url 'job_edit' job.id %}">Edit</a> ·
+        <a href="{% url 'job_applications' job.id %}">Applications</a>
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="4">No active jobs.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
 
-  <!-- Tabs -->
-  <ul class="nav nav-tabs" role="tablist">
-    <li class="nav-item" role="presentation">
-      <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-jobs" type="button" role="tab">Jobs</button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-purchases" type="button" role="tab">Purchased Packages</button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-invoices" type="button" role="tab">Invoices</button>
-    </li>
-  </ul>
+<h2>Purchased Packages</h2>
+<ul>
+  {% for p in purchased_packages %}
+    <li>{{ p.package.name }} — remaining {{ p.credits_remaining }} (source: {{ p.source }})</li>
+  {% empty %}
+    <li>No purchases yet.</li>
+  {% endfor %}
+</ul>
 
-  <div class="tab-content mt-3">
-    <!-- Jobs tab -->
-    <div class="tab-pane fade show active" id="tab-jobs" role="tabpanel">
-      <div class="card">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h5 class="card-title mb-0">Your Job Posts</h5>
-            <a href="{% url 'post_job' %}" class="btn btn-sm btn-primary">Post a Job</a>
-          </div>
-          {% if jobs %}
-            <div class="table-responsive">
-              <table class="table align-middle">
-                <thead>
-                  <tr>
-                    <th>Title</th>
-                    <th>Type</th>
-                    <th>Posted</th>
-                    <th>Expires</th>
-                    <th>Views</th>
-                    <th>Applications</th>
-                    <th>Status</th>
-                    <th class="text-end">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for j in jobs %}
-                    <tr>
-                      <td><a href="{% url 'job_detail' j.id %}" target="_blank">{{ j.title }}</a></td>
-                      <td>{% if j.job_type %}{{ j.get_job_type_display }}{% else %}-{% endif %}</td>
-                      <td>{{ j.posting_date|date:"Y-m-d" }}</td>
-                      <td>{% if j.expiry_date %}{{ j.expiry_date|date:"Y-m-d" }}{% else %}-{% endif %}</td>
-                      <td>{{ j.metrics_views|default:0 }}</td>
-                      <td>{{ j.metrics_applications|default:0 }}</td>
-                      <td>
-                        {% if j.is_active %}
-                          <span class="badge bg-success">Active</span>
-                        {% else %}
-                          <span class="badge bg-secondary">Inactive</span>
-                        {% endif %}
-                        {% if j.expiry_date and j.expiry_date|date:"U" < today|date:"U" %}
-                          <span class="badge bg-danger ms-1">Expired</span>
-                        {% endif %}
-                      </td>
-                      <td class="text-end">
-                        <a href="{% url 'edit_job' j.id %}" class="btn btn-sm btn-outline-secondary">Edit</a>
-                        <a href="{% url 'applications_list' j.id %}" class="btn btn-sm btn-outline-primary">Applications</a>
-                      </td>
-                    </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-          {% else %}
-            <p class="mb-0">You haven't posted any jobs yet.</p>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-
-    <!-- Purchases tab -->
-    <div class="tab-pane fade" id="tab-purchases" role="tabpanel">
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title">Purchased Packages</h5>
-          {% if purchases %}
-            <div class="table-responsive">
-              <table class="table align-middle">
-                <thead>
-                  <tr>
-                    <th>Package</th>
-                    <th>Credits</th>
-                    <th>Expires</th>
-                    <th>Source</th>
-                    <th>Purchased</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for p in purchases %}
-                    <tr>
-                      <td>{{ p.package.name }}</td>
-                      <td>{{ p.credits_used }}/{{ p.credits_total }} (Left: {{ p.credits_left }})</td>
-                      <td>{% if p.expires_at %}{{ p.expires_at|date:"Y-m-d" }}{% else %}-{% endif %}</td>
-                      <td>
-                        {{ p.source_label }}
-                        {% if p.price_display %}<span class="text-muted"> · {{ p.price_display }}</span>{% endif %}
-                      </td>
-                      <td>{{ p.purchased_at|date:"Y-m-d" }}</td>
-                    </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-          {% else %}
-            <p class="mb-0">No purchases yet.</p>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-
-    <!-- Invoices tab -->
-    <div class="tab-pane fade" id="tab-invoices" role="tabpanel">
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title">Invoices</h5>
-          {% if invoices %}
-            <div class="table-responsive">
-              <table class="table align-middle">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Amount</th>
-                    <th>Notes</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for inv in invoices %}
-                    <tr>
-                      <td>{{ inv.created_at|date:"Y-m-d" }}</td>
-                      <td>{{ inv.amount_display }}</td>
-                      <td>{{ inv.notes|default:"" }}</td>
-                    </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-          {% else %}
-            <p class="mb-0">No invoices yet.</p>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+<h2>Invoices</h2>
+<ul>
+  {% for inv in invoices %}
+    <li>#{{ inv.id }} — {{ inv.created_at|date:"Y-m-d" }} — ${{ inv.amount }} — {{ inv.status }}</li>
+  {% empty %}
+    <li>No invoices yet.</li>
+  {% endfor %}
+</ul>
 {% endblock %}

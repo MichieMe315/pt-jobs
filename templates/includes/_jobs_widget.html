@@ -1,0 +1,13 @@
+<div class="card mb-3">
+  <div class="card-header fw-semibold">{{ title }}</div>
+  <ul class="list-group list-group-flush">
+    {% for j in jobs %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <a href="{% url 'job_detail' j.id %}" class="text-decoration-none">{{ j.title }}</a>
+        <span class="text-muted small">{{ j.location }}</span>
+      </li>
+    {% empty %}
+      <li class="list-group-item text-muted">No jobs yet.</li>
+    {% endfor %}
+  </ul>
+</div>

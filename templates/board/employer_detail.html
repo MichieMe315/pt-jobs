@@ -1,32 +1,56 @@
 {% extends "base.html" %}
-{% block title %}{{ employer.company_name }}{% endblock %}
+
+{% block title %}{{ employer.company_name }} – Employers{% endblock %}
 
 {% block content %}
-<div class="container py-4" style="max-width: 860px;">
-  <div class="d-flex align-items-center mb-3">
+<div class="container mt-4 mb-5">
+
+  <div class="d-flex align-items-center mb-4">
     {% if employer.logo %}
-      <img src="{{ employer.logo.url }}" alt="{{ employer.company_name }}" style="height:60px;width:60px;object-fit:contain;margin-right:1rem;">
+      <div class="me-3">
+        <img src="{{ employer.logo.url }}"
+             alt="{{ employer.company_name }}"
+             style="max-height:90px; max-width:220px; object-fit:contain;">
+      </div>
     {% endif %}
     <div>
       <h1 class="mb-1">{{ employer.company_name }}</h1>
-      <p class="mb-0">{{ employer.website }}</p>
+      {% if employer.location %}
+        <div class="text-muted">{{ employer.location }}</div>
+      {% endif %}
     </div>
   </div>
 
-  <h5>About</h5>
-  <p>{{ employer.description|linebreaks }}</p>
-
-  <h5 class="mt-4">Open Jobs</h5>
-  {% if employer.job_set.all %}
-    <ul class="list-group">
-      {% for job in employer.job_set.all %}
-        <li class="list-group-item">
-          <a href="{% url 'job_detail' job.id %}">{{ job.title }}</a> – {{ job.location }}
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>No active jobs.</p>
+  {% if employer.company_description %}
+    <div class="mb-4">
+      {{ employer.company_description|linebreaks }}
+    </div>
   {% endif %}
+
+  <h2 class="h4 mb-3">Open Positions</h2>
+
+  {% if jobs %}
+    <div class="list-group">
+      {% for job in jobs %}
+        <a href="{% url 'job_detail' job.pk %}"
+           class="list-group-item list-group-item-action bg-dark text-light border-secondary mb-2 rounded">
+          <div class="d-flex justify-content-between">
+            <div>
+              <div class="fw-semibold">{{ job.title }}</div>
+              <div class="small text-muted">
+                {% if job.location %}{{ job.location }}{% endif %}
+              </div>
+            </div>
+            <div class="text-end small text-muted">
+              {% if job.posting_date %}{{ job.posting_date|date:"M j, Y" }}{% endif %}
+            </div>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted">No active jobs at the moment.</p>
+  {% endif %}
+
 </div>
 {% endblock %}

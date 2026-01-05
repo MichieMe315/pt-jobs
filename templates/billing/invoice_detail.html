@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Invoice #{{ invoice.id }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <div class="text-center mb-3">
+    {% if sitesettings and sitesettings.branding_logo %}
+      <img src="{{ sitesettings.branding_logo.url }}"
+           alt="{{ sitesettings.site_name }}"
+           style="max-height:60px; object-fit:contain;">
+    {% else %}
+      <h1 class="h5 mb-0">{{ sitesettings.site_name|default:"PT Jobs" }}</h1>
+    {% endif %}
+  </div>
+
+  <h2 class="h5 mb-3 text-center">Invoice #{{ invoice.id }}</h2>
+
+  <div class="card bg-dark text-light border-secondary mx-auto" style="max-width: 600px;">
+    <div class="card-body">
+      <p class="mb-1">
+        <strong>Employer:</strong>
+        {{ employer.company_name|default:employer.email }}
+      </p>
+
+      {% if employer.location %}
+        <p class="mb-1">
+          <strong>Location:</strong> {{ employer.location }}
+        </p>
+      {% endif %}
+
+      <p class="mb-1">
+        <strong>Date:</strong> {{ invoice.order_date|date:"M j, Y H:i" }}
+      </p>
+
+      <p class="mb-1">
+        <strong>Amount:</strong> ${{ invoice.amount }} {{ invoice.currency }}
+      </p>
+
+      <p class="mb-1">
+        <strong>Processor:</strong> {{ invoice.get_processor_display }}
+      </p>
+
+      {% if invoice.processor_reference %}
+        <p class="mb-1">
+          <strong>Reference:</strong> {{ invoice.processor_reference }}
+        </p>
+      {% endif %}
+
+      <p class="mb-3">
+        <strong>Status:</strong> {{ invoice.status|title }}
+      </p>
+
+      <div class="text-center">
+        <button type="button" class="btn btn-primary btn-sm"
+                onclick="window.print()">
+          Print / Save as PDF
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

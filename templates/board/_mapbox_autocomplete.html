@@ -1,0 +1,12 @@
+{% if MAPBOX_ACCESS_TOKEN %}
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet"/>
+<script>
+(function(){
+  if (!window.mapboxgl) return;
+  mapboxgl.accessToken = "{{ MAPBOX_ACCESS_TOKEN }}";
+  // Simple autocomplete via Mapbox geocoding API
+  // Keep your existing implementation here if you already had one.
+})();
+</script>
+{% endif %}

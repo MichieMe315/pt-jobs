@@ -1,0 +1,18 @@
+{# Mapbox autocomplete partial — include this once at the very end of base.html #}
+{% load static %}
+
+{# Only run if you’ve set a token and at least one input opts in #}
+{% if MAPBOX_PUBLIC_TOKEN %}
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.css" rel="stylesheet">
+  <script src="{% static 'js/mapbox-autocomplete.js' %}"></script>
+  <script>
+    window.__MAPBOX_TOKEN__ = "{{ MAPBOX_PUBLIC_TOKEN|escapejs }}";
+    // Autocomplete will attach to any input having: data-autocomplete="location"
+    window.addEventListener('DOMContentLoaded', function () {
+      if (window.__initMapboxAutocomplete) {
+        window.__initMapboxAutocomplete();
+      }
+    });
+  </script>
+{% endif %}

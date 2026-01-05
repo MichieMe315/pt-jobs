@@ -1,62 +1,46 @@
+<!-- PATH: templates/board/employer_profile.html -->
 {% extends "base.html" %}
-{% block title %}{{ employer.company_name|default:employer.name }} · Employer Profile{% endblock %}
+{% load static %}
+
 {% block content %}
-<div class="container my-4">
-  <div class="d-flex align-items-center mb-3">
-    {% if employer.logo %}
-      <img src="{{ employer.logo.url }}" alt="{{ employer.company_name|default:employer.name }}" class="me-3" style="width:64px;height:64px;border-radius:12px;object-fit:cover;">
-    {% endif %}
-    <div>
-      <h1 class="h3 m-0">{{ employer.company_name|default:employer.name }}</h1>
-      <div class="text-muted">{{ employer.location }}</div>
-      {% if employer.website %}
-        <div><a href="{{ employer.website }}" target="_blank" rel="noopener">Website</a></div>
-      {% endif %}
-    </div>
-  </div>
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
 
-  <ul class="nav nav-tabs" role="tablist">
-    <li class="nav-item" role="presentation">
-      <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">Overview</button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#jobs" type="button" role="tab">Open Jobs</button>
-    </li>
-  </ul>
+      <h2 class="mb-4 text-center">Edit Employer Profile</h2>
 
-  <div class="tab-content mt-3">
-    <div class="tab-pane fade show active" id="overview" role="tabpanel">
-      <p>{{ employer.description|linebreaks }}</p>
-    </div>
-
-    <div class="tab-pane fade" id="jobs" role="tabpanel">
-      {% if open_jobs %}
-        <div class="list-group">
-          {% for job in open_jobs %}
-            <a href="{% url 'job_detail' job.id %}" class="list-group-item list-group-item-action">
-              <div class="d-flex justify-content-between">
-                <div>
-                  <div class="fw-bold">{{ job.title }}</div>
-                  <div class="text-muted small">{{ job.location }}{% if job.job_type %} · {{ job.get_job_type_display }}{% endif %}</div>
-                </div>
-                <div class="text-muted small">
-                  Posted {{ job.posting_date }}
-                </div>
-              </div>
-              {% if job.compensation_type %}
-                <div class="small">
-                  {{ job.get_compensation_type_display }}:
-                  {% if job.salary_min %}${{ job.salary_min|floatformat:-2 }}{% endif %}
-                  {% if job.salary_min and job.salary_max %} – {% endif %}
-                  {% if job.salary_max %}${{ job.salary_max|floatformat:-2 }}{% endif %}
-                </div>
-              {% endif %}
-            </a>
-          {% endfor %}
+      {% if form.errors %}
+        <div class="alert alert-danger small">
+          Please correct the errors below and try again.
         </div>
-      {% else %}
-        <p>No open jobs.</p>
       {% endif %}
+
+      <form method="post" enctype="multipart/form-data" class="card p-3">
+        {% csrf_token %}
+
+        {% for field in form %}
+          <div class="mb-3">
+            <label class="form-label">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}
+              <div class="form-text">{{ field.help_text }}</div>
+            {% endif %}
+            {% for error in field.errors %}
+              <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+        {% endfor %}
+
+        <div class="d-flex justify-content-between">
+          <button type="submit" class="btn btn-primary">
+            Save Changes
+          </button>
+          <a href="{% url 'employer_dashboard' %}" class="btn btn-outline-secondary">
+            Cancel
+          </a>
+        </div>
+      </form>
+
     </div>
   </div>
 </div>

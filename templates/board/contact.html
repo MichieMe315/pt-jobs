@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Contact{% endblock %}
+
+{% block content %}
+<div class="container my-4" style="max-width: 900px;">
+  <h1 class="h3 mb-3">Contact</h1>
+
+  {% if submitted %}
+    <div class="alert alert-success">
+      Thank you for your message. We will get back to you as soon as we can.
+    </div>
+  {% endif %}
+
+  <p class="mb-3">
+    Have a question about posting jobs, using the site, or anything else?
+    Send us a message using the form below.
+  </p>
+
+  <form method="post" action="{% url 'contact' %}">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="id_name" class="form-label">Name</label>
+      <input type="text" name="name" id="id_name" class="form-control" required
+             value="{{ form_name|default:'' }}">
+    </div>
+    <div class="mb-3">
+      <label for="id_email" class="form-label">Email</label>
+      <input type="email" name="email" id="id_email" class="form-control" required
+             value="{{ form_email|default:'' }}">
+    </div>
+    <div class="mb-3">
+      <label for="id_message" class="form-label">Message</label>
+      <textarea name="message" id="id_message" rows="5" class="form-control" required>{{ form_message|default:'' }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Send message</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% load static %}
+
+<header class="bg-dark border-bottom">
+  <nav class="navbar navbar-expand-lg navbar-dark container">
+
+    <!-- Brand -->
+    <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{% url 'home' %}">
+      {% if sitesettings and sitesettings.branding_logo %}
+        <img src="{{ sitesettings.branding_logo.url }}"
+             alt="Physiotherapy Jobs Canada"
+             style="height:32px; width:auto; object-fit:contain;">
+      {% endif %}
+      <!-- ALWAYS show the brand text (it was disappearing when branding_logo existed) -->
+      <span class="text-white">Physiotherapy Jobs Canada</span>
+    </a>
+
+    <button class="navbar-toggler" type="button"
+            data-bs-toggle="collapse" data-bs-target="#mainNav"
+            aria-controls="mainNav" aria-expanded="false"
+            aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="mainNav">
+      <!-- Left nav -->
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'job_list' %}">Jobs</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'employer_list' %}">Employers</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'package_list' %}">Job Posting Packages</a>
+        </li>
+      </ul>
+
+      <!-- Right side buttons -->
+      <div class="d-flex gap-2">
+        {% if request.user.is_authenticated %}
+          {% if request.user.employer %}
+            <a class="btn btn-outline-light btn-sm" href="{% url 'employer_dashboard' %}">
+              Employer dashboard
+            </a>
+            <a class="btn btn-primary btn-sm" href="{% url 'job_create' %}">
+              Post a job
+            </a>
+          {% elif request.user.jobseeker %}
+            <a class="btn btn-outline-light btn-sm" href="{% url 'jobseeker_dashboard' %}">
+              My dashboard
+            </a>
+          {% endif %}
+          <a class="btn btn-outline-light btn-sm" href="{% url 'logout' %}">
+            Logout
+          </a>
+        {% else %}
+          <a href="{% url 'jobseeker_signup' %}" class="btn btn-outline-light btn-sm">
+            Job Seeker sign up
+          </a>
+          <a href="{% url 'employer_signup' %}" class="btn btn-outline-light btn-sm">
+            Employer sign up
+          </a>
+          <a href="{% url 'login' %}" class="btn btn-primary btn-sm">
+            Login
+          </a>
+        {% endif %}
+      </div>
+    </div>
+
+  </nav>
+</header>

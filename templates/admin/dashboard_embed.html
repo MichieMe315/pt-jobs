@@ -1,0 +1,20 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div class="dashboard-module">
+  {% if error %}
+    <p>{{ error }}</p>
+  {% else %}
+    <h2>PT Jobs Admin Dashboard</h2>
+
+    <ul>
+      <li>Total Jobs: {{ jobs_count }}</li>
+      <li>Approved Employers: {{ employers_count }}</li>
+      <li>Job Seekers: {{ jobseekers_count }}</li>
+      <li>Applications: {{ applications_count }}</li>
+      <li>Total Sales: ${{ sales_total }}</li>
+      <li>Job Alerts: {{ alerts_count }}</li>
+    </ul>
+  {% endif %}
+</div>
+{% endblock %}

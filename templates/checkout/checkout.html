@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Checkout{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h1 class="mb-3">Checkout</h1>
+
+  <div class="row">
+    <div class="col-lg-7">
+      <div class="card p-3 mb-3">
+        <h5 class="mb-2">{{ package.name }}</h5>
+        <p class="mb-1">Credits: <strong>{{ package.credits }}</strong></p>
+        <p class="mb-0">Total: <strong>${{ final_amount }}</strong></p>
+        {% if discount_code %}
+          <p class="mt-2 mb-0"><small>Discount code applied: <strong>{{ discount_code }}</strong></small></p>
+        {% endif %}
+      </div>
+
+      {% if payment_method == "paypal" %}
+        <div class="card p-3">
+          <h5 class="mb-2">PayPal</h5>
+          <p class="mb-3">Continue with PayPal to complete your purchase.</p>
+
+          {# Your existing PayPal flow (if configured) #}
+          <form method="get" action="{% url 'paypal_success' %}">
+            <input type="hidden" name="package_id" value="{{ package.id }}">
+            <input type="hidden" name="amount" value="{{ final_amount }}">
+            <button type="submit" class="btn btn-primary">Continue with PayPal</button>
+          </form>
+        </div>
+      {% else %}
+        <div class="card p-3">
+          <h5 class="mb-2">Card Payment (Stripe)</h5>
+          <p class="mb-3">You’ll be redirected to Stripe to complete payment.</p>
+
+          <form id="stripeForm" method="post" action="{% url 'stripe_create_session' package.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="discount_code" value="{{ discount_code }}">
+            <button type="submit" class="btn btn-primary">Pay with card</button>
+            <a href="{% url 'checkout_select' package.id %}" class="btn btn-link">Back</a>
+          </form>
+        </div>
+
+        <script src="https://js.stripe.com/v3/"></script>
+        <script>
+          (function() {
+            const form = document.getElementById("stripeForm");
+            if (!form) return;
+
+            form.addEventListener("submit", async function(e) {
+              e.preventDefault();
+
+              const res = await fetch(form.action, {
+                method: "POST",
+                headers: {
+                  "X-CSRFToken": form.querySelector("input[name=csrfmiddlewaretoken]").value,
+                  "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: new URLSearchParams(new FormData(form)),
+              });
+
+              const data = await res.json();
+              if (data.error) {
+                alert(data.error);
+                return;
+              }
+
+              const stripe = Stripe("{{ stripe_publishable_key }}");
+              stripe.redirectToCheckout({ sessionId: data.id });
+            });
+          })();
+        </script>
+      {% endif %}
+    </div>
+
+    <div class="col-lg-5">
+      <div class="card p-3">
+        <h6 class="mb-2">What you get</h6>
+        <ul class="mb-0">
+          <li>{{ package.credits }} job posting credit(s)</li>
+          <li>Credits expire in {{ package.duration_days }} days</li>
+          <li>Invoice generated after successful payment</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

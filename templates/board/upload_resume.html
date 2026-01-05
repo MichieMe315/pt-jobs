@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Upload Resume{% endblock %}
+{% block title %}Upload Resume · PT Jobs{% endblock %}
 {% block content %}
-<div class="container my-4" style="max-width: 640px;">
-  <h1 class="h4 mb-3">Upload new resume</h1>
-  <form method="post" enctype="multipart/form-data" class="card card-body">
+<div class="container my-4" style="max-width:720px">
+  <h1 class="mb-3">Upload Resume</h1>
+  <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button class="btn btn-primary">Upload</button>
+    {{ form.resume }}
+    <button class="btn btn-primary mt-2">Upload</button>
   </form>
 </div>
 {% endblock %}

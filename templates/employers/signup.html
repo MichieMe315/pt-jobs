@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load form_extras %}
+{% block title %}Employer Sign-up · PT Jobs{% endblock %}
+{% block content %}
+<h1>Employer Sign-up</h1>
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  <div>{{ form.email|add_placeholder:"Email *" }}</div>
+  <div>{{ form.password1|add_placeholder:"Password *" }}</div>
+
+  <div>{{ form.name|add_placeholder:"Your Name" }}</div>
+  <div>{{ form.company_name|add_placeholder:"Company Name *" }}</div>
+  <div>{{ form.company_description|add_placeholder:"Company Description" }}</div>
+  <div>{{ form.phone|add_placeholder:"Phone" }}</div>
+  <div>{{ form.website|add_placeholder:"Website" }}</div>
+  <div>{{ form.location|add_placeholder:"Location *" }}</div>
+  <div>{{ form.logo }}</div>
+
+  <button type="submit">Create Employer Account</button>
+</form>
+<p class="hint">
+  On submit: account is created as pending approval, admin is emailed, you’ll be redirected to Login with a “Pending approval” message.
+</p>
+{% endblock %}

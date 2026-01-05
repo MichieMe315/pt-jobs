@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Upload Resume{% endblock %}
+{% block content %}
+<div class="container my-4" style="max-width:640px;">
+  <h1 class="h4 mb-3">Upload Resume</h1>
+  <form method="post" enctype="multipart/form-data" class="card p-3">
+    {% csrf_token %}
+    <input type="file" name="file" class="form-control mb-3" accept=".pdf,.doc,.docx,.rtf,.txt">
+    <button class="btn btn-primary" type="submit">Upload</button>
+  </form>
+  <div class="mt-3">
+    <a href="{% url 'jobseeker_dashboard' %}">← Back to dashboard</a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{# templates/includes/mapbox_init.html #}
+{% if MAPBOX_TOKEN %}
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+  <link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.2/mapbox-gl-geocoder.css" rel="stylesheet">
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+  <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.2/mapbox-gl-geocoder.min.js"></script>
+  <script>
+    (function(){
+      function attachGeocoder(input){
+        if (!input || input.dataset.mbAttached === "1") return;
+        input.dataset.mbAttached = "1";
+        const geocoder = new MapboxGeocoder({
+          accessToken: "{{ MAPBOX_TOKEN }}",
+          types: "place,region,locality,neighborhood,poi",
+          placeholder: "Search location",
+          mapboxgl: mapboxgl,
+          marker: false,
+        });
+        const wrap = document.createElement("div");
+        input.parentNode.insertBefore(wrap, input);
+        wrap.appendChild(input);
+        geocoder.addTo(wrap);
+        geocoder.on("result", (e) => {
+          input.value = e.result && e.result.place_name ? e.result.place_name : input.value;
+        });
+      }
+      function init(){
+        mapboxgl.accessToken = "{{ MAPBOX_TOKEN }}";
+        const inputs = [
+          ...document.querySelectorAll('input[name="location"]'),
+          ...document.querySelectorAll('[data-mapbox="location"]'),
+        ];
+        inputs.forEach(attachGeocoder);
+      }
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+      } else { init(); }
+    })();
+  </script>
+{% endif %}

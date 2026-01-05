@@ -1,79 +1,115 @@
 {% extends "base.html" %}
-{% block title %}Job Seeker Sign-up · PT Jobs{% endblock %}
+{% block title %}Job Seeker Sign Up{% endblock %}
+
 {% block content %}
-<div class="container my-4" style="max-width: 780px;">
-  <h1 class="mb-4">Create Job Seeker Account</h1>
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+      <div class="card bg-dark text-light border-secondary">
+        <div class="card-body">
+          <h1 class="h4 mb-3 text-center">Job Seeker Sign Up</h1>
 
-  <form method="post" enctype="multipart/form-data" class="card card-body">
-    {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+              {{ form.non_field_errors }}
+            </div>
+          {% endif %}
 
-    <!-- Account -->
-    <div class="mb-3">
-      <label class="form-label">First name</label>
-      {{ form.first_name }}
-    </div>
-    <div class="mb-3">
-      <label class="form-label">Last name</label>
-      {{ form.last_name }}
-    </div>
-    <div class="mb-3">
-      <label class="form-label">Email</label>
-      {{ form.email }}
-    </div>
-    <div class="mb-3">
-      <label class="form-label">Password</label>
-      {{ form.password }}
-    </div>
+          <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
 
-    <hr/>
+            <div class="mb-3">
+              <label class="form-label" for="{{ form.first_name.id_for_label }}">First Name *</label>
+              {{ form.first_name }}{{ form.first_name.errors }}
+            </div>
 
-    <!-- Profile -->
-    <div class="mb-3">
-      <label class="form-label">Position desired</label>
-      {{ form.position_desired }}
+            <div class="mb-3">
+              <label class="form-label" for="{{ form.last_name.id_for_label }}">Last Name *</label>
+              {{ form.last_name }}{{ form.last_name.errors }}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label" for="{{ form.email.id_for_label }}">Email *</label>
+              {{ form.email }}{{ form.email.errors }}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label" for="{{ form.password1.id_for_label }}">Password *</label>
+              {{ form.password1 }}{{ form.password1.errors }}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label" for="{{ form.password2.id_for_label }}">Confirm Password *</label>
+              {{ form.password2 }}{{ form.password2.errors }}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label" for="{{ form.position_desired.id_for_label }}">Position Desired *</label>
+              {{ form.position_desired }}{{ form.position_desired.errors }}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label" for="{{ form.is_registered_canada.id_for_label }}">
+                Are you a Registered Professional in Canada? *
+              </label>
+              {{ form.is_registered_canada }}{{ form.is_registered_canada.errors }}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label" for="{{ form.opportunity_type.id_for_label }}">
+                What type of opportunity are you interested in? *
+              </label>
+              {{ form.opportunity_type }}{{ form.opportunity_type.errors }}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label" for="{{ form.current_location.id_for_label }}">
+                Where are you currently located? *
+              </label>
+              {{ form.current_location }}{{ form.current_location.errors }}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label" for="{{ form.open_to_relocate.id_for_label }}">
+                Are you open to relocating? *
+              </label>
+              {{ form.open_to_relocate }}{{ form.open_to_relocate.errors }}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label" for="{{ form.relocate_where.id_for_label }}">
+                If yes, where?
+              </label>
+              {{ form.relocate_where }}{{ form.relocate_where.errors }}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label" for="{{ form.requires_sponsorship.id_for_label }}">
+                Do you require sponsorship to work in Canada? *
+              </label>
+              {{ form.requires_sponsorship }}{{ form.requires_sponsorship.errors }}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label" for="{{ form.seeking_immigration.id_for_label }}">
+                Are you seeking immigration to Canada? *
+              </label>
+              {{ form.seeking_immigration }}{{ form.seeking_immigration.errors }}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label" for="{{ form.resume.id_for_label }}">Upload Resume</label>
+              {{ form.resume }}{{ form.resume.errors }}
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">
+              Create Job Seeker Account
+            </button>
+          </form>
+
+        </div>
+      </div>
     </div>
-
-    <div class="mb-3">
-      <label class="form-label">What type of opportunity are you interested in?</label>
-      {{ form.opportunity_type }}
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label">Where are you currently located?</label>
-      {{ form.current_location }}
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label">Are you a Registered professional in Canada?</label>
-      {{ form.registration_status }}
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label">Are you open to relocating?</label>
-      {{ form.open_to_relocation }}
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label">If yes, where?</label>
-      {{ form.relocation_where }}
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label">Do you require sponsorship to work in Canada?</label>
-      {{ form.need_sponsorship }}
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label">Are you seeking immigration to Canada?</label>
-      {{ form.seeking_immigration }}
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label">Upload your resume (PDF or DOC)</label><br/>
-      {{ form.resume }}
-    </div>
-
-    <button class="btn btn-primary">Create account</button>
-  </form>
+  </div>
 </div>
 {% endblock %}

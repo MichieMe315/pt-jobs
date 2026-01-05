@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Invoices · PT Jobs{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <h1 class="mb-3">Invoices</h1>
+
+  {% if messages %}
+    {% for m in messages %}
+      <div class="alert alert-{{ m.tags }}">{{ m }}</div>
+    {% endfor %}
+  {% endif %}
+
+  {% if invoices %}
+    <div class="table-responsive">
+      <table class="table table-sm align-middle">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Date</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Gateway</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for inv in invoices %}
+            <tr>
+              <td>{{ inv.id }}</td>
+              <td>{% if inv.order_date %}{{ inv.order_date|date:"Y-m-d H:i" }}{% else %}{{ inv.created_at|date:"Y-m-d H:i" }}{% endif %}</td>
+              <td>{{ inv.amount_display }}</td>
+              <td>{{ inv.order_status|capfirst }}</td>
+              <td>{{ inv.gateway|upper|default:"—" }}</td>
+              <td><a href="{% url 'invoice_detail' inv.id %}" class="btn btn-sm btn-outline-secondary">View</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="alert alert-info">No invoices found.</div>
+  {% endif %}
+</div>
+{% endblock %}

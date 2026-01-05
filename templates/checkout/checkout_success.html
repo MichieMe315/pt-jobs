@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Payment Successful{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="alert alert-success">
+    <h4 class="mb-1">Payment Successful</h4>
+    <p class="mb-0">Your package has been purchased and credits have been added to your account.</p>
+  </div>
+
+  <a href="{% url 'employer_dashboard' %}" class="btn btn-primary">Go to Dashboard</a>
+</div>
+{% endblock %}

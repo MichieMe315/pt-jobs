@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard – PT Jobs{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+  <h1 class="mb-4">Admin Dashboard</h1>
+
+  <form method="get" class="row g-2 align-items-end mb-4">
+    <div class="col-md-3">
+      <label class="form-label">Period</label>
+      <select name="period" class="form-select">
+        <option value="today" {% if period == "today" %}selected{% endif %}>Today</option>
+        <option value="7" {% if period == "7" %}selected{% endif %}>Last 7 Days</option>
+        <option value="30" {% if period == "30" %}selected{% endif %}>Last 30 Days</option>
+        <option value="custom" {% if period == "custom" %}selected{% endif %}>Custom</option>
+      </select>
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Start</label>
+      <input type="date" name="start" value="{{ start|date:'Y-m-d' }}" class="form-control" />
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">End</label>
+      <input type="date" name="end" value="{{ end|date:'Y-m-d' }}" class="form-control" />
+    </div>
+
+    <div class="col-md-3 mt-4">
+      <button class="btn btn-primary w-100">Update</button>
+    </div>
+  </form>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card border-light">
+        <div class="card-body">
+          <h5 class="card-title">Jobs Posted</h5>
+          <p class="display-6 mb-0">{{ jobs_posted }}</p>
+          <small class="text-muted">
+            {{ start|date:"M j" }} – {{ end|date:"M j" }}
+          </small>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card border-light">
+        <div class="card-body">
+          <h5 class="card-title">Applications Sent</h5>
+          <p class="display-6 mb-0">{{ applications_sent }}</p>
+          <small class="text-muted">
+            {{ start|date:"M j" }} – {{ end|date:"M j" }}
+          </small>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card border-light">
+        <div class="card-body">
+          <h5 class="card-title">Sales (Paid)</h5>
+          <p class="display-6 mb-0">${{ sales_total|floatformat:2 }}</p>
+          <small class="text-muted">
+            {{ sales_count }} invoice{{ sales_count|pluralize }}
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card border-light">
+        <div class="card-body">
+          <h5 class="card-title">New Employers</h5>
+          <p class="display-6 mb-0">{{ employers_new }}</p>
+          <small class="text-muted">{{ start|date:"M j" }} – {{ end|date:"M j" }}</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card border-light">
+        <div class="card-body">
+          <h5 class="card-title">New Job Seekers</h5>
+          <p class="display-6 mb-0">{{ jobseekers_new }}</p>
+          <small class="text-muted">{{ start|date:"M j" }} – {{ end|date:"M j" }}</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card border-light">
+        <div class="card-body">
+          <h5 class="card-title">Job Alerts Created</h5>
+          <p class="display-6 mb-0">{{ alerts_created }}</p>
+          <small class="text-muted">{{ start|date:"M j" }} – {{ end|date:"M j" }}</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

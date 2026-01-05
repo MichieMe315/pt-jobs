@@ -1,0 +1,57 @@
+<!-- PATH: templates/includes/job_sidebar.html (JOB LIST SIDEBAR) -->
+<div class="sidebar-card">
+
+  <!-- Employer CTA -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5 class="card-title mb-2">Employers</h5>
+      <p class="text-muted small mb-3">
+        Advertise your openings and reach Canadian physiotherapy professionals.
+      </p>
+      <a class="btn btn-primary w-100 mb-2" href="{% url 'package_list' %}">
+        Post a Job
+      </a>
+      <a class="btn btn-outline-secondary w-100" href="{% url 'employer_signup' %}">
+        Create Employer Account
+      </a>
+    </div>
+  </div>
+
+  <!-- Job Alerts (no featured block here) -->
+  <div class="card">
+    <div class="card-body">
+      <h6 class="card-title">Job Alerts</h6>
+      <p class="small text-muted mb-3">
+        Get new physiotherapy jobs by email.
+      </p>
+      <form method="post" action="{% url 'job_alert_signup' %}">
+        {% csrf_token %}
+        <div class="mb-2">
+          <input class="form-control form-control-sm"
+                 type="email"
+                 name="email"
+                 placeholder="Your email"
+                 required>
+        </div>
+        <div class="mb-2">
+          <input class="form-control form-control-sm"
+                 type="text"
+                 name="keyword"
+                 placeholder="Keyword (optional)"
+                 value="{{ q }}">
+        </div>
+        <div class="mb-3">
+          <input class="form-control form-control-sm"
+                 type="text"
+                 name="location"
+                 placeholder="Location (optional)"
+                 value="{{ location }}">
+        </div>
+        <button class="btn btn-outline-primary w-100 btn-sm" type="submit">
+          Create Alert
+        </button>
+      </form>
+    </div>
+  </div>
+
+</div>

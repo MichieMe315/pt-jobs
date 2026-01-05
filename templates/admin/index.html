@@ -1,0 +1,22 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}PT Jobs Admin{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-wrapper" style="margin-bottom: 2rem;">
+  <h1 class="title">{% trans 'Admin Dashboard' %}</h1>
+  <p class="help">
+    Embedded business metrics for PT Jobs Canada.
+  </p>
+
+  <iframe
+    src="{% url 'admin_dashboard' %}?period=today&embed=1"
+    style="width:100%; min-height:600px; border:none; background:transparent;">
+  </iframe>
+</div>
+
+{{ block.super }}
+
+{% endblock %}

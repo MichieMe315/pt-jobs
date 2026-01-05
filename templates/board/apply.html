@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Apply to {{ job.title }}{% endblock %}
+
+{% block content %}
+
+<h2 class="mb-4">Apply to {{ job.title }}</h2>
+
+<div class="bg-white p-4 rounded shadow-sm" style="max-width:600px;margin:auto;">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label>Upload Resume</label>
+            {{ form.file }}
+        </div>
+
+        <button class="btn btn-primary w-100">Submit Application</button>
+    </form>
+</div>
+
+{% endblock %}

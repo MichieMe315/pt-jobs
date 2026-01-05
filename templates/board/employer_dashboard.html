@@ -1,43 +1,235 @@
 {% extends "base.html" %}
+
+{% block title %}Employer Dashboard{% endblock %}
+
 {% block content %}
-<h1>Employer Dashboard</h1>
+<div class="container py-4">
 
-<section class="card">
-  <h2>{{ employer.name }}</h2>
-  <p><strong>Contact:</strong> {{ employer.contact_name }} — {{ employer.contact_email }} {{ employer.contact_phone }}</p>
-  <p><strong>Location:</strong> {{ employer.location }}{% if employer.company_size %} | <strong>Company Size:</strong> {{ employer.company_size }}{% endif %}</p>
-  <p><strong>Remaining Posts:</strong> {{ remaining_posts }}</p>
-  <p><a class="btn" href="{% url 'job_create' %}">Post a Job</a></p>
-</section>
+  <!-- Header row: name/location on left, counter box on right -->
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+      <h2 class="mb-2">Employer Dashboard</h2>
+      {% if employer %}
+        <div class="fw-bold fs-5">{{ employer.company_name }}</div>
+        {% if employer.location %}
+          <div class="text-muted">{{ employer.location }}</div>
+        {% endif %}
+        <div class="mt-2">
+          <a href="{% url 'employer_profile_edit' %}" class="btn btn-sm btn-outline-light">
+            Edit Profile
+          </a>
+        </div>
+      {% endif %}
+    </div>
 
-<section class="card">
-  <h3>Your Jobs</h3>
-  {% if jobs %}
-    <ul class="list">
-      {% for job in jobs %}
-        <li>
-          <a href="{% url 'job_detail' job.pk %}">{{ job.title }}</a>
-          <small>— {{ job.get_job_type_display }} | {{ job.location }} | {{ job.created_at|date:"Y-m-d" }}</small>
-          <span class="pill">{% if job.is_active %}Active{% else %}Inactive{% endif %}</span>
-          <a href="{% url 'job_update' job.pk %}">Edit</a>
+    <!-- CREDIT COUNTER BOX ONLY AROUND COUNTER -->
+    <div style="min-width: 220px;">
+      <div class="card bg-dark text-light border-secondary mb-2">
+        <div class="card-body text-center p-3">
+          <div class="small text-uppercase text-muted">Posting Credits</div>
+          <div class="display-6 fw-bold my-2">
+            {{ employer.credits|default:0 }}
+          </div>
+        </div>
+      </div>
+
+      {% if employer.credits|default:0|add:0 > 0 %}
+        <a href="{% url 'job_create' %}" class="btn btn-primary w-100">Post a Job</a>
+      {% else %}
+        <a href="{% url 'package_list' %}" class="btn btn-warning w-100">Buy Posting Package</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Tabs and tab content full width -->
+  <div class="row">
+    <div class="col-12">
+
+      <!-- Tabs -->
+      <ul class="nav nav-tabs mb-3">
+        <li class="nav-item">
+          <a class="nav-link active" data-bs-toggle="tab" href="#tab-jobs">Jobs</a>
         </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>No jobs yet.</p>
-  {% endif %}
-</section>
+        <li class="nav-item">
+          <a class="nav-link" data-bs-toggle="tab" href="#tab-applications">Applications</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-bs-toggle="tab" href="#tab-billing">Billing</a>
+        </li>
+      </ul>
 
-<section class="card">
-  <h3>Recent Orders</h3>
-  {% if recent_orders %}
-    <ul class="list">
-      {% for order in recent_orders %}
-        <li>Order #{{ order.id }} — {{ order.package.name }} × {{ order.quantity }} — {{ order.total_cents|floatformat:0 }} cents — {{ order.get_status_display }}</li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>No recent orders.</p>
-  {% endif %}
-</section>
+      <div class="tab-content">
+
+        <!-- JOBS TAB -->
+        <div class="tab-pane fade show active" id="tab-jobs">
+          <table class="table table-dark table-striped align-middle">
+            <thead>
+              <tr>
+                <th>Job</th>
+                <th>Posted</th>
+                <th>Expires</th>
+                <th>Applications</th>
+                <th style="width: 180px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for job in jobs %}
+              <tr>
+                <td>
+                  <a href="{% url 'job_detail' job.id %}" class="text-info fw-bold">
+                    {{ job.title }}
+                  </a>
+                  {% if job.location %}
+                    <div class="small text-muted mt-1">
+                      <strong>Location:</strong> {{ job.location }}
+                    </div>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if job.posting_date %}
+                    {{ job.posting_date|date:"M j, Y" }}
+                  {% else %}—{% endif %}
+                </td>
+                <td>
+                  {% if job.expiry_date %}
+                    {{ job.expiry_date|date:"M j, Y" }}
+                  {% else %}—{% endif %}
+                </td>
+                <td>
+                  {{ job.application_set.count }}
+                </td>
+                <td>
+                  <a href="{% url 'job_edit' job.id %}" class="btn btn-sm btn-secondary mb-1">Edit</a>
+                  <a href="{% url 'job_duplicate' job.id %}" class="btn btn-sm btn-primary mb-1">Duplicate</a>
+                  {# no delete button #}
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="5" class="text-center py-4">No jobs yet.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- APPLICATIONS TAB -->
+        <div class="tab-pane fade" id="tab-applications">
+          <table class="table table-dark table-striped align-middle">
+            <thead>
+              <tr>
+                <th>Job</th>
+                <th>Applied</th>
+                <th>Applicant</th>
+                <th>Resume</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for app in applications %}
+              <tr>
+                <td>
+                  <a href="{% url 'job_detail' app.job.id %}" class="text-info fw-bold">
+                    {{ app.job.title }}
+                  </a>
+                </td>
+                <td>
+                  {{ app.created_at|date:"M j, Y H:i" }}
+                </td>
+                <td>
+                  {{ app.jobseeker.first_name }} {{ app.jobseeker.last_name }}
+                </td>
+                <td>
+                  {% if app.resume and app.resume.file %}
+                    <a href="{{ app.resume.file.url }}" class="text-info" target="_blank">
+                      Download
+                    </a>
+                  {% else %}
+                    No resume
+                  {% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="4" class="text-center py-4">No applications yet.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- BILLING TAB -->
+        <div class="tab-pane fade" id="tab-billing">
+
+          <h5 class="mt-2 mb-3">Purchased Packages</h5>
+          <table class="table table-dark table-striped align-middle mb-4">
+            <thead>
+              <tr>
+                <th>Package</th>
+                <th>Credits</th>
+                <th>Remaining</th>
+                <th>Purchased</th>
+                <th>Expires</th>
+                <th>Source</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for pp in purchased_packages %}
+              <tr>
+                <td>{{ pp.package.name }}</td>
+                <td>{{ pp.credits_granted }}</td>
+                <td>{{ pp.credits_remaining }}</td>
+                <td>{{ pp.purchased_at|date:"M j, Y" }}</td>
+                <td>
+                  {% if pp.expires_at %}
+                    {{ pp.expires_at|date:"M j, Y" }}
+                  {% else %}—{% endif %}
+                </td>
+                <td>{{ pp.get_source_display }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="6" class="text-center py-4">No packages purchased.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+          <h5 class="mt-3 mb-3">Invoices</h5>
+          <table class="table table-dark table-striped align-middle">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Processor</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for invoice in invoices %}
+              <tr>
+                <td>#{{ invoice.id }}</td>
+                <td>{{ invoice.order_date|date:"M j, Y H:i" }}</td>
+                <td>${{ invoice.amount }} {{ invoice.currency }}</td>
+                <td>{{ invoice.get_processor_display }}</td>
+                <td>{{ invoice.status|title }}</td>
+                <td>
+                  {# FIX: open invoice HTML page instead of downloading a .txt #}
+                  <a href="{% url 'invoice_detail' invoice.id %}" class="btn btn-sm btn-secondary">
+                    View / Download
+                  </a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="6" class="text-center py-4">No invoices.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
 {% endblock %}

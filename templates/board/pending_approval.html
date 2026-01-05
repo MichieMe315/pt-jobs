@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Pending Approval · {{ site_name }}{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <div class="alert alert-info">
+    Your account is pending approval. You’ll be notified once an admin approves it.
+  </div>
+  <a class="btn btn-secondary" href="{% url 'home' %}">Back to home</a>
+</div>
+{% endblock %}

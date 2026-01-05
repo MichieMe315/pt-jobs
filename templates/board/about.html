@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}About · PT Jobs{% endblock %}
+{% block content %}
+
+<div class="container my-4">
+  <h1 class="h4 mb-3">About {{ settings.site_name|default:"PT Jobs" }}</h1>
+
+  <p>
+    {{ settings.site_name|default:"PT Jobs" }} is a dedicated job board for physiotherapists
+    and rehab clinics across Canada. Our goal is to make it easier for clinics to find
+    qualified candidates and for PTs and PT students to discover great opportunities.
+  </p>
+
+  <p>
+    Employers can create an account, purchase job posting packages, and manage their postings
+    from an employer dashboard. Job seekers can create profiles, apply to jobs, and track their
+    applications from a simple, focused interface.
+  </p>
+
+  <p class="text-muted small mt-4">
+    If you need help or have questions about the site, please use the contact options in the footer.
+  </p>
+</div>
+
+{% endblock %}

@@ -1,67 +1,51 @@
 {% load static %}
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>{% block title %}PT Jobs{% endblock %}</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PT Jobs{% endblock %}</title>
 
-  <!-- Bootswatch Slate (kept) -->
-  <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/slate/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootswatch Slate Theme -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/slate/bootstrap.min.css">
 
-  <!-- Our overrides -->
-  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <!-- Custom Global Styles -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+    <!-- Mapbox (only load if token exists) -->
+    {% if MAPBOX_TOKEN %}
+        <link href="https://api.mapbox.com/mapbox-gl-js/v2.12.0/mapbox-gl.css" rel="stylesheet">
+    {% endif %}
+
+    {% block extra_head %}{% endblock %}
 </head>
-<body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-  <div class="container">
-    <a class="navbar-brand fw-bold" href="{% url 'home' %}">PT Jobs</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topnav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="topnav">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link" href="{% url 'job_list' %}">Jobs</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'employer_list' %}">Employers</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'package_list' %}">Posting Packages</a></li>
-      </ul>
 
-      <ul class="navbar-nav ms-auto">
-        {% if request.user.is_authenticated %}
-          <li class="nav-item">
-            {% if request.user.employer %}
-              <a class="nav-link" href="{% url 'employer_dashboard' %}">Dashboard</a>
-            {% elif request.user.jobseeker %}
-              <a class="nav-link" href="{% url 'jobseeker_dashboard' %}">Dashboard</a>
-            {% endif %}
-          </li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
-        {% else %}
-          <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'employer_signup' %}">Employer Sign-up</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'jobseeker_signup' %}">Job Seeker Sign-up</a></li>
-        {% endif %}
-      </ul>
-    </div>
-  </div>
-</nav>
+<body class="bg-dark text-light">
 
-<main class="py-4">
-  <div class="container">
-    {% for message in messages %}
-      <div class="alert alert-{{ message.tags }} mb-3">{{ message }}</div>
-    {% endfor %}
-  </div>
-  {% block content %}{% endblock %}
-</main>
+    <!-- HEADER -->
+    {% include "includes/header.html" %}
 
-<footer class="py-4 mt-4 border-top">
-  <div class="container text-muted small">
-    &copy; {{ now|date:"Y" }} PT Jobs
-    <span class="ms-3"><a class="link-light" href="{% url 'password_reset' %}">Forgot password?</a></span>
-  </div>
-</footer>
+    <!-- MAIN CONTENT -->
+    <main class="py-4">
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- FOOTER -->
+    {% include "includes/footer.html" %}
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    {% if MAPBOX_TOKEN %}
+        <script src="https://api.mapbox.com/mapbox-gl-js/v2.12.0/mapbox-gl.js"></script>
+        <script>
+            mapboxgl.accessToken = "{{ MAPBOX_TOKEN }}";
+        </script>
+    {% endif %}
+
+    {% block extra_js %}{% endblock %}
 </body>
 </html>
