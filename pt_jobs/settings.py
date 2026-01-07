@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     # Third-party
     "import_export",
     # Local
-    "board",
+    "board.apps.BoardConfig",
 ]
 
 MIDDLEWARE = [

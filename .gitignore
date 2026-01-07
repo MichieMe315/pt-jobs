@@ -20,19 +20,18 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Local imports / exports
+# Local imports / exports (ignore by default)
 *.csv
 *.zip
+*.xlsx
+
+# BUT allow the ONE deploy-time employer sheet in board/data/
+!board/data/*.csv
+!board/data/*.xlsx
 
 # Local scratch folders
 dashboard/
 int/
 
-# Django / Python
-__pycache__/
-*.pyc
-.env
-.env.*
-media/
+# Collected static
 staticfiles/
-
