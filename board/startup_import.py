@@ -7,19 +7,9 @@ from django.db import OperationalError, ProgrammingError
 
 
 def run_employer_import_if_enabled() -> None:
-    """
-    One-time deploy-time importer for Employers (CSV).
-
-    SAFETY:
-    - Only runs if RUN_EMPLOYER_IMPORT_ON_STARTUP=1
-    - Skips if any Employer already exists
-    - Uses existing import_employers_csv command
-    """
-
     if os.environ.get("RUN_EMPLOYER_IMPORT_ON_STARTUP") != "1":
         return
 
-    # Don't run during management commands
     blocked = {"migrate", "makemigrations", "collectstatic", "shell", "createsuperuser"}
     if any(cmd in sys.argv for cmd in blocked):
         return
@@ -52,5 +42,6 @@ def run_employer_import_if_enabled() -> None:
         Command().handle(csv_path=str(csv_path), dry_run=False)
         print("[EMPLOYER IMPORT] DONE")
     except Exception as e:
-        print(f"[EMPLOYER IMPORT] ERROR: {e}")
-        raise
+        # CRITICAL: do not kill the web process
+        print(f"[EMPLOYER IMPORT] ERROR (non-fatal): {e}")
+        return
