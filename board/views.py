@@ -44,7 +44,6 @@ from .models import (
     PaymentGatewayConfig,
 )
 
-
 # ============================================================
 # Email helpers
 # ============================================================
@@ -80,10 +79,9 @@ def _gateway_context() -> dict:
     cfg = _gateway_config()
     return {
         "stripe_publishable_key": getattr(cfg, "stripe_publishable_key", None) if cfg else None,
-        "stripe_public_key": getattr(cfg, "stripe_publishable_key", None) if cfg else None,
         "stripe_secret_key": getattr(cfg, "stripe_secret_key", None) if cfg else None,
         "paypal_client_id": getattr(cfg, "paypal_client_id", None) if cfg else None,
-        "paypal_mode": "live" if (cfg and getattr(settings, "PAYPAL_LIVE", False)) else "sandbox",
+        "paypal_secret": getattr(cfg, "paypal_secret", None) if cfg else None,
         "currency": getattr(cfg, "currency", "CAD") if cfg else "CAD",
     }
 
@@ -99,6 +97,7 @@ def _apply_discount(package: PostingPackage, code_raw: str) -> tuple[Optional[Di
     if not dc:
         return None, base, "Invalid discount code."
 
+    # Package restriction (only if the discount is tied to a specific package)
     if getattr(dc, "applicable_package_id", None) and dc.applicable_package_id != package.id:
         return None, base, "This discount code is not valid for this package."
 
@@ -277,7 +276,6 @@ def employer_signup(request: HttpRequest) -> HttpResponse:
         if admin_emails:
             _send_email("New Employer Signup", f"A new employer signed up: {user.email}", admin_emails)
 
-        # Restored message you asked to change back:
         messages.success(request, "Your account has been created. You will be notified via email when admin approves your account.")
         return redirect("login")
 
@@ -286,11 +284,15 @@ def employer_signup(request: HttpRequest) -> HttpResponse:
 
 def employer_list(request: HttpRequest) -> HttpResponse:
     sitesettings = SiteSettings.objects.first()
+
+    # IMPORTANT FIX:
+    # Your reverse relation is "jobs" (NOT "job"), so annotate/filter must use jobs__...
     employers = (
-        Employer.objects.annotate(active_jobs=Count("job", filter=Q(job__is_active=True)))
+        Employer.objects.annotate(active_jobs=Count("jobs", filter=Q(jobs__is_active=True)))
         .filter(active_jobs__gt=0)
         .order_by("company_name", "id")
     )
+
     return render(request, "board/employer_list.html", {"sitesettings": sitesettings, "employers": employers})
 
 
@@ -494,7 +496,7 @@ def job_duplicate(request: HttpRequest, job_id: int) -> HttpResponse:
         "apply_via": original.apply_via,
         "apply_email": original.apply_email,
         "apply_url": original.apply_url,
-        "relocation_assistance": "yes" if bool(original.relocation_assistance) else "no",
+        "relocation_assistance": "yes" if bool(getattr(original, "relocation_assistance", False)) else "no",
     }
 
     form = JobForm(request.POST or None, initial=initial, max_expiry_date=max_expiry)
@@ -608,7 +610,6 @@ def employer_dashboard(request: HttpRequest) -> HttpResponse:
     )
     invoices = Invoice.objects.filter(employer=employer).order_by("-order_date", "-id")
 
-    # Both keys are passed to avoid breaking anything:
     packages = PurchasedPackage.objects.filter(employer=employer).order_by("-purchased_at", "-id")
     purchased_packages = packages
 
@@ -622,7 +623,7 @@ def employer_dashboard(request: HttpRequest) -> HttpResponse:
             "applications": applications,
             "invoices": invoices,
             "packages": packages,
-            "purchased_packages": purchased_packages,  # template expects this :contentReference[oaicite:2]{index=2}
+            "purchased_packages": purchased_packages,
             "available_credits": _available_credits(employer),
         },
     )
@@ -674,7 +675,7 @@ class EmployerProfileEditForm(forms.ModelForm):
 
     class Meta:
         model = Employer
-        fields = ("company_name", "company_description", "phone", "website", "location", "logo")
+        fields = ("company_name", "description", "phone", "website", "location", "logo")
 
     def clean_company_description(self):
         val = self.cleaned_data.get("company_description") or ""
@@ -683,9 +684,9 @@ class EmployerProfileEditForm(forms.ModelForm):
 
 
 class JobSeekerProfileEditForm(forms.ModelForm):
-    registered_in_canada = forms.ChoiceField(choices=[("", "Select…")] + list(YES_NO_CHOICES), required=True)
+    is_registered_canada = forms.ChoiceField(choices=[("", "Select…")] + list(YES_NO_CHOICES), required=True)
     open_to_relocate = forms.ChoiceField(choices=[("", "Select…")] + list(YES_NO_CHOICES), required=True)
-    require_sponsorship = forms.ChoiceField(choices=[("", "Select…")] + list(YES_NO_CHOICES), required=True)
+    requires_sponsorship = forms.ChoiceField(choices=[("", "Select…")] + list(YES_NO_CHOICES), required=True)
     seeking_immigration = forms.ChoiceField(choices=[("", "Select…")] + list(YES_NO_CHOICES), required=True)
 
     class Meta:
@@ -705,9 +706,9 @@ class JobSeekerProfileEditForm(forms.ModelForm):
         def _to_bool(v: str) -> bool:
             return True if (v or "").lower() == "yes" else False
 
-        inst.registered_in_canada = _to_bool(self.cleaned_data.get("registered_in_canada", "no"))
+        inst.is_registered_canada = _to_bool(self.cleaned_data.get("is_registered_canada", "no"))
         inst.open_to_relocate = _to_bool(self.cleaned_data.get("open_to_relocate", "no"))
-        inst.require_sponsorship = _to_bool(self.cleaned_data.get("require_sponsorship", "no"))
+        inst.requires_sponsorship = _to_bool(self.cleaned_data.get("requires_sponsorship", "no"))
         inst.seeking_immigration = _to_bool(self.cleaned_data.get("seeking_immigration", "no"))
 
         if commit:

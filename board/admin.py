@@ -161,19 +161,12 @@ def _max_expiry_date_last_day(posting_date, duration_days: int):
 
 @admin.action(description="Duplicate selected Jobs (creates inactive copies)")
 def duplicate_jobs(modeladmin, request, queryset):
-    """
-    Admin-side duplicate:
-    - Creates a new Job record with copied fields.
-    - Sets is_active=False by default (so no credits concept is involved here).
-    - Sets posting_date to today and clamps expiry_date to posting_duration_days.
-    """
     created = 0
     posting_date = timezone.now().date()
     duration_days = _posting_duration_days_default()
     max_expiry = _max_expiry_date_last_day(posting_date, duration_days)
 
     for j in queryset:
-        # Copy all concrete fields except PK + timestamps-ish fields.
         dup = Job()
         for field in Job._meta.concrete_fields:
             if field.primary_key:
@@ -189,7 +182,6 @@ def duplicate_jobs(modeladmin, request, queryset):
                 continue
 
         dup.posting_date = posting_date
-        # Keep original expiry if it exists but clamp to max; otherwise set to max.
         try:
             if getattr(j, "expiry_date", None):
                 dup.expiry_date = min(j.expiry_date, max_expiry)
@@ -336,10 +328,81 @@ class DiscountCodeAdmin(SafeModelAdmin):
 # Settings + templates
 # ----------------------------
 
+def _field_exists(model, name: str) -> bool:
+    try:
+        model._meta.get_field(name)
+        return True
+    except Exception:
+        return False
+
+
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(SafeModelAdmin):
+    """
+    This is where your "duplicate fields / fields that shouldn't be there" gets fixed.
+
+    We explicitly choose what SiteSettings shows in admin so you ONLY see the fields
+    you actually use. Everything else stays in the model (no renames / no deletions),
+    it just doesn't clutter the admin screen.
+    """
     list_display = ("id", "site_name", "contact_email")
     search_fields = ("site_name", "contact_email")
+
+    def get_fieldsets(self, request, obj=None):
+        # Prefer "new" hero fields if present; otherwise show legacy home_hero_* fields.
+        hero_fields = []
+        if _field_exists(SiteSettings, "hero_image"):
+            hero_fields.append("hero_image")
+        if _field_exists(SiteSettings, "hero_title"):
+            hero_fields.append("hero_title")
+        if _field_exists(SiteSettings, "hero_subtitle"):
+            hero_fields.append("hero_subtitle")
+
+        if not hero_fields:
+            # Legacy names in your uploaded models.py
+            for f in ("home_hero_image", "home_hero_title", "home_hero_subtitle", "home_hero_cta_text", "home_hero_cta_url"):
+                if _field_exists(SiteSettings, f):
+                    hero_fields.append(f)
+
+        core = [f for f in ("site_name", "contact_email") if _field_exists(SiteSettings, f)]
+        search = [f for f in ("mapbox_token", "posting_duration_days") if _field_exists(SiteSettings, f)]
+
+        banners = [f for f in ("side_banner_html", "bottom_banner_html") if _field_exists(SiteSettings, f)]
+
+        seo = [f for f in ("seo_meta_title", "seo_meta_description", "google_analytics_id") if _field_exists(SiteSettings, f)]
+
+        socials = [f for f in ("facebook_url", "instagram_url", "reddit_url", "linkedin_url", "twitter_url", "social_webhook_url") if _field_exists(SiteSettings, f)]
+
+        # ✅ RESTORED: branding fields shown in admin (logo was "gone" because this was empty)
+        branding = []
+        for f in (
+            "branding_logo",
+            "branding_favicon",
+            "branding_primary_color",
+            "branding_secondary_color",
+            "branding_footer_html",
+            "footer_text",
+        ):
+            if _field_exists(SiteSettings, f):
+                branding.append(f)
+
+        fieldsets = [
+            ("Core", {"fields": core}),
+        ]
+        if hero_fields:
+            fieldsets.append(("Homepage Hero", {"fields": hero_fields}))
+        if search:
+            fieldsets.append(("Search / Posting Defaults", {"fields": search}))
+        if banners:
+            fieldsets.append(("Banners", {"fields": banners}))
+        if seo:
+            fieldsets.append(("SEO / Analytics", {"fields": seo}))
+        if socials:
+            fieldsets.append(("Social Links", {"fields": socials}))
+        if branding:
+            fieldsets.append(("Branding", {"fields": branding}))
+
+        return fieldsets
 
 
 @admin.register(EmailTemplate)

@@ -2,20 +2,20 @@
 {% load static %}
 
 {% block title %}
-  {% if sitesettings and sitesettings.home_hero_title %}
-    {{ sitesettings.home_hero_title }}
+  {% if sitesettings and sitesettings.hero_title %}
+    {{ sitesettings.hero_title }}
   {% endif %}
 {% endblock %}
 
 {% block content %}
 
-{# HERO — ADMIN DRIVEN ONLY #}
+{# HERO — ADMIN DRIVEN ONLY (contract). NO hardcoded fallback text. #}
 <section
   class="py-5"
   style="
-    {% if sitesettings and sitesettings.home_hero_image %}
+    {% if sitesettings and sitesettings.hero_image %}
       background-image: linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.55)),
-      url('{{ sitesettings.home_hero_image.url }}');
+      url('{{ sitesettings.hero_image.url }}');
       background-size: cover;
       background-position: center;
     {% endif %}
@@ -25,11 +25,11 @@
     <div class="row">
       <div class="col-lg-8">
         <h1 class="display-5 fw-bold text-white mb-2">
-          {{ sitesettings.home_hero_title }}
+          {{ sitesettings.hero_title }}
         </h1>
 
         <p class="lead text-white-50 mb-4">
-          {{ sitesettings.home_hero_subtitle }}
+          {{ sitesettings.hero_subtitle }}
         </p>
 
         <form method="get" action="{% url 'job_list' %}" class="row g-2">
