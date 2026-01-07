@@ -1,3 +1,4 @@
+# pt_jobs/settings.py
 from pathlib import Path
 import os
 
@@ -56,7 +57,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # <-- REQUIRED for Railway static/admin
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # REQUIRED for Railway static/admin
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -93,7 +94,6 @@ WSGI_APPLICATION = "pt_jobs.wsgi.application"
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 
 if DATABASE_URL:
-    # Railway Postgres usually requires SSL
     DATABASES = {
         "default": dj_database_url.parse(
             DATABASE_URL,
@@ -102,9 +102,11 @@ if DATABASE_URL:
         )
     }
 else:
-    # Local/dev fallback
     DATABASES = {
-        "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
     }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -142,10 +144,23 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Email
-DEFAULT_FROM_EMAIL = os.environ.get(
-    "DEFAULT_FROM_EMAIL",
-    "no-reply@physiotherapyjobscanada.ca"
-)
-SERVER_EMAIL = DEFAULT_FROM_EMAIL
+# ----------------
+# Email (IMPORTANT)
+# ----------------
 EMAIL_SUBJECT_PREFIX = "[PT Jobs] "
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "no-reply@physiotherapyjobscanada.ca")
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+# Local dev: print emails to console so password reset works without SMTP.
+# For live: set EMAIL_BACKEND and SMTP env vars in Railway.
+EMAIL_BACKEND = os.environ.get(
+    "EMAIL_BACKEND",
+    "django.core.mail.backends.console.EmailBackend",
+)
+
+# Optional SMTP settings (only used if you switch EMAIL_BACKEND to SMTP)
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587")) if os.environ.get("EMAIL_PORT") else 587
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "1") == "1"

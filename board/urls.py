@@ -1,3 +1,4 @@
+# board/urls.py
 from django.urls import path
 from django.contrib.auth import views as auth_views
 
@@ -14,13 +15,39 @@ urlpatterns = [
     path("login/", v.login_view, name="login"),
     path("logout/", v.logout_view, name="logout"),
 
-    # Password reset (restores your "Forgot password" flow)
-    path("password-reset/", auth_views.PasswordResetView.as_view(), name="password_reset"),
-    path("password-reset/done/", auth_views.PasswordResetDoneView.as_view(), name="password_reset_done"),
-    path("reset/<uidb64>/<token>/", auth_views.PasswordResetConfirmView.as_view(), name="password_reset_confirm"),
-    path("reset/done/", auth_views.PasswordResetCompleteView.as_view(), name="password_reset_complete"),
+    # Password reset (templates live in templates/auth/)
+    path(
+        "password-reset/",
+        auth_views.PasswordResetView.as_view(
+            template_name="auth/password_reset_form.html",
+            email_template_name="auth/password_reset_email.txt",
+            subject_template_name="auth/password_reset_subject.txt",
+        ),
+        name="password_reset",
+    ),
+    path(
+        "password-reset/done/",
+        auth_views.PasswordResetDoneView.as_view(
+            template_name="auth/password_reset_done.html",
+        ),
+        name="password_reset_done",
+    ),
+    path(
+        "reset/<uidb64>/<token>/",
+        auth_views.PasswordResetConfirmView.as_view(
+            template_name="auth/password_reset_confirm.html",
+        ),
+        name="password_reset_confirm",
+    ),
+    path(
+        "reset/done/",
+        auth_views.PasswordResetCompleteView.as_view(
+            template_name="auth/password_reset_complete.html",
+        ),
+        name="password_reset_complete",
+    ),
 
-    # Job Alerts (footer expects this exact name)
+    # Job Alerts
     path("job-alerts/signup/", v.job_alert_signup, name="job_alert_signup"),
 
     # Employers
@@ -35,7 +62,7 @@ urlpatterns = [
     path("jobseeker/dashboard/", v.jobseeker_dashboard, name="jobseeker_dashboard"),
     path("jobseeker/profile/", v.jobseeker_profile_edit, name="jobseeker_profile_edit"),
 
-    # Jobs
+    # Jobs  ✅ THIS is what makes /jobs/ work
     path("jobs/", v.job_list, name="job_list"),
     path("jobs/new/", v.job_create, name="job_create"),
     path("jobs/<int:job_id>/", v.job_detail, name="job_detail"),
@@ -48,18 +75,16 @@ urlpatterns = [
     path("packages/<int:package_id>/buy/", v.buy_package, name="buy_package"),
     path("packages/<int:package_id>/buy/select/", v.checkout_select, name="checkout_select"),
 
-    # Checkout (restored)
+    # Checkout
     path("checkout/start/<int:package_id>/", v.checkout_start, name="checkout_start"),
     path("checkout/success/", v.checkout_success, name="checkout_success"),
     path("checkout/paypal/success/", v.paypal_success, name="paypal_success"),
-
-    # Stripe session creation (required by checkout.html template)
     path("stripe/create-session/<int:package_id>/", v.stripe_create_session, name="stripe_create_session"),
 
     # Invoices
     path("invoices/<int:invoice_id>/", v.invoice_detail, name="invoice_detail"),
     path("invoices/<int:invoice_id>/download/", v.invoice_download, name="invoice_download"),
 
-    # Admin dashboard (embedded in templates/admin/index.html)
+    # Admin dashboard
     path("admin/dashboard/", v.admin_dashboard, name="admin_dashboard"),
 ]

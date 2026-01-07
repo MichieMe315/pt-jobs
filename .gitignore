@@ -19,3 +19,20 @@ media/
 Thumbs.db
 .vscode/
 .idea/
+
+# Local imports / exports
+*.csv
+*.zip
+
+# Local scratch folders
+dashboard/
+int/
+
+# Django / Python
+__pycache__/
+*.pyc
+.env
+.env.*
+media/
+staticfiles/
+

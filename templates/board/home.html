@@ -32,7 +32,8 @@
           {{ sitesettings.hero_subtitle }}
         </p>
 
-        <form method="get" action="{% url 'job_list' %}" class="row g-2">
+        <!-- FIX: hard link instead of {% url 'job_list' %} -->
+        <form method="get" action="/jobs/" class="row g-2">
           <div class="col-md-6">
             <input type="text" name="q" class="form-control form-control-lg"
                    placeholder="Search jobs (title, keywords)">
@@ -97,8 +98,8 @@
         </div>
 
         <div class="mt-3">
-          <a href="{% url 'job_list' %}"
-             class="btn btn-outline-primary fw-bold">
+          <!-- FIX: hard link instead of {% url 'job_list' %} -->
+          <a href="/jobs/" class="btn btn-outline-primary fw-bold">
             View all jobs
           </a>
         </div>
