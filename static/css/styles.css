@@ -1,0 +1,98 @@
+/* =========================================================
+   Physiotherapy Jobs Canada
+   Master Stylesheet
+   Path: static/css/styles.css
+   ========================================================= */
+
+/* ---- Base ---- */
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: #f8f9fa;
+  color: #212529;
+}
+
+/* ---- Links ---- */
+a {
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ---- Navbar ---- */
+.navbar-brand span {
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.navbar .nav-link {
+  font-weight: 600;
+}
+
+/* ---- Buttons ---- */
+.btn-primary {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.btn-primary:hover {
+  background-color: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+.btn-outline-primary {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.btn-outline-primary:hover {
+  background-color: #2563eb;
+  color: #fff;
+}
+
+/* ---- Forms ---- */
+.form-control,
+.form-select {
+  border-radius: 6px;
+}
+
+/* ---- Cards ---- */
+.card {
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+}
+
+.card h3,
+.card h2 {
+  font-weight: 700;
+}
+
+/* ---- Job list ---- */
+.list-group-item {
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+}
+
+.list-group-item:hover {
+  background-color: #f9fafb;
+}
+
+/* ---- Footer ---- */
+footer {
+  background-color: #111827;
+  color: #d1d5db;
+}
+
+footer a {
+  color: #d1d5db;
+}
+
+footer a:hover {
+  color: #ffffff;
+}
+
+/* ---- Utility ---- */
+.text-muted {
+  color: #6b7280 !important;
+}

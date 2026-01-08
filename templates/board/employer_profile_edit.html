@@ -19,46 +19,94 @@
         {% endif %}
 
         <div class="row g-3">
+
+          <!-- Email: visible, not editable -->
+          <div class="col-12">
+            <label class="form-label">Email</label>
+            <input
+              type="email"
+              class="form-control"
+              value="{{ request.user.email }}"
+              readonly
+            >
+            <div class="form-text">Email can’t be changed here.</div>
+          </div>
+
           <div class="col-12">
             <label class="form-label" for="{{ form.company_name.id_for_label }}">Company Name</label>
-            {{ form.company_name }}
+            <input
+              type="text"
+              name="{{ form.company_name.html_name }}"
+              id="{{ form.company_name.id_for_label }}"
+              class="form-control"
+              value="{{ form.company_name.value|default_if_none:'' }}"
+            >
             {% if form.company_name.errors %}<div class="text-danger">{{ form.company_name.errors }}</div>{% endif %}
           </div>
 
           <div class="col-12">
             <label class="form-label" for="{{ form.description.id_for_label }}">Company Description</label>
-            {{ form.description }}
+            <textarea
+              name="{{ form.description.html_name }}"
+              id="{{ form.description.id_for_label }}"
+              class="form-control"
+              rows="6"
+            >{{ form.description.value|default_if_none:'' }}</textarea>
             {% if form.description.errors %}<div class="text-danger">{{ form.description.errors }}</div>{% endif %}
           </div>
 
           <div class="col-md-6">
             <label class="form-label" for="{{ form.phone.id_for_label }}">Phone</label>
-            {{ form.phone }}
+            <input
+              type="text"
+              name="{{ form.phone.html_name }}"
+              id="{{ form.phone.id_for_label }}"
+              class="form-control"
+              value="{{ form.phone.value|default_if_none:'' }}"
+            >
             {% if form.phone.errors %}<div class="text-danger">{{ form.phone.errors }}</div>{% endif %}
           </div>
 
           <div class="col-md-6">
             <label class="form-label" for="{{ form.website.id_for_label }}">Website</label>
-            {{ form.website }}
+            <input
+              type="url"
+              name="{{ form.website.html_name }}"
+              id="{{ form.website.id_for_label }}"
+              class="form-control"
+              value="{{ form.website.value|default_if_none:'' }}"
+            >
             {% if form.website.errors %}<div class="text-danger">{{ form.website.errors }}</div>{% endif %}
           </div>
 
           <div class="col-md-6">
             <label class="form-label" for="{{ form.location.id_for_label }}">Location</label>
-            {{ form.location }}
+            <input
+              type="text"
+              name="{{ form.location.html_name }}"
+              id="{{ form.location.id_for_label }}"
+              class="form-control"
+              value="{{ form.location.value|default_if_none:'' }}"
+            >
             {% if form.location.errors %}<div class="text-danger">{{ form.location.errors }}</div>{% endif %}
           </div>
 
           <div class="col-md-6">
             <label class="form-label" for="{{ form.logo.id_for_label }}">Logo</label>
-            {{ form.logo }}
+            <input
+              type="file"
+              name="{{ form.logo.html_name }}"
+              id="{{ form.logo.id_for_label }}"
+              class="form-control"
+            >
             {% if form.logo.errors %}<div class="text-danger">{{ form.logo.errors }}</div>{% endif %}
           </div>
+
         </div>
 
         <div style="display:flex; gap:10px; margin-top: 16px;">
           <button type="submit" class="btn btn-primary">Save</button>
-          <a class="btn btn-outline-secondary" href="{% url 'employer_profile_edit' %}">Cancel</a>
+          <a class="btn btn-outline-secondary" href="/employer/dashboard/">Cancel</a>
         </div>
 
       </form>
