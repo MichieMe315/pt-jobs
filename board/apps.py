@@ -1,5 +1,9 @@
-from django.apps import AppConfig
+# board/apps.py
+from __future__ import annotations
+
 import threading
+
+from django.apps import AppConfig
 
 
 class BoardConfig(AppConfig):
@@ -8,11 +12,10 @@ class BoardConfig(AppConfig):
     verbose_name = "Job Board"
 
     def ready(self) -> None:
+        # Ensure signal receivers are registered
         from . import signals  # noqa: F401
 
-        # Run importer shortly after app boot (web container), non-blocking.
-        def _delayed_import():
-            from .startup_import import run_employer_import_if_enabled
-            run_employer_import_if_enabled()
+        # Startup imports (run in a short delayed thread so app can finish loading)
+        from .startup_import import run_bulk_import_if_enabled  # noqa
 
-        threading.Timer(3.0, _delayed_import).start()
+        threading.Timer(2.0, run_bulk_import_if_enabled).start()

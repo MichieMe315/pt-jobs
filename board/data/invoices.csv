@@ -1,0 +1,885 @@
+﻿"Invoice #","Customer Name",Product,Date,"Payment Method",Total,Status
+886,"Active Approach Health & Wellness Centre","30-day job posting","Dec 17, 2025",Stripe,$75.00,Paid
+885,"Weeneebayko Area Health Authority","60-day Job Posting (5 pack)","Dec 10, 2025",Stripe,$395.00,Paid
+884,"Synapse by Park Integrative Health","30-day job posting","Nov 28, 2025",Stripe,$75.00,Paid
+883,"InHome Physical Therapy & Massage","30-day job posting","Nov 28, 2025",Stripe,$75.00,Paid
+882,"The Performance Clinic","30-day job posting","Nov 23, 2025",Stripe,$75.00,Paid
+881,"Terrace Child Development Centre","30-day job posting","Nov 12, 2025",Stripe,$75.00,Paid
+880,"Life 'n Balance Wellness Centre","30-day job posting","Nov 05, 2025",Stripe,$75.00,Paid
+879,"Woollahra Physiotherapy","30-day job posting","Nov 03, 2025",Stripe,$75.00,Paid
+878,"Sunrise Physiotherapy Clinic","30-day job posting","Oct 20, 2025",Stripe,$75.00,Paid
+877,"Active Therapy Clinic","30-day job posting","Oct 18, 2025",Stripe,$75.00,Paid
+876,"Rebound Health","30-day job posting","Oct 17, 2025",Stripe,$75.00,Paid
+875,"Vitae Health & Sport","30-day job posting","Oct 09, 2025",Stripe,$75.00,Paid
+874,"Hire Engine Inc.","30-day job posting","Oct 07, 2025","PayPal Standard (deprecated)",$75.00,Paid
+873,"Terrace Child Development Centre","30-day job posting","Oct 07, 2025",Stripe,$75.00,Paid
+872,"AltaVie Health","30-day job posting","Sep 25, 2025",Stripe,$75.00,Paid
+871,"Equilibrium Clinics","30-day job posting","Sep 17, 2025",Stripe,$75.00,Paid
+870,"Collegiate Sports Medicine (Olds)","30-day job posting","Sep 16, 2025",Stripe,$75.00,Paid
+869,"Health PEI","30-day job posting","Sep 09, 2025",Stripe,$75.00,Paid
+868,"Health PEI","30-day job posting","Sep 08, 2025",,$75.00,Unpaid
+867,"Prime Physio Plus","30-day job posting","Sep 07, 2025",,$75.00,Unpaid
+866,"Myers-Siron Physiotherapy; Alliance Wellness Centre","30-day job posting","Sep 07, 2025",Stripe,$75.00,Paid
+865,"Orchard Chiropractic & Physiotherapy","30-day job posting","Sep 05, 2025","PayPal Standard (deprecated)",$75.00,Paid
+864,"Footprints Therapy","30-day job posting","Sep 04, 2025",Stripe,$75.00,Paid
+863,"Century Chiropractic Clinic Inc.","30-day job posting","Aug 28, 2025",Stripe,$75.00,Paid
+862,"Provectus Physiotherapy","30-day job posting","Aug 20, 2025",Stripe,$75.00,Paid
+861,"The LiveWell Centre","30-day job posting","Aug 20, 2025",Stripe,$75.00,Paid
+860,"Terrace Child Development Centre","30-day job posting","Aug 18, 2025",Stripe,$75.00,Paid
+859,"Sportmed Max Physiotherapy","30-day job posting","Aug 15, 2025",Stripe,$75.00,Paid
+858,"Dunbar Physio","30-day job posting","Aug 13, 2025",Stripe,$75.00,Paid
+857,"Price Health","30-day job posting","Aug 08, 2025",Stripe,$75.00,Paid
+856,"The Pierce Wellness and Fitness Centre","30-day job posting","Jul 22, 2025",Stripe,$75.00,Paid
+855,"Live Well Active Therapy","30-day job posting","Jul 17, 2025",Stripe,$75.00,Paid
+854,"Clinique Mouvement optimal","30-day job posting","Jul 12, 2025",,$75.00,Unpaid
+853,"Price Health","30-day job posting","Jul 08, 2025",Stripe,$75.00,Paid
+852,"Eagle Chiropractic & Massage","30-day job posting","Jul 08, 2025",Stripe,$75.00,Paid
+851,"Terrace Child Development Centre","30-day job posting","Jul 08, 2025",Stripe,$75.00,Paid
+850,"Ultimate Health Clinic","30-day job posting","Jul 02, 2025",Stripe,$75.00,Paid
+849,"Backs In Action Rehab and Wellness Centre","30-day job posting","Jul 02, 2025",Stripe,$75.00,Paid
+848,"Body Works Sports Physiotherapy","30-day job posting","Jun 26, 2025",Stripe,$75.00,Paid
+847,"NL Balance & Dizziness Centre","30-day job posting","Jun 19, 2025",Stripe,$75.00,Paid
+846,"NL Balance & Dizziness Centre","30-day job posting","Jun 19, 2025",,$75.00,Unpaid
+845,"The Pierce Wellness and Fitness Centre","30-day job posting","Jun 18, 2025",Stripe,$75.00,Paid
+844,"Southeast Physiotherapy P.C. Inc.","30-day job posting","Jun 18, 2025",Stripe,$75.00,Paid
+843,"Shelbourne Physiotherapy","30-day job posting","Jun 18, 2025",Stripe,$75.00,Paid
+842,"Equilibrium Clinics","30-day job posting","Jun 13, 2025",Stripe,$75.00,Paid
+841,"Orchard Chiropractic & Physiotherapy","30-day job posting","Jun 10, 2025",Stripe,$75.00,Paid
+840,"The Rehab Centre of Maple Inc","30-day job posting","Jun 09, 2025",Stripe,$75.00,Paid
+839,"Easthill Physiotherapy & Acupuncture","30-day job posting","Jun 06, 2025",Stripe,$75.00,Paid
+838,"Price Health","30-day job posting","Jun 05, 2025",Stripe,$75.00,Paid
+837,"Georgian Bay Physiotherapy Inc","30-day job posting","Jun 04, 2025",Stripe,$75.00,Paid
+836,"George Jeffrey Children's Centre","60-day Job Posting (5 pack)","Jun 04, 2025",Stripe,$395.00,Paid
+835,"Sun City Physiotherapy","30-day job posting","May 29, 2025",Stripe,$75.00,Paid
+834,"The Senzu Bean","30-day job posting","May 29, 2025",Stripe,$75.00,Paid
+833,"The Senzu Bean","30-day job posting","May 29, 2025",,$75.00,Unpaid
+832,"Sparsh Wellness Retreat","30-day job posting","May 28, 2025",Stripe,$75.00,Paid
+831,"Cedar Rock Wellness","30-day job posting","May 28, 2025",Stripe,$75.00,Paid
+830,"Body Works Sports Physiotherapy","30-day job posting","May 27, 2025",Stripe,$75.00,Paid
+829,"Terrace Child Development Centre","30-day job posting","May 27, 2025",Stripe,$75.00,Paid
+828,"Rehab Plus rehabilitation and Fitness","30-day job posting","May 22, 2025",Stripe,$75.00,Paid
+827,"Glenwoodsrehab and Physiotherapy Clinic","30-day job posting","May 19, 2025",Stripe,$75.00,Paid
+826,"Ossington Chiropractic and Rehabilitation","30-day job posting","May 15, 2025",Stripe,$75.00,Paid
+825,"Live Well Active Therapy","30-day job posting","May 09, 2025",Stripe,$75.00,Paid
+824,"Summers Physiotherapy","30-day job posting","May 09, 2025",Stripe,$75.00,Paid
+823,"Pure Healthcare Partnership","30-day job posting","May 08, 2025",Stripe,$75.00,Paid
+822,"Physio Casselman","30-day job posting","May 08, 2025",Stripe,$75.00,Paid
+821,"360 Wellness Okotoks","30-day job posting","May 08, 2025",Stripe,$75.00,Paid
+820,"NL Balance & Dizziness Centre","30-day job posting","May 07, 2025",,$75.00,Unpaid
+819,"Catalyst Kinetics Group","30-day job posting","May 02, 2025",Stripe,$75.00,Paid
+818,"ProActive Wellness Centre","30-day job posting","May 02, 2025",,$75.00,Unpaid
+817,"RX Physiotherapy","30-day job posting","May 01, 2025",Stripe,$75.00,Paid
+816,"Pure Alignment Chiropractic and Wellness","30-day job posting","May 01, 2025",Stripe,$75.00,Paid
+815,"The LiveWell Centre","30-day job posting","May 01, 2025",Stripe,$75.00,Paid
+814,"Lifelong Health Ltd","30-day job posting","Apr 24, 2025",Stripe,$75.00,Paid
+813,"Leduc Physio","30-day job posting","Apr 24, 2025",Stripe,$75.00,Paid
+812,"Rebound Health","30-day job posting","Apr 24, 2025",Stripe,$75.00,Paid
+811,"Active Therapy Clinic","30-day job posting","Apr 22, 2025",Stripe,$75.00,Paid
+810,"Morrisburg Physiotherapy","30-day job posting","Apr 22, 2025",Stripe,$75.00,Paid
+809,"Lakeview Physiotherapy & Acupuncture","30-day job posting","Apr 20, 2025",Stripe,$75.00,Paid
+808,"Sun City Physiotherapy","30-day job posting","Apr 16, 2025",Stripe,$75.00,Paid
+807,"The Performance Clinic","30-day job posting","Apr 10, 2025",Stripe,$75.00,Paid
+806,"Terrace Child Development Centre","30-day job posting","Apr 09, 2025",Stripe,$75.00,Paid
+805,"Shelbourne Physiotherapy","30-day job posting","Mar 28, 2025",Stripe,$75.00,Paid
+804,"Pure Healthcare Partnership","30-day job posting","Mar 27, 2025",Stripe,$75.00,Paid
+803,"Lifelong Health Ltd","30-day job posting","Mar 25, 2025",Stripe,$75.00,Paid
+802,"Korean Acupuncture & Wellness Clinic","30-day job posting","Mar 21, 2025",Stripe,$75.00,Paid
+801,"Physio FX ltd","30-day job posting","Mar 19, 2025",Stripe,$75.00,Paid
+800,"Geometry Integrated Health","30-day job posting","Mar 12, 2025",Stripe,$75.00,Paid
+799,"Physio on the Run Therapy Inc.","60-day Job Posting (5 pack)","Mar 10, 2025",Stripe,$395.00,Paid
+798,"Broadmead Orthopaedic Physiotherapy Clinic","30-day job posting","Mar 06, 2025",Stripe,$75.00,Paid
+797,"The LiveWell Centre","30-day job posting","Mar 06, 2025",Stripe,$75.00,Paid
+796,"Body Works Sports Physiotherapy","30-day job posting","Mar 02, 2025",Stripe,$75.00,Paid
+795,"Zenith Physio Pilates Ltd","30-day job posting","Feb 27, 2025",Stripe,$75.00,Paid
+794,"Terrace Child Development Centre","30-day job posting","Feb 25, 2025",Stripe,$75.00,Paid
+793,"Allied Physiotherapy Health Group","30-day job posting","Feb 25, 2025",Stripe,$75.00,Paid
+792,"Shelbourne Physiotherapy","30-day job posting","Feb 25, 2025",Stripe,$75.00,Paid
+791,"Life Balance Wellness","30-day job posting","Feb 13, 2025",Stripe,$75.00,Paid
+790,"Easthill Physiotherapy & Acupuncture","30-day job posting","Feb 13, 2025",Stripe,$75.00,Paid
+789,"The WOMB","30-day job posting","Feb 06, 2025",Stripe,$75.00,Paid
+788,"Lifelong Health Ltd","30-day job posting","Feb 04, 2025",Stripe,$75.00,Paid
+787,"Core Wellness","30-day job posting","Jan 30, 2025",Stripe,$75.00,Paid
+786,"Cobblestone Medicine and Rehab Inc","30-day job posting","Jan 30, 2025",Stripe,$75.00,Paid
+785,"The Well of Alternative Med","30-day job posting","Jan 29, 2025",Stripe,$75.00,Paid
+784,"Start Line Health and Wellness Group","60-day Job Posting (5 pack)","Jan 29, 2025",Stripe,$395.00,Paid
+783,"Cedar Rock Wellness","30-day job posting","Jan 28, 2025",Stripe,$75.00,Paid
+782,"Capture Therapeutics","30-day job posting","Jan 27, 2025",Stripe,$75.00,Paid
+781,"LV Physiotherapy","30-day job posting","Jan 23, 2025",Stripe,$75.00,Paid
+780,"McKenzie Health Care Recruitment","30-day job posting","Jan 03, 2025","PayPal Standard (deprecated)",$75.00,Paid
+779,"ProActive Physiotherapy","30-day job posting","Dec 31, 2024",Stripe,$69.00,Paid
+778,"Weeneebayko Area Health Authority","60-day Job Posting (5 pack)","Dec 31, 2024",Stripe,$395.00,Paid
+777,"Clearwater Physical Therapy","30-day job posting","Dec 30, 2024",,$69.00,Unpaid
+776,"Terrace Child Development Centre","30-day job posting","Dec 18, 2024",Stripe,$69.00,Paid
+775,"ProActive Rehab","30-day job posting","Dec 05, 2024",Stripe,$69.00,Paid
+774,Myotherapymassage,"30-day job posting","Nov 30, 2024",,$69.00,Unpaid
+773,"Community Fit Physiotherapy Clinic","30-day job posting","Nov 27, 2024","PayPal Standard (deprecated)",$69.00,Paid
+772,"Health PEI","30-day job posting","Nov 22, 2024",Stripe,$69.00,Paid
+771,"Health PEI","30-day job posting","Nov 22, 2024",Stripe,$69.00,Paid
+770,"ParaMed Home Health Care","30-day job posting","Nov 19, 2024",Stripe,$69.00,Paid
+769,"B-Well Physiotherapy Inc","30-day job posting","Nov 18, 2024",Stripe,$69.00,Paid
+768,"Neumovement Wellness Inc.","30-day job posting","Nov 14, 2024",Stripe,$69.00,Paid
+767,"Total Physio Centres Kanwal","30-day job posting","Nov 13, 2024",Stripe,$69.00,Paid
+766,"River Stone Wellness Centre","30-day job posting","Nov 13, 2024",Stripe,$69.00,Paid
+765,"Weeneebayko Area Health Authority","30-day job posting","Nov 13, 2024",Stripe,$69.00,Paid
+764,"North Bay Regional Health Centre","30-day job posting","Nov 11, 2024",Stripe,$69.00,Paid
+763,"New Heights Massage Therapy","30-day job posting","Nov 08, 2024",Stripe,$69.00,Paid
+762,"Capture Therapeutics","30-day job posting","Nov 08, 2024",Stripe,$69.00,Paid
+761,"Elle Physiotherapy and Pelvic Health","30-day job posting","Nov 07, 2024",Stripe,$69.00,Paid
+760,"Back in Line Physiotherapy with Julia Dawn Physio","30-day job posting","Nov 06, 2024",Stripe,$69.00,Paid
+759,"LV Physiotherapy","30-day job posting","Nov 05, 2024",Stripe,$69.00,Paid
+758,"Elite Physio","30-day job posting","Nov 04, 2024",Stripe,$69.00,Paid
+757,"Physio Casselman","30-day job posting","Nov 04, 2024",Stripe,$69.00,Paid
+756,"Physio Casselman","30-day job posting","Nov 04, 2024",Stripe,$69.00,Paid
+755,"Back In Line Physiotherapy","30-day job posting","Oct 30, 2024",Stripe,$69.00,Paid
+754,"Generations Sport & Spine Physiotherapy","30-day job posting","Oct 28, 2024",Stripe,$69.00,Paid
+753,"Vital Physiotherapy & Wellness","30-day job posting","Oct 16, 2024",Stripe,$69.00,Paid
+752,"Physiotherapy III","30-day job posting","Oct 14, 2024",Stripe,$69.00,Paid
+751,"Elite Physio","30-day job posting","Oct 07, 2024",Stripe,$69.00,Paid
+750,"Moveo Santé","30-day job posting","Oct 04, 2024",Stripe,$69.00,Paid
+749,"Suncoast Integrated Health","30-day job posting","Oct 03, 2024",Stripe,$69.00,Paid
+748,"Mcknight Village Physiotherapy Clinic","30-day job posting","Oct 02, 2024",Stripe,$69.00,Paid
+747,"Generations Sport & Spine Physiotherapy","30-day job posting","Sep 26, 2024",Stripe,$69.00,Paid
+746,"Rosedale Wellness Centre","30-day job posting","Sep 24, 2024",Stripe,$69.00,Paid
+745,"Callingwood Physical Therapy","30-day job posting","Sep 18, 2024",Stripe,$69.00,Paid
+744,"Blanche River Health","30-day job posting","Sep 18, 2024",Stripe,$69.00,Paid
+743,"Lake of the Woods District Hospital","30-day job posting","Sep 17, 2024",Stripe,$69.00,Paid
+742,"Willow Health Centre","30-day job posting","Sep 15, 2024",Stripe,$69.00,Paid
+741,"Level 10 Fitness","30-day job posting","Sep 12, 2024",Stripe,$69.00,Paid
+740,"Progressive Physiotherapy Ltd","30-day job posting","Sep 11, 2024",Stripe,$69.00,Paid
+739,"Physio FX ltd","30-day job posting","Sep 11, 2024",Stripe,$69.00,Paid
+738,"Clarington Physiotherapy Health and Wellness Centre","30-day job posting","Sep 06, 2024",Stripe,$69.00,Paid
+737,"Back and Body Wellness Centre","30-day job posting","Sep 05, 2024",Stripe,$69.00,Paid
+736,"NL Balance & Dizziness Centre","30-day job posting","Sep 04, 2024",Stripe,$69.00,Paid
+735,"One Step Ahead Mobility","30-day job posting","Sep 04, 2024","PayPal Standard (deprecated)",$69.00,Paid
+734,"Blanche River Health","30-day job posting","Aug 29, 2024",Stripe,$69.00,Paid
+733,"Physiotherapy III","30-day job posting","Aug 29, 2024",Stripe,$69.00,Paid
+732,"Effect Therapy Health Centre","30-day job posting","Aug 27, 2024",Stripe,$69.00,Paid
+731,"Rehab Plus rehabilitation and Fitness","30-day job posting","Aug 27, 2024",Stripe,$69.00,Paid
+730,"Durham Orthopedic and Sports Injury Clinic","30-day job posting","Aug 14, 2024",Stripe,$69.00,Paid
+729,"CURAVITA Health Group","30-day job posting","Aug 14, 2024",Stripe,$69.00,Paid
+728,"Capture Therapeutics","30-day job posting","Aug 07, 2024",Stripe,$69.00,Paid
+727,"Kinetic Solutions Physiotherapy","30-day job posting","Aug 01, 2024",Stripe,$69.00,Paid
+726,"Physio Casselman","30-day job posting","Jul 31, 2024",Stripe,$69.00,Paid
+725,"Physio Casselman","30-day job posting","Jul 31, 2024",Stripe,$69.00,Paid
+724,"Lethbridge Thai Massage  & Wellness","30-day job posting","Jul 31, 2024",Stripe,$69.00,Paid
+723,"Gulf Island Physiotherapy","30-day job posting","Jul 31, 2024",Stripe,$69.00,Paid
+722,"Generations Sport & Spine Physiotherapy","30-day job posting","Jul 29, 2024",Stripe,$69.00,Paid
+721,"Kelowna S.M.I.L.E Therapy for Kids","30-day job posting","Jul 26, 2024","PayPal Standard (deprecated)",$69.00,Paid
+720,"Woollahra Physiotherapy","30-day job posting","Jul 22, 2024",Stripe,$69.00,Paid
+719,Strikerecovery2024,"30-day job posting","Jul 22, 2024",Stripe,$69.00,Paid
+718,"Child Development Centre Society of Fort St. John & District","30-day job posting","Jul 22, 2024",Stripe,$69.00,Paid
+717,"Broadmead Orthopaedic Physiotherapy Clinic","30-day job posting","Jul 22, 2024",Stripe,$69.00,Paid
+716,"ZerOne | Athleticare","30-day job posting","Jul 16, 2024",Stripe,$69.00,Paid
+715,"Leaps and Bounds: Performance Rehabilitation","30-day job posting","Jul 15, 2024",Stripe,$69.00,Paid
+714,"B-Well Physiotherapy","30-day job posting","Jul 11, 2024",Stripe,$69.00,Paid
+713,"Physio FX ltd","30-day job posting","Jul 10, 2024",Stripe,$69.00,Paid
+712,"Personal Best Physiotherapy and Pilates","30-day job posting","Jul 06, 2024",,$69.00,Unpaid
+711,"Equilibrium Clinics","30-day job posting","Jul 05, 2024",Stripe,$69.00,Paid
+710,"George Jeffrey Children's Centre","30-day job posting","Jul 02, 2024",Stripe,$69.00,Paid
+709,"The Physi-Yogis","30-day job posting","Jun 27, 2024",Stripe,$69.00,Paid
+708,"Equilibrium Clinics","30-day job posting","Jun 03, 2024",Stripe,$69.00,Paid
+707,"Vital Physiotherapy & Wellness","30-day job posting","May 30, 2024",Stripe,$69.00,Paid
+706,"Mavis Eglinton Physiotherapy","30-day job posting","May 29, 2024","PayPal Standard (deprecated)",$69.00,Paid
+705,"Mavis Eglinton Physiotherapy","30-day job posting","May 29, 2024",,$69.00,Unpaid
+704,"One Step Ahead Mobility","30-day job posting","May 27, 2024",Stripe,$69.00,Paid
+703,"Shelburne Physiotherapy","30-day job posting","May 26, 2024",Stripe,$69.00,Paid
+702,"Shelburne Physiotherapy","30-day job posting","May 23, 2024",,$69.00,Unpaid
+701,"KYND INTL","30-day job posting","May 21, 2024",Stripe,$69.00,Paid
+700,"St. Johns Active Care","30-day job posting","May 15, 2024",Stripe,$69.00,Paid
+699,"Vital Physiotherapy & Wellness","30-day job posting","May 15, 2024",Stripe,$69.00,Paid
+698,"Brentwood Chiropractic Clinic","30-day job posting (10 pack)","May 14, 2024",Stripe,$549.00,Paid
+697,"Physiotherapy III","30-day job posting","May 08, 2024",Stripe,$69.00,Paid
+696,"North of Superior Healthcare Group","30-day job posting","May 07, 2024",Stripe,$69.00,Paid
+695,"KYND INTL","30-day job posting","May 06, 2024",,$69.00,Unpaid
+694,"Equilibrium Clinics","30-day job posting","May 03, 2024",Stripe,$69.00,Paid
+693,"Physiocare Physiotherapy & Rehab Centre","30-day job posting","May 01, 2024",Stripe,$69.00,Paid
+692,"NONA Child Development Centre","30-day job posting","Apr 30, 2024",Stripe,$69.00,Paid
+691,"Pulse Physiotherapy","30-day job posting","Apr 30, 2024",Stripe,$69.00,Paid
+690,"CURAVITA Health Group","30-day job posting","Apr 29, 2024",Stripe,$69.00,Paid
+689,"Kawartha Care Wellness Centre","30-day job posting","Apr 23, 2024",Stripe,$69.00,Paid
+688,"Boost Physiotherapy","30-day job posting","Apr 19, 2024",Stripe,$69.00,Paid
+687,"PRIMUS PHYSIOTHERAPY","30-day job posting","Apr 15, 2024",Stripe,$69.00,Paid
+686,"Impact Physical Therapy","30-day job posting","Apr 11, 2024",Stripe,$69.00,Paid
+685,"Interior Health Authority","30-day job posting (10 pack)","Apr 09, 2024",Stripe,$549.00,Paid
+684,"The Performance Clinic","30-day job posting","Apr 06, 2024",Stripe,$69.00,Paid
+683,"The Performance Clinic","30-day job posting","Apr 06, 2024",,$69.00,Unpaid
+682,Hydrathletics/Physiogenix/Movewell,"30-day job posting","Apr 04, 2024",Stripe,$69.00,Paid
+681,"Equilibrium Clinics","30-day job posting","Apr 03, 2024",Stripe,$69.00,Paid
+680,"Impact Physical Therapy","30-day job posting","Apr 02, 2024",Stripe,$69.00,Paid
+679,"Synapse by Park Integrative Health","30-day job posting","Apr 02, 2024",Stripe,$69.00,Paid
+678,"Synapse by Park Integrative Health","30-day job posting","Apr 02, 2024",,$69.00,Unpaid
+677,"Jack Nathan Health","30-day job posting","Mar 22, 2024",Stripe,$77.97,Paid
+676,"Affinity Family Wellness","30-day job posting (10 pack)","Mar 22, 2024",Stripe,$620.37,Paid
+675,"Leaps and Bounds: Performance Rehabilitation","30-day job posting","Mar 11, 2024",Stripe,$77.97,Paid
+674,"Whitehorse Physiotherapy","30-day job posting","Mar 08, 2024","PayPal Standard (deprecated)",$77.97,Paid
+673,"Interior Health Authority","30-day job posting","Mar 07, 2024",Stripe,$77.97,Paid
+672,"South Okanagan Physiotherapy and Active Wellness Centre","30-day job posting","Mar 03, 2024",Stripe,$77.97,Paid
+671,"Symmetrics Health","30-day job posting","Feb 29, 2024",Stripe,$77.97,Paid
+670,"Sheddon Physiotherapy and Sports Clinic","30-day job posting","Feb 28, 2024","PayPal Standard (deprecated)",$77.97,Paid
+669,"Interior Health Authority","30-day job posting","Feb 21, 2024",Stripe,$77.97,Paid
+668,"Laelia Wellness","30-day job posting","Feb 19, 2024",Stripe,$77.97,Paid
+667,"Affinity Family Wellness","30-day job posting","Feb 18, 2024","PayPal Standard (deprecated)",$77.97,Paid
+666,"Physiotherapy III","30-day job posting","Feb 17, 2024",Stripe,$77.97,Paid
+665,"Kim Blainey","30-day job posting","Feb 17, 2024",Stripe,$77.97,Paid
+664,"Whitecourt Physical Therapy","30-day job posting","Feb 15, 2024",Stripe,$77.97,Paid
+663,"Inner City Family Health Team","30-day job posting","Feb 14, 2024",Stripe,$77.97,Paid
+662,"Durham Bone and Joint Specialists (DBJS)","30-day job posting","Feb 13, 2024",Stripe,$77.97,Paid
+661,"Be Well","30-day job posting","Feb 08, 2024",Stripe,$77.97,Paid
+660,"Paramed Home Health Care","30-day job posting","Feb 08, 2024",Stripe,$77.97,Paid
+659,"Interior Health Authority","30-day job posting","Feb 07, 2024",Stripe,$77.97,Paid
+658,"Collegiate Sports Medicine","30-day job posting","Feb 01, 2024",Stripe,$77.97,Paid
+657,"Louis Brier Home and Hospital","30-day job posting","Jan 31, 2024",Stripe,$77.97,Paid
+656,"Active Living Physiotherapy","30-day job posting","Jan 31, 2024","PayPal Standard (deprecated)",$77.97,Paid
+655,"Blanche River Health","30-day job posting","Jan 26, 2024",Stripe,$77.97,Paid
+654,"Aspire Physio","30-day job posting","Jan 24, 2024",Stripe,$77.97,Paid
+653,"Equilibrium Clinics","30-day job posting","Jan 20, 2024",Stripe,$77.97,Paid
+652,"Adventure Physiotherapy","30-day job posting","Jan 18, 2024",Stripe,$77.97,Paid
+651,"Impact Physio & Sport Clinic","30-day job posting","Jan 17, 2024",Stripe,$77.97,Paid
+650,"Physiotherapy III","30-day job posting","Jan 16, 2024","PayPal Standard (deprecated)",$77.97,Paid
+649,"Leaps and Bounds: Performance Rehabilitation","30-day job posting","Jan 15, 2024",Stripe,$77.97,Paid
+648,CÉNO,"30-day job posting","Jan 10, 2024",Stripe,$77.97,Paid
+647,"Move RX Performance & Wellness","30-day job posting","Jan 04, 2024",Stripe,$59.26,Paid
+646,"Interior Health Authority","30-day job posting","Jan 04, 2024",Stripe,$77.97,Paid
+645,"Glow Integrative Clinic","30-day job posting","Jan 03, 2024",Stripe,$59.26,Paid
+644,"Physio Casselman","30-day job posting","Jan 03, 2024",Stripe,$77.97,Paid
+643,"Generations Sport & Spine Physiotherapy","30-day job posting","Jan 02, 2024",Stripe,$77.97,Paid
+642,"Emkiro Health Services","30-day job posting","Jan 02, 2024","PayPal Standard (deprecated)",$59.26,Paid
+641,"Southeast Physiotherapy P.C. Inc.","30-day job posting","Dec 20, 2023",Stripe,$77.97,Paid
+640,"Adventure Physiotherapy","30-day job posting","Dec 18, 2023",Stripe,$77.97,Paid
+639,"Interior Health Authority","30-day job posting","Dec 15, 2023",Stripe,$77.97,Paid
+638,"Interior Health Authority","30-day job posting","Dec 15, 2023",Stripe,$77.97,Paid
+637,"Synapse by Park Integrative Health","30-day job posting","Dec 13, 2023",Stripe,$77.97,Paid
+636,"Georgian Bay Physiotherapy Inc","30-day job posting","Dec 11, 2023",Stripe,$77.97,Paid
+635,"Precision Physiotherapy","30-day job posting","Dec 08, 2023",Stripe,$77.97,Paid
+634,"Skill Builders Physiotherapy & Rehab","30-day job posting","Dec 01, 2023",,$77.97,Unpaid
+633,"Generations Sport & Spine Physiotherapy","30-day job posting","Nov 30, 2023",Stripe,$77.97,Paid
+632,"Apexx Injury Rehab Center","30-day job posting","Nov 20, 2023",Stripe,$77.97,Paid
+631,Paceyourself,"30-day job posting","Nov 17, 2023",Stripe,$77.97,Paid
+630,"Adventure Physiotherapy","30-day job posting","Nov 16, 2023",Stripe,$77.97,Paid
+629,"Momentum Physiotherapy","30-day job posting","Nov 15, 2023",Stripe,$77.97,Paid
+628,"Coronation Physiotherapy","30-day job posting","Nov 13, 2023",Stripe,$77.97,Paid
+627,"Dr. Megan Olver Chiropractic Corporation","30-day job posting","Nov 10, 2023",Stripe,$77.97,Paid
+626,"Batoul Awada","Resume posting","Nov 09, 2023",,$0.00,Paid
+625,"The Clinic YYC","30-day job posting","Nov 03, 2023",Stripe,$77.97,Paid
+624,"Interior Health Authority","30-day job posting","Nov 02, 2023",Stripe,$77.97,Paid
+623,"KYND INTL","30-day job posting","Oct 31, 2023",Stripe,$77.97,Paid
+622,"Annapolis Valley Wellness Centre","30-day job posting","Oct 31, 2023",Stripe,$77.97,Paid
+621,"Atikokan Health and Community Services","30-day job posting","Oct 30, 2023",Stripe,$77.97,Paid
+620,"Blanche River Health","30-day job posting","Oct 27, 2023",Stripe,$77.97,Paid
+619,"TMJ Physio Clinic","30-day job posting","Oct 24, 2023",Stripe,$77.97,Paid
+618,"Aurora North Medical Centre & Pharmacy","30-day job posting","Oct 19, 2023","PayPal Standard (deprecated)",$77.97,Paid
+617,"Aurora North Medical Centre & Pharmacy","30-day job posting","Oct 19, 2023","PayPal Standard (deprecated)",$77.97,Paid
+616,"Head 2 Toe Holistic Health Clinic","30-day job posting","Oct 19, 2023","PayPal Standard (deprecated)",$77.97,Paid
+615,"Head 2 Toe Holistic Health Clinic","30-day job posting","Oct 19, 2023","PayPal Standard (deprecated)",$77.97,Paid
+614,"Head 2 Toe Holistic Health Clinic","30-day job posting","Oct 19, 2023","PayPal Standard (deprecated)",$77.97,Paid
+613,"Adventure Physiotherapy","30-day job posting","Oct 16, 2023",Stripe,$77.97,Paid
+612,"Peach Physiotherapy & Wellness Centre Inc.","30-day job posting","Oct 11, 2023",Stripe,$77.97,Paid
+611,"Georgian Bay Physiotherapy Inc","30-day job posting","Oct 10, 2023",Stripe,$77.97,Paid
+610,"Success Rehab","30-day job posting","Oct 10, 2023",Stripe,$77.97,Paid
+609,"Skill Builders Physiotherapy & Rehab","30-day job posting","Oct 08, 2023","PayPal Standard (deprecated)",$77.97,Paid
+608,"Interior Health Authority","30-day job posting","Oct 03, 2023",Stripe,$77.97,Paid
+607,"Momentum Health","30-day job posting","Oct 02, 2023",Stripe,$77.97,Paid
+606,"Atikokan Health and Community Services","30-day job posting","Sep 28, 2023",Stripe,$77.97,Paid
+605,"Quinte and District Rehabilitation","30-day job posting (10 pack)","Sep 27, 2023",Stripe,$620.37,Paid
+604,"Interior Health Authority","30-day job posting","Sep 25, 2023",Stripe,$77.97,Paid
+603,Hydrathletics/Physiogenix/Movewell,"30-day job posting","Sep 25, 2023",Stripe,$77.97,Paid
+602,"Adventure Physiotherapy","30-day job posting","Sep 14, 2023",Stripe,$77.97,Paid
+601,"The Physi-Yogis","30-day job posting","Sep 12, 2023","PayPal Standard (deprecated)",$77.97,Paid
+600,"CURAVITA Health Group","30-day job posting","Sep 11, 2023",Stripe,$77.97,Paid
+599,"Catalyst Kinetics Group","30-day job posting","Sep 11, 2023",Stripe,$77.97,Paid
+598,"Beaumont Physiotherapy & Sports Injury Clinic","30-day job posting","Sep 11, 2023",Stripe,$77.97,Paid
+597,"Bayside Wellness","30-day job posting","Sep 11, 2023",Stripe,$77.97,Paid
+596,"Ritz & Hydroactive Clinics Inc.","30-day job posting","Sep 09, 2023",Stripe,$77.97,Paid
+595,"Interior Health Authority","30-day job posting","Sep 07, 2023",Stripe,$77.97,Paid
+594,"Stride Physio and Performance","30-day job posting","Sep 04, 2023",Stripe,$77.97,Paid
+593,"Vector Wellness Center","30-day job posting","Aug 29, 2023",Stripe,$77.97,Paid
+592,In-Balance,"30-day job posting","Aug 28, 2023",Stripe,$77.97,Paid
+591,"Thrive Now Physiotherapy","30-day job posting","Aug 23, 2023",Stripe,$77.97,Paid
+590,Hydrathletics/Physiogenix/Movewell,"30-day job posting","Aug 23, 2023",Stripe,$77.97,Paid
+589,"ALLISTON PHYSIOTHERAPY & SPORTS REHABILITATION","30-day job posting","Aug 22, 2023","PayPal Standard (deprecated)",$77.97,Paid
+588,"Gagandeep Kaur Toor","Resume posting","Aug 22, 2023",,$0.00,Paid
+587,"Orillia Sports Medicine","30-day job posting","Aug 16, 2023",Stripe,$77.97,Paid
+586,"Physiothérapie Hélène Morin","30-day job posting","Aug 14, 2023",Stripe,$77.97,Paid
+585,"Adventure Physiotherapy","30-day job posting","Aug 14, 2023",Stripe,$77.97,Paid
+584,"The Clinic at Christie","30-day job posting","Aug 14, 2023",Stripe,$77.97,Paid
+583,"Equilibrium Clinics","30-day job posting","Aug 10, 2023",Stripe,$77.97,Paid
+582,"Novo Peak Health","30-day job posting","Aug 10, 2023",Stripe,$77.97,Paid
+581,"Leaps and Bounds: Performance Rehabilitation","30-day job posting","Aug 10, 2023",Stripe,$77.97,Paid
+580,"Ritz & Hydroactive Clinics Inc.","30-day job posting","Aug 09, 2023",Stripe,$77.97,Paid
+579,"Bayview Hill Wellness","30-day job posting","Aug 06, 2023",Stripe,$77.97,Paid
+578,"Clinique Mouvement optimal","30-day job posting","Aug 03, 2023",Stripe,$77.97,Paid
+577,"Optimum Wellness Centres","30-day job posting","Aug 02, 2023",Stripe,$77.97,Paid
+576,"Optimum Wellness Centres","30-day job posting","Aug 02, 2023",,$77.97,Unpaid
+575,"YEG Physiotherapy","30-day job posting","Aug 02, 2023",Stripe,$77.97,Paid
+574,"Vector Wellness Center","30-day job posting","Jul 28, 2023",Stripe,$77.97,Paid
+573,"Blanche River Health","30-day job posting","Jul 26, 2023",Stripe,$77.97,Paid
+572,"Georgian Bay Physiotherapy Inc","30-day job posting","Jul 23, 2023",Stripe,$77.97,Paid
+571,"Restore Physiotherapy Timmins","30-day job posting","Jul 18, 2023",Stripe,$77.97,Paid
+570,"Atikokan Health and Community Services","30-day job posting","Jul 18, 2023",Stripe,$77.97,Paid
+569,"KYND INTL","30-day job posting","Jul 17, 2023",Stripe,$77.97,Paid
+568,"Adventure Physiotherapy","30-day job posting","Jul 13, 2023",Stripe,$77.97,Paid
+567,"Ultimate Health Clinic","30-day job posting","Jul 13, 2023",Stripe,$77.97,Paid
+566,"Coronation Physiotherapy","30-day job posting","Jul 11, 2023",Stripe,$77.97,Paid
+565,"Interior Health Authority","30-day job posting","Jul 06, 2023",Stripe,$77.97,Paid
+564,"Orillia Sports Medicine","30-day job posting","Jul 04, 2023",Stripe,$77.97,Paid
+563,"Physiothérapie Hélène Morin","30-day job posting","Jun 30, 2023",Stripe,$77.97,Paid
+562,"Emilee Gagnier","Resume posting","Jun 29, 2023",,$0.00,Paid
+561,"Thrive Now Physiotherapy","30-day job posting","Jun 27, 2023",Stripe,$77.97,Paid
+560,"SE Health","30-day job posting","Jun 27, 2023",Stripe,$77.97,Paid
+559,"SE Health","30-day job posting","Jun 27, 2023",,$77.97,Unpaid
+558,"Queen's University","30-day job posting","Jun 23, 2023",Stripe,$77.97,Paid
+557,"South City Physiotherapy","30-day job posting","Jun 21, 2023","PayPal Standard (deprecated)",$77.97,Paid
+556,"Sunrise Physiotherapy Clinic","30-day job posting","Jun 18, 2023",Stripe,$77.97,Paid
+555,"Leduc Physio","30-day job posting","Jun 13, 2023",Stripe,$77.97,Paid
+554,"Timmins and District Hospital","30-day job posting","Jun 07, 2023",Stripe,$77.97,Paid
+553,"Timmins and District Hospital","30-day job posting","Jun 07, 2023",Stripe,$77.97,Paid
+552,"Timmins and District Hospital","30-day job posting","Jun 07, 2023",Stripe,$77.97,Paid
+551,"Interior Health Authority","30-day job posting","Jun 07, 2023",Stripe,$77.97,Paid
+550,"BodyWorx Vitality Inc.","30-day job posting","Jun 06, 2023",Stripe,$77.97,Paid
+549,"VOR Physiotherapy","30-day job posting","Jun 06, 2023",Stripe,$77.97,Paid
+548,Steinhoff,"30-day job posting","Jun 05, 2023",Stripe,$77.97,Paid
+547,"Thrive Physio","30-day job posting","Jun 05, 2023",Stripe,$77.97,Paid
+546,"Drayton Valley Physiotherapy","30-day job posting","May 30, 2023",Stripe,$77.97,Paid
+545,"Family Physiotherapy Centre’s","30-day job posting","May 29, 2023",Stripe,$77.97,Paid
+544,"Affinity Family Wellness","30-day job posting","May 26, 2023","PayPal Standard (deprecated)",$77.97,Paid
+543,"Speech Language Network Ltd.","30-day job posting","May 25, 2023",Stripe,$77.97,Paid
+542,"Port Alberni Physiotherapy Clinic","30-day job posting","May 24, 2023",Stripe,$77.97,Paid
+541,"Thrive Now Physiotherapy","30-day job posting","May 23, 2023",Stripe,$77.97,Paid
+540,CÉNO,"30-day job posting","May 16, 2023",Stripe,$77.97,Paid
+539,"Interior Health Authority","30-day job posting","May 10, 2023",Stripe,$77.97,Paid
+538,"The Movement Co.","30-day job posting","May 10, 2023",Stripe,$77.97,Paid
+537,"Body Works Physiotherapy","30-day job posting","May 08, 2023",Stripe,$77.97,Paid
+536,"Optimum Wellness Centres","30-day job posting","May 05, 2023",Stripe,$77.97,Paid
+534,"Complete care physio","30-day job posting","Apr 26, 2023",Stripe,$77.97,Paid
+533,"Callingwood Physical Therapy","30-day job posting","Apr 25, 2023",Stripe,$77.97,Paid
+532,"Drayton Valley Physiotherapy","30-day job posting","Apr 25, 2023",Stripe,$77.97,Paid
+531,"Leduc Physio","30-day job posting","Apr 20, 2023",Stripe,$77.97,Paid
+530,"Thrive Now Physiotherapy","30-day job posting","Apr 18, 2023",Stripe,$77.97,Paid
+529,"Rehab Plus rehabilitation and Fitness","30-day job posting","Apr 18, 2023",Stripe,$77.97,Paid
+528,"Physio First","30-day job posting","Apr 17, 2023",Stripe,$77.97,Paid
+527,"Southeast Physiotherapy P.C. Inc.","30-day job posting","Apr 15, 2023",Stripe,$77.97,Paid
+526,"Agile Integrated Health","30-day job posting","Apr 09, 2023",Stripe,$77.97,Paid
+525,"Interior Health Authority","30-day job posting","Apr 03, 2023",Stripe,$77.97,Paid
+524,"Bayview Rehabilitation","30-day job posting","Apr 03, 2023",Stripe,$77.97,Paid
+523,"Belleville Integrative Health Centre","30-day job posting","Mar 29, 2023",Stripe,$77.97,Paid
+522,"Belleville Integrative Health Centre","30-day job posting","Mar 29, 2023",,$77.97,Unpaid
+521,"Waterdown Physiotherapy","30-day job posting","Mar 20, 2023",Stripe,$77.97,Paid
+520,www.hrhssa.org,"30-day job posting","Mar 10, 2023",Stripe,$77.97,Paid
+519,"Footprints Therapy","30-day job posting","Mar 08, 2023",Stripe,$77.97,Paid
+518,"Interior Health Authority","30-day job posting","Mar 06, 2023",Stripe,$77.97,Paid
+517,"Active Care Health","30-day job posting","Mar 04, 2023",Stripe,$77.97,Paid
+516,"Thrive Physio","30-day job posting","Mar 02, 2023",Stripe,$77.97,Paid
+515,"Active Care Health","60-day Job Posting (5 pack)","Feb 24, 2023",,$446.35,Unpaid
+514,"The Badminton and Racquet Club of Toronto","30-day job posting","Feb 23, 2023",Stripe,$77.97,Paid
+513,"KYND INTL","30-day job posting","Feb 23, 2023",Stripe,$77.97,Paid
+512,"Balance Point Acupuncture and Integrative Medicine","30-day job posting","Feb 13, 2023",Stripe,$77.97,Paid
+511,"Vector Wellness Center","30-day job posting","Feb 12, 2023",Stripe,$77.97,Paid
+510,"United Health clinic","30-day job posting","Feb 11, 2023",Stripe,$77.97,Paid
+509,"Evolve Health & Wellness","30-day job posting","Feb 08, 2023",Stripe,$77.97,Paid
+508,"Shelbourne Physiotherapy","30-day job posting","Jan 26, 2023",Stripe,$77.97,Paid
+507,"Venture Rehabilitation Sciences Group","30-day job posting","Jan 20, 2023",Stripe,$77.97,Paid
+506,"Partners in Rehab","30-day job posting","Jan 19, 2023",Stripe,$77.97,Paid
+505,"Synergy Health","30-day job posting","Jan 09, 2023",Stripe,$77.97,Paid
+504,"Collegiate Sports Medicine","30-day job posting","Jan 06, 2023",Stripe,$77.97,Paid
+503,"Optimum Wellness Centres","30-day job posting","Dec 29, 2022",Stripe,$77.97,Paid
+502,"Pure Life Health Centre","30-day job posting","Dec 12, 2022",,$77.97,Unpaid
+501,"Advance Concussion Clinic","30-day job posting","Dec 12, 2022",Stripe,$77.97,Paid
+500,"Quinte and District Rehabilitation","30-day job posting","Dec 01, 2022",Stripe,$77.97,Paid
+499,"Quinte and District Rehabilitation","30-day job posting","Dec 01, 2022",Stripe,$77.97,Paid
+498,"Active Approach Health & Wellness Centre","30-day job posting","Nov 29, 2022",Stripe,$77.97,Paid
+497,"Optimum Wellness Centres","30-day job posting","Nov 17, 2022",Stripe,$77.97,Paid
+496,"Rehab Plus rehabilitation and Fitness","30-day job posting","Nov 11, 2022",,$77.97,Unpaid
+495,"Saanich Physiotherapy and Sports Clinic","30-day job posting","Nov 11, 2022",Stripe,$77.97,Paid
+494,"Thrive Now Physiotherapy","30-day job posting","Nov 08, 2022",Stripe,$77.97,Paid
+493,Hydrathletics/Physiogenix/Movewell,"30-day job posting","Nov 08, 2022","PayPal Standard (deprecated)",$77.97,Paid
+492,Hydrathletics/Physiogenix/Movewell,"30-day job posting","Nov 08, 2022","PayPal Standard (deprecated)",$77.97,Paid
+491,"Blanche River Health","30-day job posting","Nov 02, 2022",Stripe,$77.97,Paid
+490,"Keswick Active","30-day job posting","Oct 31, 2022",,$77.97,Unpaid
+489,"Callingwood Physical Therapy","30-day job posting","Oct 28, 2022",Stripe,$77.97,Paid
+488,"Sage Health and Wellness Clinic Inc.","30-day job posting","Oct 21, 2022",Stripe,$77.97,Paid
+487,"Core Therapeutics Physiotherapy","30-day job posting","Oct 19, 2022",Stripe,$77.97,Paid
+486,"Core Therapeutics Physiotherapy","30-day job posting","Oct 19, 2022",Stripe,$77.97,Paid
+485,"Aspire Physio","30-day job posting","Oct 19, 2022",Stripe,$77.97,Paid
+484,"Optimum Wellness Centres","30-day job posting","Oct 17, 2022",Stripe,$77.97,Paid
+483,"Rehab Plus rehabilitation and Fitness","30-day job posting","Oct 11, 2022",Stripe,$77.97,Paid
+482,"Revive Whole Body Health","30-day job posting","Oct 04, 2022",Stripe,$77.97,Paid
+481,"Sagebrush Physiotherapy","30-day job posting","Oct 03, 2022",Stripe,$77.97,Paid
+480,"Sagebrush Physiotherapy","30-day job posting","Oct 03, 2022",,$77.97,Unpaid
+479,"Dynamic Health and Performance","30-day job posting","Sep 17, 2022",Stripe,$77.97,Paid
+478,"Dynamic Health and Performance","30-day job posting","Sep 17, 2022",,$77.97,Unpaid
+477,"Euro Physical Therapy","30-day job posting","Sep 07, 2022",Stripe,$77.97,Paid
+476,"BLACKGOLD PHYSICAL THERAPY CLINIC INC","30-day job posting","Sep 05, 2022",Stripe,$77.97,Paid
+475,"Interior Health Authority","30-day job posting","Aug 31, 2022",Stripe,$77.97,Paid
+474,"Interior Health Authority","30-day job posting","Aug 31, 2022",,$77.97,Unpaid
+473,Hydrathletics/Physiogenix/Movewell,"30-day job posting","Aug 29, 2022",Stripe,$77.97,Paid
+472,Hydrathletics/Physiogenix/Movewell,"30-day job posting","Aug 29, 2022",Stripe,$77.97,Paid
+471,"Williams Lake Physiotherapy","30-day job posting","Aug 22, 2022",Stripe,$77.97,Paid
+470,"Mississauga Health and Wellness Center","30-day job posting","Aug 18, 2022",Stripe,$77.97,Paid
+469,"Personal Care Physio & Osteopathy","30-day job posting","Aug 18, 2022","PayPal Standard (deprecated)",$77.97,Paid
+468,"Dynamic Health and Performance","30-day job posting","Aug 17, 2022",Stripe,$77.97,Paid
+467,"Thrive Physio","30-day job posting","Aug 17, 2022",Stripe,$77.97,Paid
+466,"SMART Rehabilitation Consulting Ltd.","30-day job posting","Aug 16, 2022",Stripe,$77.97,Paid
+465,"Alliance Wellness Clinic","30-day job posting","Aug 12, 2022",Stripe,$77.97,Paid
+464,"Rehab Plus rehabilitation and Fitness","30-day job posting","Aug 11, 2022",Stripe,$77.97,Paid
+463,"Health and Performance Centre","30-day job posting","Aug 06, 2022",Stripe,$77.97,Paid
+462,"Shift Concussion Management","30-day job posting","Aug 05, 2022",Stripe,$77.97,Paid
+461,"KNEW LIFE PHYSIOTHERAPY & PELVIC HEALING","30-day job posting","Aug 05, 2022",Stripe,$77.97,Paid
+460,"ProActive Rehab","30-day job posting","Aug 05, 2022",Stripe,$77.97,Paid
+459,"Revive Health Centres","30-day job posting","Aug 04, 2022",Stripe,$77.97,Paid
+458,"Renfrew Educational Services","30-day job posting","Aug 03, 2022",Stripe,$77.97,Paid
+457,"Revive Whole Body Health","30-day job posting","Aug 03, 2022",Stripe,$77.97,Paid
+456,"Fusion Physiotherapy & Wellness Centre","30-day job posting","Aug 03, 2022","PayPal Standard (deprecated)",$77.97,Paid
+455,"Skill Builders Physiotherapy & Rehab","30-day job posting","Aug 02, 2022",Stripe,$77.97,Paid
+454,"Vital Physiotherapy & Wellness","30-day job posting","Aug 02, 2022",Stripe,$77.97,Paid
+453,"Shelbourne Physiotherapy","30-day job posting","Aug 02, 2022",Stripe,$77.97,Paid
+452,"Interior Health Authority","30-day job posting","Jul 29, 2022",Stripe,$77.97,Paid
+451,"Leduc Physio","30-day job posting","Jul 26, 2022",Stripe,$77.97,Paid
+450,"Tru Performance and Rehab","30-day job posting","Jul 20, 2022",Stripe,$77.97,Paid
+449,iBody,"30-day job posting","Jul 14, 2022",Stripe,$77.97,Paid
+448,"Physiotherapy on Lakeshore","30-day job posting","Jul 14, 2022",Stripe,$77.97,Paid
+447,"Shelbourne Physiotherapy","30-day job posting","Jul 11, 2022",,$77.97,Unpaid
+446,"SMART Rehabilitation Consulting Ltd.","30-day job posting","Jul 11, 2022",Stripe,$77.97,Paid
+445,"Sage Health and Wellness Clinic Inc.","30-day job posting","Jul 11, 2022","PayPal Standard (deprecated)",$77.97,Paid
+444,"Churchill Physiotherapy Clinic Inc.","30-day job posting","Jul 11, 2022",Stripe,$77.97,Paid
+443,"Rehab Plus rehabilitation and Fitness","30-day job posting","Jul 11, 2022",Stripe,$77.97,Paid
+442,"Bayview Rehabilitation","30-day job posting","Jul 05, 2022",Stripe,$62.38,Paid
+441,"Eagle Ridge Physiotherapy","30-day job posting","Jul 05, 2022",Stripe,$77.97,Paid
+440,"Interior Health Authority","30-day job posting","Jun 29, 2022",Stripe,$77.97,Paid
+439,"Interior Health Authority","30-day job posting","Jun 29, 2022",,$77.97,Unpaid
+438,"Grandview Kids","30-day job posting","Jun 27, 2022","PayPal Standard (deprecated)",$77.97,Paid
+437,"Optimum Wellness Centres","30-day job posting","Jun 21, 2022",Stripe,$77.97,Paid
+436,"Tailor Made Wellness","30-day job posting","Jun 21, 2022",Stripe,$77.97,Paid
+435,"Revive Health Centres","30-day job posting","Jun 21, 2022","PayPal Standard (deprecated)",$77.97,Paid
+434,"Euro Physical Therapy","30-day job posting","Jun 09, 2022",Stripe,$77.97,Paid
+433,"Peninsula Physiotherapy and Sports Rehabilitation","30-day job posting","Jun 03, 2022",Stripe,$77.97,Paid
+432,"E.S Orthotics and Wellness","30-day job posting","May 13, 2022",Stripe,$77.97,Paid
+431,"Euro Physical Therapy","30-day job posting","May 09, 2022",Stripe,$77.97,Paid
+430,"SMART Rehabilitation Consulting Ltd.","30-day job posting","May 04, 2022",Stripe,$77.97,Paid
+429,"Creston PhysioWorks & More","30-day job posting","Feb 23, 2022",Stripe,$77.97,Paid
+428,"Axis Therapy & Performance","30-day job posting","Feb 08, 2022",Stripe,$77.97,Paid
+427,"Alberta Institute for Spine and Sport Therapy","30-day job posting","Dec 20, 2021",Stripe,$77.97,Paid
+426,"the toronto centre for sports medicine","30-day job posting","Dec 15, 2021","PayPal Standard (deprecated)",$77.97,Paid
+425,"Infinity Health Centre","30-day job posting","Dec 01, 2021",Stripe,$77.97,Paid
+424,"Kamloops Physiotherapy and Sports Injury Centre","30-day job posting","Nov 29, 2021",Stripe,$77.97,Paid
+423,"Alberta Institute for Spine and Sport Therapy","30-day job posting","Nov 16, 2021",Stripe,$77.97,Paid
+422,"South Okanagan Physiotherapy and Active Wellness Centre","30-day job posting","Nov 13, 2021",Stripe,$77.97,Paid
+421,"Hamilton Health & Wellness Centre","30-day job posting","Nov 05, 2021",Stripe,$77.97,Paid
+420,"AltaVie Health","30-day job posting","Oct 15, 2021",Stripe,$77.97,Paid
+419,"Alberta Institute for Spine and Sport Therapy","30-day job posting","Oct 15, 2021",Stripe,$77.97,Paid
+418,"North Bay Regional Health Centre","30-day job posting","Oct 15, 2021",Stripe,$77.97,Paid
+417,"North Bay Regional Health Centre","30-day job posting","Oct 15, 2021",Stripe,$77.97,Paid
+416,"Revive Whole Body Health","30-day job posting","Oct 14, 2021",Stripe,$77.97,Paid
+415,"Vancouver Physiotherapy Hub","30-day job posting","Oct 07, 2021",Stripe,$77.97,Paid
+414,"Vancouver Physiotherapy Hub","30-day job posting","Oct 07, 2021",Stripe,$77.97,Paid
+413,"Steps 2 Better Health Wellness Clinic","30-day job posting","Oct 05, 2021",Stripe,$77.97,Paid
+412,"Morgan Creek Family Chiropractic","30-day job posting","Sep 22, 2021",Stripe,$77.97,Paid
+411,"Interior Health Authority","30-day job posting","Sep 16, 2021",Stripe,$77.97,Paid
+410,"The Performance Clinic","30-day job posting","Sep 15, 2021",Stripe,$77.97,Paid
+409,"Pinpoint Physiotherapy & IMS","30-day job posting (10 pack)","Sep 14, 2021",Stripe,$620.37,Paid
+408,"Alberta Institute for Spine and Sport Therapy","30-day job posting","Sep 14, 2021",Stripe,$77.97,Paid
+407,"Alberta Institute for Spine and Sport Therapy","30-day job posting","Sep 14, 2021",,$77.97,Unpaid
+406,"Rehab Plus rehabilitation and Fitness","30-day job posting","Aug 31, 2021",Stripe,$77.97,Paid
+405,"RMT Movement Inc","30-day job posting","Aug 27, 2021",Stripe,$77.97,Paid
+404,"Clayton Heights Sports and Therapy Center","30-day job posting","Aug 17, 2021","PayPal Standard (deprecated)",$77.97,Paid
+403,"Highland Physio Inc","30-day job posting","Aug 13, 2021",Stripe,$77.97,Paid
+402,"Evolve Health & Wellness","30-day job posting","Aug 11, 2021",Stripe,$77.97,Paid
+401,"Prairie View Physiotherapy","30-day job posting","Aug 11, 2021",Stripe,$77.97,Paid
+400,Aethos,"30-day job posting","Aug 10, 2021",Stripe,$77.97,Paid
+399,"Fusion Physiotherapy & Wellness Centre","30-day job posting","Aug 10, 2021","PayPal Standard (deprecated)",$77.97,Paid
+398,"The Cheerful Pelvis","30-day job posting (10 pack)","Aug 04, 2021",Stripe,$620.37,Paid
+397,"Advance Concussion Clinic","30-day job posting","Aug 04, 2021",Stripe,$77.97,Paid
+396,"True Integration Wellness","30-day job posting","Aug 02, 2021","PayPal Standard (deprecated)",$77.97,Paid
+395,"SMILE Threrapy for Kids","30-day job posting","Jul 29, 2021",Stripe,$77.97,Paid
+394,"The Cheerful Pelvis","30-day job posting","Jul 28, 2021",,$77.97,Unpaid
+393,"Quinte and District Rehabilitation","30-day job posting","Jul 26, 2021",Stripe,$77.97,Paid
+392,"The Art of Life Natural Health Centre","30-day job posting","Jul 21, 2021",Stripe,$77.97,Paid
+391,"Synergy Health","30-day job posting","Jul 19, 2021",Stripe,$77.97,Paid
+390,"Synergy Health","30-day job posting","Jul 19, 2021",Stripe,$77.97,Paid
+389,"Cor Maximus","30-day job posting","Jul 18, 2021",Stripe,$77.97,Paid
+388,"Nordel Physiotherapy & Sports Clinic","30-day job posting","Jul 05, 2021",Stripe,$77.97,Paid
+387,"Nordel Physiotherapy & Sports Clinic","30-day job posting","Jul 05, 2021",Stripe,$77.97,Paid
+386,"Fairview Physiotherapy and Rehab Centre","30-day job posting","Jun 22, 2021",Stripe,$77.97,Paid
+385,"The Cheerful Pelvis","30-day job posting","Jun 21, 2021",Stripe,$77.97,Paid
+384,"The Cheerful Pelvis","30-day job posting (10 pack)","Jun 21, 2021",,$620.37,Unpaid
+383,"Fusion Physiotherapy & Wellness Centre","30-day job posting","Jun 21, 2021","PayPal Standard (deprecated)",$77.97,Paid
+382,"Maritime Chiropractic & Wellness","30-day job posting","Jun 17, 2021",Stripe,$77.97,Paid
+381,"Synergy Health","30-day job posting","Jun 17, 2021",Stripe,$77.97,Paid
+380,"Synergy Health","30-day job posting","Jun 17, 2021",Stripe,$77.97,Paid
+379,"Cor Maximus","30-day job posting","Jun 16, 2021",Stripe,$77.97,Paid
+378,"Joint Rehab","30-day job posting","Jun 16, 2021",Stripe,$77.97,Paid
+377,"ProActive Rehab","30-day job posting","Jun 16, 2021",Stripe,$77.97,Paid
+376,"CommuniCare Therapy Inc.","30-day job posting","Jun 16, 2021",Stripe,$77.97,Paid
+375,"CommuniCare Therapy Inc.","30-day job posting","Jun 16, 2021",Stripe,$77.97,Paid
+374,iBody,"30-day job posting","Jun 16, 2021",Stripe,$77.97,Paid
+373,"Functional Neurology Vestibular Rehab","30-day job posting","Jun 16, 2021",Stripe,$77.97,Paid
+372,"Rae Physiotherapy & Pilates","30-day job posting","Jun 08, 2021",Stripe,$77.97,Paid
+371,"PhysioPlus Health Group","30-day job posting","Jun 08, 2021",Stripe,$77.97,Paid
+370,"Kinectiv Sport + Health","30-day job posting","May 28, 2021",Stripe,$77.97,Paid
+369,"Revitamax Rehab & Wellness","30-day job posting","May 18, 2021",Stripe,$77.97,Paid
+368,"A Hand In Knead Massage & Welness","30-day job posting","May 17, 2021",Stripe,$77.97,Paid
+367,"Balance Physiotherapy","30-day job posting","May 15, 2021",Stripe,$77.97,Paid
+366,"Interior Health Authority","30-day job posting (10 pack)","May 04, 2021",Stripe,$620.37,Paid
+365,"Propel Physiotherapy Inc.","30-day job posting","May 04, 2021",Stripe,$77.97,Paid
+364,"CBI Health","30-day job posting","May 03, 2021",Stripe,$77.97,Paid
+363,"Nova Active Rehab","30-day job posting","Apr 26, 2021",Stripe,$77.97,Paid
+362,"Nova Active Rehab","30-day job posting","Apr 26, 2021",,$77.97,Unpaid
+361,"Agile Integrated Health","30-day job posting","Apr 15, 2021",Stripe,$77.97,Paid
+360,"Agile Integrated Health","30-day job posting","Apr 15, 2021",Stripe,$77.97,Paid
+359,"Agile Integrated Health","30-day job posting","Apr 15, 2021",Stripe,$77.97,Paid
+358,"Bump Physio & Co","30-day job posting","Apr 15, 2021",Stripe,$77.97,Paid
+357,"Muscle & Spine","30-day job posting","Apr 15, 2021",Stripe,$77.97,Paid
+356,"Synergy Health","30-day job posting","Apr 12, 2021",Stripe,$77.97,Paid
+355,"Synergy Health","30-day job posting","Apr 12, 2021",Stripe,$77.97,Paid
+354,"Bourassa and Associates Rehabilitation Centre","30-day job posting","Apr 11, 2021",Stripe,$77.97,Paid
+353,Paceyourself,"30-day job posting","Apr 08, 2021",Stripe,$77.97,Paid
+352,revibe,"30-day job posting","Apr 06, 2021",Stripe,$77.97,Paid
+351,"Clinique Mouvement optimal","30-day job posting","Apr 05, 2021",Stripe,$77.97,Paid
+350,"Aspire Physio","30-day job posting","Mar 26, 2021",Stripe,$77.97,Paid
+349,"Accel Physical Therapy","30-day job posting","Mar 26, 2021",Stripe,$77.97,Paid
+348,"Physio Casselman","30-day job posting","Mar 26, 2021",Stripe,$77.97,Paid
+347,"Physio Casselman","30-day job posting","Mar 26, 2021",Stripe,$77.97,Paid
+346,"Fairview Physiotherapy and Rehab Centre","30-day job posting","Mar 25, 2021",Stripe,$77.97,Paid
+345,"Sporting Edge Physiotherapy","30-day job posting","Mar 24, 2021",Stripe,$77.97,Paid
+344,"LifeHealthMassageTherapeutic Clinic","30-day job posting","Mar 16, 2021",Stripe,$77.97,Paid
+343,"LifeHealthMassageTherapeutic Clinic","30-day job posting","Mar 16, 2021",Stripe,$77.97,Paid
+342,"The Cheerful Pelvis","30-day job posting","Mar 16, 2021",Stripe,$77.97,Paid
+341,"Beaches Health Group","30-day job posting","Mar 16, 2021",Stripe,$77.97,Paid
+340,"Pure Form Physiotherapy","30-day job posting","Mar 12, 2021",Stripe,$77.97,Paid
+339,"Pure Form Physiotherapy","30-day job posting","Mar 12, 2021",,$77.97,Unpaid
+338,"ViVi Therapy","30-day job posting","Mar 11, 2021",Stripe,$77.97,Paid
+337,"Closing the Gap Healthcare","30-day job posting (10 pack)","Mar 09, 2021",Stripe,$620.37,Paid
+336,"Momentum Clinic Consulting","30-day job posting","Mar 09, 2021",,$77.97,Unpaid
+335,"Sagebrush Physiotherapy","30-day job posting","Mar 08, 2021",Stripe,$77.97,Paid
+334,"Physiomed Humber","30-day job posting","Mar 08, 2021",Stripe,$77.97,Paid
+333,"Clinique Physio Familiale","30-day job posting","Mar 03, 2021",Stripe,$77.97,Paid
+332,"Lightspeed Rehabilitation","30-day job posting","Mar 02, 2021",Stripe,$77.97,Paid
+331,www.arnicawellness.com,"30-day job posting","Mar 02, 2021",Stripe,$77.97,Paid
+330,"Synergy Health","30-day job posting","Mar 02, 2021",Stripe,$77.97,Paid
+329,"Synergy Health","30-day job posting","Mar 02, 2021",Stripe,$77.97,Paid
+328,"AAA Therapies","30-day job posting","Feb 17, 2021",Stripe,$77.97,Paid
+327,"Lime Health and Wellness","30-day job posting (10 pack)","Feb 13, 2021",Stripe,$620.37,Paid
+326,"Therapeutic Effects","30-day job posting","Feb 10, 2021",Stripe,$77.97,Paid
+325,"Waterdown Village Chiropractic and Wellness Group","30-day job posting","Feb 08, 2021",Stripe,$77.97,Paid
+324,"Pillars of Wellness","30-day job posting","Feb 04, 2021",Stripe,$77.97,Paid
+323,"Seraphim Health and Wellness","30-day job posting","Feb 03, 2021",Stripe,$77.97,Paid
+322,"Functional Neurology Vestibular Rehab","30-day job posting","Feb 02, 2021",Stripe,$77.97,Paid
+321,"Synergy Health","30-day job posting","Feb 01, 2021",Stripe,$77.97,Paid
+320,"Back to Wellness","30-day job posting","Jan 30, 2021",Stripe,$77.97,Paid
+319,"Nova Active Rehab","30-day job posting","Jan 28, 2021",Stripe,$77.97,Paid
+318,"Ligament NZ","30-day job posting","Jan 27, 2021",Stripe,$58.48,Paid
+317,"South City Physiotherapy","30-day job posting","Jan 23, 2021","PayPal Standard (deprecated)",$77.97,Paid
+316,"Allied Physiotherapy Health Group","30-day job posting","Jan 21, 2021",Stripe,$77.97,Paid
+315,"Tamarack Physical Therapy","30-day job posting","Jan 19, 2021",Stripe,$77.97,Paid
+314,PRIME,"30-day job posting","Jan 15, 2021",Stripe,$77.97,Paid
+313,"ATLAS Registered Massage Therapy","30-day job posting","Jan 14, 2021",Stripe,$77.97,Paid
+312,"Southeast Physiotherapy P.C. Inc.","30-day job posting","Jan 04, 2021",Stripe,$77.97,Paid
+311,"Equilibrium Clinics","30-day job posting","Dec 31, 2020",Stripe,$46.78,Paid
+310,"Equilibrium Clinics","30-day job posting","Dec 31, 2020",Stripe,$46.78,Paid
+309,"PhysioPlus Health Group","30-day job posting","Dec 31, 2020",Stripe,$77.97,Paid
+308,"Waterdown Village Chiropractic and Wellness Group","30-day job posting","Dec 30, 2020",Stripe,$77.97,Paid
+307,"Reactivate Muskoka Inc.","30-day job posting","Dec 23, 2020",Stripe,$46.78,Paid
+306,"CORE Restore Physiotherapy","30-day job posting","Dec 21, 2020",Stripe,$77.97,Paid
+305,"Functional Neurology Vestibular Rehab","30-day job posting","Dec 19, 2020",Stripe,$77.97,Paid
+304,"Manitoulin Physiotherapy Centre","30-day job posting","Dec 18, 2020",Stripe,$46.78,Paid
+303,"LCP Health","30-day job posting","Dec 17, 2020",Stripe,$77.97,Paid
+302,"Rae Physiotherapy & Pilates","30-day job posting","Dec 16, 2020",Stripe,$46.78,Paid
+301,"Easy Therapy","30-day job posting","Dec 16, 2020",Stripe,$46.78,Paid
+300,"Easy Therapy","30-day job posting","Dec 16, 2020",,$77.97,Unpaid
+299,"Joanna Juchau","Resume posting","Dec 12, 2020",,$0.00,Paid
+298,"School District 60: Peace River North","30-day job posting","Dec 08, 2020",Stripe,$77.97,Paid
+297,"SEHC (formerlySaintElizabeth)","30-day job posting","Dec 02, 2020",Stripe,$77.97,Paid
+296,"Access Rehab Inc","30-day job posting","Dec 02, 2020",Stripe,$77.97,Paid
+295,"Collegiate Sports Medicine (Olds)","30-day job posting","Nov 30, 2020","PayPal Standard (deprecated)",$62.38,Paid
+294,"CORE Restore Physiotherapy","30-day job posting","Nov 30, 2020",Stripe,$62.38,Paid
+293,"Rae Physiotherapy & Pilates","30-day job posting","Nov 27, 2020",Stripe,$77.97,Paid
+292,"Neroli Blossoms Health and Wellness","30-day job posting","Nov 27, 2020",Stripe,$77.97,Paid
+291,"Vaughan Physiotherapy","30-day job posting","Nov 25, 2020",Stripe,$77.97,Paid
+290,"Access Physiotherapy","30-day job posting","Nov 22, 2020","PayPal Standard (deprecated)",$77.97,Paid
+289,"Alevia Health and Wellness Centre","30-day job posting","Nov 22, 2020",Stripe,$77.97,Paid
+288,"Reactivate Muskoka Inc.","30-day job posting","Nov 20, 2020",Stripe,$77.97,Paid
+287,"Functional Neurology Vestibular Rehab","30-day job posting","Nov 19, 2020",Stripe,$77.97,Paid
+286,"Foundation Body Lab","30-day job posting","Nov 17, 2020",Stripe,$77.97,Paid
+285,"Vernon Active Health Clinic","30-day job posting","Nov 12, 2020",Stripe,$77.97,Paid
+284,"Cor Maximus","30-day job posting","Nov 07, 2020",Stripe,$77.97,Paid
+283,"Eramosa Physiotherapy Associates","30-day job posting","Nov 06, 2020",Stripe,$77.97,Paid
+282,"The Chiropractic Office & Health Associates","30-day job posting","Oct 21, 2020",Stripe,$77.97,Paid
+281,"Newleaf Total Wellness Centre","30-day job posting","Oct 21, 2020","PayPal Standard (deprecated)",$77.97,Paid
+280,"CBI Home Health","30-day job posting","Oct 21, 2020",Stripe,$77.97,Paid
+279,"CBI Home Health","30-day job posting","Oct 21, 2020",Stripe,$77.97,Paid
+278,"CBI Home Health","30-day job posting","Oct 20, 2020",Stripe,$77.97,Paid
+277,"wellbe family wellness","30-day job posting","Oct 19, 2020",Stripe,$77.97,Paid
+276,"wellbe family wellness","30-day job posting","Oct 19, 2020",Stripe,$77.97,Paid
+275,"Let's Get Physio Muskoka","30-day job posting","Oct 07, 2020",Stripe,$77.97,Paid
+274,"Manitoulin Physiotherapy Centre","30-day job posting","Oct 02, 2020",Stripe,$77.97,Paid
+273,"Jockvale Massage & Physio","30-day job posting","Sep 30, 2020","PayPal Standard (deprecated)",$77.97,Paid
+272,"Advance Concussion Clinic","30-day job posting","Sep 29, 2020",Stripe,$77.97,Paid
+271,"Let's Get Physio Muskoka","30-day job posting","Sep 28, 2020",,$77.97,Unpaid
+270,"Access Physiotherapy","30-day job posting","Sep 28, 2020",Stripe,$77.97,Paid
+269,"Ultimate Health Clinic","30-day job posting","Sep 25, 2020",Stripe,$77.97,Paid
+268,"Pure Life Health Centre","30-day job posting (10 pack)","Sep 22, 2020",Stripe,$620.37,Paid
+267,"Advance Concussion Clinic","30-day job posting","Sep 21, 2020",Stripe,$77.97,Paid
+266,"Shang Gong Chinese Medicine Wellness Centre","30-day job posting","Sep 19, 2020",Stripe,$77.97,Paid
+265,"Broadmead Orthopaedic Physiotherapy Clinic","30-day job posting","Sep 18, 2020",Stripe,$77.97,Paid
+264,Venor,"30-day job posting","Sep 18, 2020",Stripe,$77.97,Paid
+263,"Advance Concussion Clinic","30-day job posting","Sep 15, 2020",,$77.97,Unpaid
+262,"Advance Concussion Clinic","30-day job posting","Sep 10, 2020",,$77.97,Unpaid
+261,"Advance Concussion Clinic","30-day job posting","Sep 10, 2020",,$77.97,Unpaid
+260,"CURAVITA Health Group","30-day job posting","Sep 04, 2020",Stripe,$77.97,Paid
+259,"Acacia Health","30-day job posting","Aug 30, 2020",Stripe,$77.97,Paid
+258,"Advanced Health + Sports Clinic","30-day job posting","Aug 29, 2020",Stripe,$77.97,Paid
+257,"Emkiro Health Services","30-day job posting","Aug 27, 2020",Stripe,$77.97,Paid
+256,"Bedford Integrative Therapeutic Services","30-day job posting","Aug 26, 2020",Stripe,$77.97,Paid
+255,"Athlete's Zone Inc.","30-day job posting","Aug 25, 2020",Stripe,$77.97,Paid
+254,"Tonume Integrated Health","30-day job posting","Aug 24, 2020","PayPal Standard (deprecated)",$77.97,Paid
+253,"Alberta Institute for Spine and Sport Therapy","30-day job posting","Aug 20, 2020",Stripe,$77.97,Paid
+252,"Heritage Community Fitness & Rehabilitation Centre","30-day job posting","Aug 12, 2020",Stripe,$77.97,Paid
+251,"Heritage Community Fitness & Rehabilitation Centre","30-day job posting","Aug 12, 2020",Stripe,$77.97,Paid
+250,"Pure Life Health Centre","30-day job posting","Aug 10, 2020",Stripe,$77.97,Paid
+249,"Ponoka Physiotherapy & Acupuncture Clinic Ltd","30-day job posting","Aug 08, 2020",Stripe,$77.97,Paid
+248,"Alevia Health and Wellness Centre","30-day job posting","Aug 02, 2020",Stripe,$77.97,Paid
+247,iBody,"30-day job posting","Jul 31, 2020",Stripe,$77.97,Paid
+246,"Shelbourne Physiotherapy","30-day job posting","Jul 24, 2020",Stripe,$77.97,Paid
+245,"Total Vitality Centre","30-day job posting","Jul 18, 2020",Stripe,$58.48,Paid
+244,"Honsberger Physio+","30-day job posting","Jul 13, 2020",Stripe,$77.97,Paid
+243,"Honsberger Physio+","30-day job posting","Jul 13, 2020",Stripe,$77.97,Paid
+242,"Performance Health & Fitness Centre","30-day job posting","Jul 09, 2020","PayPal Standard (deprecated)",$77.97,Paid
+241,"Parksville Physiotherapy Clinic","30-day job posting","Jul 08, 2020",Stripe,$77.97,Paid
+240,"Pure Life Health Centre","30-day job posting","Jul 08, 2020",Stripe,$77.97,Paid
+239,"Performance Health & Fitness Centre","30-day job posting","Jul 07, 2020",,$77.97,Unpaid
+238,"Physio Casselman","30-day job posting","Jul 03, 2020",Stripe,$77.97,Paid
+237,"Beaches Health Group","30-day job posting","Jul 02, 2020",Stripe,$77.97,Paid
+236,"Shelbourne Physiotherapy","30-day job posting","Jun 23, 2020",Stripe,$77.97,Paid
+235,"Advance Concussion Clinic","30-day job posting","Jun 09, 2020",Stripe,$58.48,Paid
+234,"Atikokan General Hospital","30-day job posting","Jun 04, 2020",Stripe,$58.48,Paid
+233,"User deleted","30-day job posting","Jun 04, 2020",Stripe,$58.48,Paid
+232,"The Chiropractic Office & Health Associates","30-day job posting","Jun 03, 2020",Stripe,$58.48,Paid
+231,"The Chiropractic Office & Health Associates","30-day job posting","Apr 02, 2020",Stripe,$58.48,Paid
+230,"Alberta Institute for Spine and Sport Therapy","30-day job posting","Mar 19, 2020",Stripe,$77.97,Paid
+229,"Equilibrium Clinics","30-day job posting","Mar 11, 2020",Stripe,$77.97,Paid
+228,"Strive Health and Performance","30-day job posting","Mar 11, 2020",Stripe,$77.97,Paid
+227,"Serenity Spa","30-day job posting","Mar 11, 2020",Stripe,$77.97,Paid
+226,"Electra Health","30-day job posting","Mar 10, 2020",Stripe,$77.97,Paid
+225,"Change Your Pain Kamloops","30-day job posting","Mar 10, 2020",Stripe,$77.97,Paid
+224,"Rose City Wellness","60-day Job Posting (5 pack)","Mar 05, 2020",Stripe,$446.35,Paid
+223,"Functional Neurology Vestibular Rehab","30-day job posting","Mar 04, 2020",Stripe,$77.97,Paid
+222,SpineWise,"30-day job posting","Mar 03, 2020",Stripe,$77.97,Paid
+221,"Tonume Integrated Health","30-day job posting","Mar 03, 2020","PayPal Standard (deprecated)",$77.97,Paid
+220,"User deleted","30-day job posting","Mar 02, 2020","PayPal Standard (deprecated)",$77.97,Paid
+219,"Momentum Chiropractic & Sports Therapy Clinic","30-day job posting","Mar 02, 2020",,$77.97,Unpaid
+218,"Physio Casselman","30-day job posting","Feb 27, 2020",Stripe,$77.97,Paid
+217,"Synergy Rehabilitation","30-day job posting","Feb 27, 2020",Stripe,$77.97,Paid
+216,"Performance Health and Fitness Centre","30-day job posting","Feb 26, 2020",Stripe,$77.97,Paid
+215,"Body Co","30-day job posting","Feb 26, 2020",Stripe,$77.97,Paid
+214,"South City Physiotherapy","30-day job posting","Feb 24, 2020","PayPal Standard (deprecated)",$77.97,Paid
+213,"Southeast Physiotherapy","30-day job posting","Feb 24, 2020",Stripe,$77.97,Paid
+212,"Century Wellness","30-day job posting","Feb 24, 2020","PayPal Standard (deprecated)",$77.97,Paid
+211,"Level 10 Fitness","30-day job posting","Feb 21, 2020",Stripe,$77.97,Paid
+210,"Total Vitality Centre","30-day job posting","Feb 21, 2020",Stripe,$77.97,Paid
+209,"Diversified Health Clinic","30-day job posting","Feb 21, 2020",Stripe,$77.97,Paid
+208,"One Kids Place Children's Treatment Centre","30-day job posting","Feb 20, 2020",Stripe,$77.97,Paid
+207,"One Kids Place Children's Treatment Centre","30-day job posting","Feb 20, 2020",Stripe,$77.97,Paid
+206,"Jockvale Massage & Physio","30-day job posting","Feb 20, 2020",,$77.97,Unpaid
+205,"Revive Whole Body Health","30-day job posting","Feb 18, 2020",Stripe,$77.97,Paid
+204,"MMD Chiropractic Health Centre","30-day job posting","Feb 18, 2020",Stripe,$77.97,Paid
+203,"Blue Sky Physiotherapy & Wellness Center","30-day job posting","Feb 12, 2020",Stripe,$77.97,Paid
+202,"Alberta Institute for Spine and Sport Therapy","30-day job posting","Feb 12, 2020",Stripe,$77.97,Paid
+201,"Active Living Physiotherapy","30-day job posting","Feb 12, 2020","PayPal Standard (deprecated)",$77.97,Paid
+200,"Choice Health Centre","30-day job posting","Feb 12, 2020",Stripe,$77.97,Paid
+199,"Queen's University","30-day job posting","Feb 11, 2020",Stripe,$77.97,Paid
+198,"Evergreen Rehab & Wellness","30-day job posting","Feb 09, 2020",Stripe,$77.97,Paid
+197,"Strive Health and Performance","30-day job posting","Feb 09, 2020",Stripe,$77.97,Paid
+196,"Newleaf Total Wellness Centre","30-day job posting","Feb 07, 2020",Stripe,$77.97,Paid
+195,"Change Your Pain Kamloops","30-day job posting","Jan 30, 2020",Stripe,$77.97,Paid
+194,"In Motion","30-day job posting","Jan 28, 2020",Stripe,$77.97,Paid
+193,"Tonume Integrated Health","30-day job posting","Jan 28, 2020",Stripe,$77.97,Paid
+192,"Tonume Integrated Health","30-day job posting","Jan 28, 2020",,$77.97,Unpaid
+191,"Sportmed Max Physiotherapy","30-day job posting","Jan 28, 2020",Stripe,$77.97,Paid
+190,"Physio Casselman","30-day job posting","Jan 27, 2020",Stripe,$77.97,Paid
+189,"Performance Health and Fitness Centre","30-day job posting","Jan 22, 2020",Stripe,$77.97,Paid
+188,"Alliance Wellness","30-day job posting","Jan 20, 2020",Stripe,$77.97,Paid
+187,"Total Health Physio","30-day job posting","Jan 17, 2020",Stripe,$77.97,Paid
+186,"Creston PhysioWorks & More","30-day job posting","Jan 17, 2020",Stripe,$77.97,Paid
+185,"Glenwoodsrehab and Physiotherapy Clinic","30-day job posting","Jan 16, 2020",Stripe,$77.97,Paid
+184,"Revive Whole Body Health","30-day job posting","Jan 16, 2020",Stripe,$77.97,Paid
+183,"Kinematics Sports Medicine & Rehab","30-day job posting","Jan 15, 2020",Stripe,$77.97,Paid
+182,"Pure Lifestyle","30-day job posting","Jan 15, 2020",Stripe,$77.97,Paid
+181,"Altima Physio","30-day job posting","Jan 15, 2020",Stripe,$77.97,Paid
+180,"Dr. Green's Health and Wellness","30-day job posting","Jan 10, 2020",Stripe,$77.97,Paid
+179,theFIX,"30-day job posting","Jan 09, 2020",Stripe,$77.97,Paid
+178,"Alberta Institute for Spine and Sport Therapy","30-day job posting","Jan 08, 2020",Stripe,$77.97,Paid
+177,"Queen's University","30-day job posting","Jan 08, 2020",Stripe,$77.97,Paid
+176,"Queen's University","30-day job posting","Jan 08, 2020",,$77.97,Unpaid
+175,"Peninsula Physiotherapy and Sports Rehabilitation","30-day job posting","Jan 07, 2020",Stripe,$77.97,Paid
+174,"Prime Physio Plus","30-day job posting","Dec 31, 2019",Stripe,$77.97,Paid
+173,"Georgian Bay Physiotherapy Inc","30-day job posting","Dec 28, 2019",Stripe,$77.97,Paid
+172,"Physio Casselman","30-day job posting","Dec 27, 2019",Stripe,$77.97,Paid
+171,"Heritage Community Fitness & Rehabilitation Centre","30-day job posting","Dec 23, 2019",Stripe,$77.97,Paid
+170,"Pulse Physiotherapy","30-day job posting","Dec 18, 2019",Stripe,$77.97,Paid
+169,"Inter-Action Rehabilitation Inc.","30-day job posting","Dec 17, 2019","PayPal Standard (deprecated)",$77.97,Paid
+168,"Pure Lifestyle","30-day job posting","Dec 13, 2019","PayPal Standard (deprecated)",$77.97,Paid
+167,"Coronation Physiotherapy","30-day job posting","Dec 12, 2019",Stripe,$77.97,Paid
+166,"Active Therapy Clinic - Granite Club","30-day job posting","Dec 10, 2019",Stripe,$77.97,Paid
+165,"CheerMed Rehabilitation","30-day job posting","Dec 07, 2019",Stripe,$77.97,Paid
+164,"Sport & Spine Physiotherapy Clinic Ltd","30-day job posting","Dec 05, 2019",Stripe,$77.97,Paid
+163,"Absolute Health Centre","30-day job posting","Dec 05, 2019",Stripe,$77.97,Paid
+162,"Alberta Institute for Spine and Sport Therapy","30-day job posting","Dec 05, 2019",Stripe,$77.97,Paid
+161,"Happy Baby Spa Inc.","30-day job posting","Dec 04, 2019",Stripe,$77.97,Paid
+160,"Port Alberni Physiotherapy Clinic","30-day job posting","Dec 04, 2019",Stripe,$77.97,Paid
+159,"Village Chiropractic","30-day job posting","Dec 04, 2019",Stripe,$77.97,Paid
+158,"Skywalk Health Inc.","30-day job posting","Dec 03, 2019",Stripe,$77.97,Paid
+157,"Sport Manitoba Clinic","30-day job posting","Dec 03, 2019",Stripe,$77.97,Paid
+156,"Queen's University","30-day job posting","Dec 03, 2019",Stripe,$77.97,Paid
+155,"Quinte and District Rehabilitation","30-day job posting","Nov 29, 2019",Stripe,$77.97,Paid
+154,"Total Vitality Centre","30-day job posting","Nov 29, 2019",Stripe,$77.97,Paid
+153,"McKenzie Health Care Recruitment","30-day job posting","Nov 29, 2019",Stripe,$66.27,Paid
+152,"Physio Casselman","30-day job posting","Nov 25, 2019",Stripe,$77.97,Paid
+151,"Oakwood Health","30-day job posting","Nov 22, 2019",Stripe,$77.97,Paid
+150,"Atikokan General Hospital","30-day job posting","Nov 21, 2019",Stripe,$77.97,Paid
+149,"Active Choice - Rehabilitation Centre","30-day job posting","Nov 19, 2019",Stripe,$77.97,Paid
+148,"Surrey Neuroplasticity Clinic","30-day job posting","Nov 18, 2019",Stripe,$77.97,Paid
+147,"King West Chiropractic and Wellness Centre","30-day job posting","Nov 18, 2019",Stripe,$77.97,Paid
+146,"Massage Addict Mavis","30-day job posting","Nov 15, 2019",Stripe,$77.97,Paid
+145,"Head 2 Toe Holistic Health Clinic","30-day job posting","Nov 11, 2019",Stripe,$77.97,Paid
+144,"Physioactif Vaudreuil","30-day job posting","Nov 06, 2019",Stripe,$77.97,Paid
+143,"Black Creek Physiotherapy","30-day job posting","Nov 04, 2019",Stripe,$77.97,Paid
+142,"Dynamic Health Therapy Inc.","30-day job posting","Nov 04, 2019",Stripe,$77.97,Paid
+141,"Georgian Bay Physiotherapy Inc","30-day job posting","Nov 04, 2019",Stripe,$77.97,Paid
+140,"Sport & Spine Physiotherapy Clinic Ltd","30-day job posting","Oct 31, 2019",Stripe,$77.97,Paid
+139,"Alberta Institute for Spine and Sport Therapy","30-day job posting","Oct 31, 2019",Stripe,$77.97,Paid
+138,"Proactive Pelvic Health Centre","30-day job posting","Oct 28, 2019",Stripe,$77.97,Paid
+137,"User deleted","30-day job posting","Oct 28, 2019",Stripe,$77.97,Paid
+136,"One Kids Place","30-day job posting","Oct 25, 2019",Stripe,$77.97,Paid
+135,"Deep physio","30-day job posting","Oct 25, 2019",Stripe,$77.97,Paid
+134,"Forge Health","30-day job posting","Oct 24, 2019",Stripe,$77.97,Paid
+133,"Hawkstone Physical Therapy","30-day job posting","Oct 24, 2019",Stripe,$77.97,Paid
+132,"Accelerated Physio & CycleBarre","30-day job posting","Oct 24, 2019",Stripe,$77.97,Paid
+131,"Bliss Pilates Studio","30-day job posting","Sep 28, 2019",Stripe,$77.97,Paid
+130,"Alberta Institute for Spine and Sport Therapy","30-day job posting","Sep 23, 2019",Stripe,$77.97,Paid
+129,"Life 'n Balance Wellness Centre","September Virtual Job Fair - Bronze","Sep 20, 2019",,$0.00,Paid
+128,"NeuMovement Pilates and Physiotherapy","30-day job posting","Sep 13, 2019",Stripe,$77.97,Paid
+127,"Georgian Bay Physiotherapy Inc","30-day job posting","Sep 08, 2019",Stripe,$77.97,Paid
+126,"One Kids Place","30-day job posting","Sep 05, 2019",Stripe,$77.97,Paid
+125,"Health Careers in Saskatchewan","September Virtual Job Fair - Silver","Sep 04, 2019",Stripe,"$1,467.87",Paid
+124,"Closing the Gap Healthcare","September Virtual Job Fair - Bronze","Sep 04, 2019",Stripe,$676.87,Paid
+123,"Saskatchewan Health Authority","30-day job posting","Sep 04, 2019",Stripe,$77.97,Paid
+122,"Saskatchewan Health Authority","30-day job posting","Sep 04, 2019",Stripe,$77.97,Paid
+121,"Nest Yoga and Massage","30-day job posting","Sep 03, 2019",Stripe,$77.97,Paid
+120,"Manitoulin Physiotherapy Centre","30-day job posting","Sep 03, 2019",Stripe,$77.97,Paid
+119,"Sioux Lookout Meno Ya Win Health Centre","September Virtual Job Fair - Bronze","Aug 30, 2019",Stripe,$676.87,Paid
+118,"Light of Christ Catholic Schools","30-day job posting","Aug 27, 2019",Stripe,$77.97,Paid
+117,"Fit for Life Wellness & Rehab Centre","30-day job posting","Aug 26, 2019",Stripe,$77.97,Paid
+116,"PhysioLink Porters Lake","September Virtual Job Fair - Bronze","Aug 26, 2019",Stripe,$676.87,Paid
+115,"Shannon Marion Physiotherapy","September Virtual Job Fair - Bronze","Aug 24, 2019",Stripe,$676.87,Paid
+114,"Oshawa Chiropractic & Physiotherapy Wellness Centre","September Virtual Job Fair - Bronze","Aug 24, 2019",Stripe,$676.87,Paid
+113,"Oshawa Chiropractic & Physiotherapy Wellness Centre","30-day job posting","Aug 22, 2019",Stripe,$77.97,Paid
+112,"Alberta Institute for Spine and Sport Therapy","30-day job posting","Aug 22, 2019",Stripe,$77.97,Paid
+111,"Cochrane Temiskaming Children's Treatment Centre","September Virtual Job Fair - Bronze","Aug 20, 2019",Stripe,$676.87,Paid
+110,"Peak Physical Therapy","30-day job posting","Aug 11, 2019",Stripe,$77.97,Paid
+109,"Georgian Bay Physiotherapy Inc","30-day job posting","Aug 08, 2019",Stripe,$77.97,Paid
+108,"Red Lake Margaret Cochenour Memorial Hospital","30-day job posting","Aug 07, 2019",Stripe,$77.97,Paid
+107,"User deleted","30-day job posting","Aug 02, 2019",Stripe,$77.97,Paid
+106,"User deleted","30-day job posting","Aug 02, 2019",,$77.97,Unpaid
+105,"Quinte and District Rehabilitation","September Virtual Job Fair - Bronze","Jul 30, 2019",Stripe,$507.37,Paid
+104,"Kapuskasing and Area Family Health Team","30-day job posting","Jul 22, 2019",Stripe,$77.97,Paid
+103,"Manitoulin Physiotherapy Centre","30-day job posting","Jul 19, 2019",Stripe,$77.97,Paid
+102,"Manitoulin Physiotherapy Centre","30-day job posting","Jul 19, 2019",Stripe,$77.97,Paid
+101,FitStudios,"30-day job posting","Jul 12, 2019","PayPal Standard (deprecated)",$77.97,Paid
+100,"Peak Physical Therapy","30-day job posting","Jul 11, 2019",Stripe,$77.97,Paid
+99,"Quinte and District Rehabilitation","30-day job posting","Jul 10, 2019",Stripe,$77.97,Paid
+98,"Children's Treatment Centre of Chatham-Kent","30-day job posting","Jul 10, 2019",Stripe,$77.97,Paid
+97,"UNION HEALTH","30-day job posting","Jul 09, 2019",Stripe,$77.97,Paid
+96,"Tip Top Thai Wellness","30-day job posting","Jul 06, 2019",Stripe,$77.97,Paid
+95,"Deep physio","30-day job posting","Jun 29, 2019",Stripe,$58.48,Paid
+94,"Valhalla Physiotherapy","30-day job posting","Jun 28, 2019","PayPal Standard (deprecated)",$58.48,Paid
+93,"ASH Chiropractic and Wellness","30-day job posting","Jun 14, 2019",Stripe,$77.97,Paid
+92,"Personacare Health and Wellness Clinic","30-day job posting","Jun 12, 2019",Stripe,$77.97,Paid
+91,"Northville Rehabilitation Centre","30-day job posting","Jun 10, 2019",Stripe,$77.97,Paid
+90,"DOLPHIN PHYSIOTHERAPY CLINIC","30-day job posting","May 31, 2019","PayPal Standard (deprecated)",$77.97,Paid
+89,"Synergy Centre Spine And Joint Associates","30-day job posting","May 30, 2019",Stripe,$77.97,Paid
+88,"One Step Ahead Mobility","30-day job posting","May 28, 2019",Stripe,$77.97,Paid
+87,"SEHC (formerlySaintElizabeth)","30-day job posting","May 28, 2019",Stripe,$77.97,Paid
+86,"Symmetrics Health","30-day job posting","May 27, 2019",Stripe,$77.97,Paid
+85,"Active Therapy Clinic - Granite Club","30-day job posting","May 27, 2019",Stripe,$77.97,Paid
+84,Osteoathletic,"30-day job posting","May 25, 2019",Stripe,$77.97,Paid
+83,"Nirvana Wellness Centre","30-day job posting","May 25, 2019",Stripe,$77.97,Paid
+82,"River Heights Physiotherapy","30-day job posting","May 24, 2019",Stripe,$77.97,Paid
+81,"Clinique Physio Familiale","30-day job posting","May 22, 2019",Stripe,$77.97,Paid
+80,"Deep physio","30-day job posting","May 18, 2019",Stripe,$77.97,Paid
+79,"Lime Health and Wellness","30-day job posting","May 17, 2019",Stripe,$77.97,Paid
+78,"Vitality Physiotherapy and Wellness Centre","30-day job posting","May 17, 2019",Stripe,$77.97,Paid
+77,"KING LIBERTY HEALTH CENTRE","30-day job posting","May 13, 2019",Stripe,$77.97,Paid
+76,"Quinte and District Rehabilitation","30-day job posting","May 13, 2019",Stripe,$77.97,Paid
+75,"Breslau Chiropractic and Wellness","30-day job posting","May 13, 2019",Stripe,$77.97,Paid
+74,"Point of Balance Physiotherapy Ltd.","60-day Job Posting (5 pack)","May 11, 2019",Stripe,$446.35,Paid
+73,"Creston PhysioWorks & More","30-day job posting","May 10, 2019",Stripe,$77.97,Paid
+72,"Studio Zee Pilates","30-day job posting","May 07, 2019",Stripe,$77.97,Paid
+71,"Pillars of Wellness","30-day job posting","May 06, 2019",Stripe,$77.97,Paid
+70,"Align Massage Therapy and Advance bodywork","30-day job posting","May 06, 2019",Stripe,$77.97,Paid
+69,"Functional Neurology Vestibular Rehab","30-day job posting","May 05, 2019",Stripe,$77.97,Paid
+68,"HR Project Partners","30-day job posting","May 01, 2019",Stripe,$77.97,Paid
+67,"Physio In The Six Inc","30-day job posting","Apr 29, 2019",Stripe,$77.97,Paid
+66,"Lightspeed Rehabilitation","30-day job posting","Apr 23, 2019",Stripe,$77.97,Paid
+65,Vecova,"30-day job posting","Apr 18, 2019",Stripe,$77.97,Paid
+64,Lifemark,"30-day job posting","Apr 17, 2019",Stripe,$77.97,Paid
+63,Lifemark,"30-day job posting","Apr 17, 2019",Stripe,$77.97,Paid
+62,"School District 60 (Peace River North)","30-day job posting","Apr 12, 2019",Stripe,$77.97,Paid
+61,"Willow Health Centre","30-day job posting","Apr 11, 2019",Stripe,$77.97,Paid
+60,"Quinte and District Rehabilitation","30-day job posting","Apr 10, 2019",Stripe,$77.97,Paid
+59,"Be Well Windsor","30-day job posting","Apr 09, 2019",Stripe,$77.97,Paid
+58,"Closing the Gap Healthcare","30-day job posting (10 pack)","Apr 09, 2019",Stripe,$620.37,Paid
+57,"Atikokan General Hospital","30-day job posting","Apr 08, 2019",Stripe,$77.97,Paid
+56,"Stevenson Chiropractic","30-day job posting","Apr 05, 2019",Stripe,$77.97,Paid
+55,"Enhanced Wellness Studio","30-day job posting","Apr 04, 2019",Stripe,$77.97,Paid
+54,"Locus Health Centre","30-day job posting","Apr 04, 2019",Stripe,$77.97,Paid
+53,Aethos,"30-day job posting","Apr 03, 2019",Stripe,$77.97,Paid
+52,"Chipperfield Physiotherapy","30-day job posting","Apr 03, 2019",Stripe,$77.97,Paid
+51,"Newcastle Physiotherapy and Sports Rehab","30-day job posting","Apr 02, 2019",Stripe,$77.97,Paid
+50,"InHome Physical Therapy & Massage","30-day job posting","Apr 01, 2019",Stripe,$77.97,Paid
+49,"iScope Concussion & Pain Clinics","30-day job posting","Apr 01, 2019",Stripe,$77.97,Paid
+48,"Child Development Centre Society of Fort St. John & District","60-day Job Posting (5 pack)","Mar 26, 2019",Stripe,$446.35,Paid
+47,"Red Lake Margaret Cochenour Memorial Hospital","30-day job posting","Mar 25, 2019",Stripe,$77.97,Paid
+46,"Rutland Physical Therapy Inc.","30-day job posting","Mar 20, 2019","PayPal Standard (deprecated)",$77.97,Paid
+45,"Royal Canadian College of Massage Therapy","Advertise with us","Mar 15, 2019","PayPal Standard (deprecated)",$111.87,Paid
+44,"BodyWorks Chiropractic, Health & Wellness","30-day job posting","Mar 14, 2019",Stripe,$77.97,Paid
+43,"BodyWorks Chiropractic, Health & Wellness","30-day job posting","Mar 13, 2019",Stripe,$77.97,Paid
+42,"BodyWorks Chiropractic, Health & Wellness","30-day job posting","Mar 13, 2019",,$77.97,Unpaid
+41,"Health Bound Health Network","30-day job posting","Mar 12, 2019",Stripe,$77.97,Paid
+40,"LCP Health","30-day job posting","Feb 27, 2019",Stripe,$111.87,Paid
+39,"Kapuskasing and Area Family Health Team","30-day job posting","Feb 19, 2019",Stripe,$111.87,Paid
+38,"Collegiate Sports Medicine Inc.","30-day job posting","Feb 19, 2019",Stripe,$111.87,Paid
+37,"Choice Health Centre","30-day job posting","Feb 12, 2019",Stripe,$111.87,Paid
+36,"Fit for Life Wellness & Rehab Centre","30-day job posting","Feb 07, 2019",Stripe,$111.87,Paid
+35,"School District 60 (Peace River North)","30-day job posting","Feb 04, 2019",Stripe,$111.87,Paid
+34,"Beach Integrated Health Clinic","30-day job posting","Jan 21, 2019",Stripe,$111.87,Paid
+33,"Physiotherapy III","30-day job posting","Jan 18, 2019",,$111.87,Unpaid
+32,"Dr. Trevor Hove","Pre-Screened Candidate Database Access (Jan 10, 2019 - Feb 10, 2019)","Jan 10, 2019",,$0.00,Paid
+31,"Dr. Trevor Hove","Pre-Screened Candidate Database Access","Jan 10, 2019",,$0.00,Paid
+30,"Altum Health, Div. of UHN","30-day job posting","Jan 08, 2019",Stripe,$111.87,Paid
+29,"School District 60 (Peace River North)","30-day job posting","Dec 21, 2018",Stripe,$111.87,Paid
+28,"South Okanagan Physiotherapy and Active Wellness Centre","30-day job posting","Dec 12, 2018",Stripe,$111.87,Paid
+27,"Sports Medicine and Rehabilitation Centre","60-day Job Posting (5 pack)","Dec 12, 2018",Stripe,$620.37,Paid
+26,"Hawkstone Physical Therapy","30-day job posting","Nov 30, 2018",Stripe,$55.94,Paid
+25,Lifemark,"30-day job posting","Nov 30, 2018",Stripe,$55.94,Paid
+24,"St. Joseph's Care Group","30-day job posting","Nov 30, 2018",Stripe,$55.94,Paid
+23,"inMotion Network","30-day job posting","Nov 30, 2018",Stripe,$55.94,Paid
+22,"Collegiate Sports Medicine (Olds)","30-day job posting","Nov 30, 2018",Stripe,$55.94,Paid
+21,"Diversified Health Clinic","30-day job posting","Nov 30, 2018",Stripe,$55.94,Paid
+20,"Diversified Health Clinic","30-day job posting","Nov 30, 2018",Stripe,$55.94,Paid
+19,"Prairie View Physiotherapy","30-day job posting","Nov 29, 2018",Stripe,$55.94,Paid
+18,"The Grove Health and Wellness","30-day job posting","Nov 29, 2018",Stripe,$55.94,Paid
+17,"Philip Naiman Physiotherapy","30-day job posting","Nov 28, 2018",Stripe,$111.87,Paid
+16,"Cloud Rehab Wellness Corporation","30-day job posting","Nov 28, 2018",Stripe,$111.87,Paid
+15,"Health Partners","30-day job posting","Nov 22, 2018",Stripe,$55.94,Paid
+14,PRICE,"30-day job posting","Nov 15, 2018",Stripe,$111.87,Paid
+13,"ProActive Health Group","30-day job posting","Jul 26, 2018","PayPal Standard (deprecated)",$111.87,Paid
+12,"Anas Kitana","Job seeker resume posting","Jul 24, 2018",,$11.29,Unpaid
+11,"ahmad wassi","Job seeker resume posting","Jul 23, 2018",,$11.29,Unpaid
+10,"Prateek Benjamin","Job seeker resume posting","Jul 13, 2018","PayPal Standard (deprecated)",$11.29,Paid
+9,"Copeman Healthcare Canada","30-day job posting","Jul 13, 2018","PayPal Standard (deprecated)",$111.87,Paid
+8,"Deep physio","30-day job posting","Jul 02, 2018","PayPal Standard (deprecated)",$111.87,Paid
+7,zubair,"Job seeker resume posting","Jun 08, 2018",,$11.29,Unpaid
+6,"Back in Motion Rehab","30-day job posting","Jun 04, 2018","PayPal Standard (deprecated)",$111.87,Paid
+5,Michelle,"Job seeker resume posting","Jun 02, 2018",,$0.00,Paid
+4,Michelle,"Job seeker resume posting","Jun 02, 2018",,$55.37,Unpaid
+3,"Kavita Joshi","Job seeker resume posting","Apr 27, 2018",,$55.37,Unpaid
+2,"shokit Ali","Job seeker resume posting","Mar 29, 2018",,$55.37,Unpaid
