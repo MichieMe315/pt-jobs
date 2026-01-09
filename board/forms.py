@@ -99,13 +99,16 @@ class EmployerSignUpForm(UserCreationForm, StyledFormMixin):
         if commit:
             user.save()
 
+        # IMPORTANT: avoid NULLs for optional fields if DB columns are NOT NULL.
+        # Use "" instead of None for text/url fields.
         Employer.objects.create(
             user=user,
             email=user.email,
+            name=self.cleaned_data.get("name") or "",
             company_name=self.cleaned_data.get("company_name") or "",
-            description=self.cleaned_data.get("company_description") or "",
+            company_description=self.cleaned_data.get("company_description") or "",
             phone=self.cleaned_data.get("phone") or "",
-            website=self.cleaned_data.get("website") or None,
+            website=self.cleaned_data.get("website") or "",
             location=self.cleaned_data.get("location") or "",
             logo=self.cleaned_data.get("logo"),
             is_approved=False,
