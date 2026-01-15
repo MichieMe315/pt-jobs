@@ -23,33 +23,40 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "1") == "1"
 
-# ------------------------------------------------------------
-# Hosts / CSRF
-# ------------------------------------------------------------
-# Allow local + Railway + your domain by default, without needing extra env vars.
-_raw_hosts = os.environ.get("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
-ALLOWED_HOSTS = [h.strip() for h in _raw_hosts if h.strip()]
 
-# Always allow Railway domains (covers web-production-xxxx.up.railway.app etc.)
-# Django allows leading-dot patterns for subdomains.
-for h in [".railway.app", ".up.railway.app"]:
-    if h not in ALLOWED_HOSTS:
-        ALLOWED_HOSTS.append(h)
+def _csv_env(name: str, default: str = "") -> list[str]:
+    """
+    Split a comma-separated env var into a clean list (strip spaces, remove empties).
+    This avoids DisallowedHost when values contain spaces/newlines.
+    """
+    raw = os.environ.get(name, default) or ""
+    parts = [p.strip() for p in raw.replace("\n", ",").split(",")]
+    return [p for p in parts if p]
 
-# Always allow your site domains (safe even if not live yet)
-for h in ["physiotherapyjobscanada.ca", "www.physiotherapyjobscanada.ca", "media.physiotherapyjobscanada.ca"]:
-    if h not in ALLOWED_HOSTS:
-        ALLOWED_HOSTS.append(h)
 
-# CSRF trusted origins (needed once you use HTTPS + forms on custom domain)
-CSRF_TRUSTED_ORIGINS = []
-for origin in [
-    "https://*.railway.app",
-    "https://*.up.railway.app",
-    "https://physiotherapyjobscanada.ca",
-    "https://*.physiotherapyjobscanada.ca",
-]:
-    CSRF_TRUSTED_ORIGINS.append(origin)
+# --- Hosts / CSRF ---
+# Railway sometimes provides a public domain env var; include it if present.
+railway_public = (os.environ.get("RAILWAY_PUBLIC_DOMAIN") or os.environ.get("RAILWAY_STATIC_URL") or "").strip()
+allowed = set(_csv_env("ALLOWED_HOSTS", "127.0.0.1,localhost"))
+
+if railway_public:
+    allowed.add(railway_public)
+
+ALLOWED_HOSTS = list(allowed)
+
+# If you set CSRF_TRUSTED_ORIGINS in Railway, we will use it; otherwise we derive from ALLOWED_HOSTS.
+# (This avoids admin/login POST issues once host is fixed.)
+_csrf_from_env = _csv_env("CSRF_TRUSTED_ORIGINS", "")
+if _csrf_from_env:
+    CSRF_TRUSTED_ORIGINS = _csrf_from_env
+else:
+    CSRF_TRUSTED_ORIGINS = []
+    for h in ALLOWED_HOSTS:
+        if h in ("127.0.0.1", "localhost"):
+            continue
+        # Accept both http/https for safety behind Railway/Cloudflare
+        CSRF_TRUSTED_ORIGINS.append(f"https://{h}")
+        CSRF_TRUSTED_ORIGINS.append(f"http://{h}")
 
 
 # Application definition
@@ -168,10 +175,10 @@ if R2_ACCOUNT_ID and R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY and R2_BUCKET_NAM
     AWS_S3_ENDPOINT_URL = f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
     AWS_S3_ADDRESSING_STYLE = "path"
 
-    # Public bucket access (no signed querystrings)
+    # If your bucket is public (r2.dev or custom domain), use direct URLs without querystrings
     AWS_QUERYSTRING_AUTH = False
 
-    # MEDIA_URL must be PUBLIC (custom domain OR r2.dev), not the S3 API endpoint
+    # MEDIA_URL must be PUBLIC (r2.dev or custom domain), not the S3 API endpoint
     if R2_PUBLIC_BASE_URL:
         MEDIA_URL = R2_PUBLIC_BASE_URL.rstrip("/") + "/"
 
@@ -194,4 +201,8 @@ DEFAULT_FROM_EMAIL = SITE_FROM_EMAIL
 
 # Admin notifications
 ADMIN_EMAILS = os.environ.get("ADMIN_EMAILS", "").strip()
-SITE_ADMIN_EMAIL = (ADMIN_EMAILS.split(",")[0].strip() if ADMIN_EMAILS else os.environ.get("SITE_ADMIN_EMAIL", "").strip())
+SITE_ADMIN_EMAIL = (
+    ADMIN_EMAILS.split(",")[0].strip()
+    if ADMIN_EMAILS
+    else os.environ.get("SITE_ADMIN_EMAIL", "").strip()
+)
