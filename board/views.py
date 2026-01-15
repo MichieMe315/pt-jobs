@@ -1,4 +1,3 @@
-# board/views.py
 from __future__ import annotations
 
 from datetime import timedelta
@@ -49,6 +48,9 @@ from .models import (
 # ============================================================
 
 def _send_email(subject: str, body: str, to_emails: list[str]) -> None:
+    """
+    Sends email using DEFAULT_FROM_EMAIL (settings) and Django backend.
+    """
     try:
         from django.core.mail import send_mail
         send_mail(subject, body, getattr(settings, "DEFAULT_FROM_EMAIL", None), to_emails, fail_silently=True)
@@ -57,11 +59,45 @@ def _send_email(subject: str, body: str, to_emails: list[str]) -> None:
 
 
 def _admin_emails() -> list[str]:
+    """
+    Admin recipient emails:
+    1) SiteSettings.contact_email (your admin inbox per your setup)
+    2) settings.ADMINS
+    3) settings.SITE_ADMIN_EMAIL
+    """
+    try:
+        s = SiteSettings.objects.first()
+        if s and getattr(s, "contact_email", None):
+            return [s.contact_email]
+    except Exception:
+        pass
+
     admins = getattr(settings, "ADMINS", None)
     if admins:
         return [email for _, email in admins]
+
     site_admin = getattr(settings, "SITE_ADMIN_EMAIL", None)
     return [site_admin] if site_admin else []
+
+
+def send_templated_email(key: str, to_emails: list[str], context: dict) -> bool:
+    """
+    Uses EmailTemplate(key).subject + .html with simple {{ token }} replacement.
+    Returns True if template exists+enabled AND email send was attempted.
+    """
+    tpl = EmailTemplate.objects.filter(key=key, is_enabled=True).first()
+    if not tpl:
+        return False
+
+    subject = tpl.subject or ""
+    body = getattr(tpl, "html", "") or ""
+
+    for k, v in context.items():
+        subject = subject.replace(f"{{{{ {k} }}}}", str(v))
+        body = body.replace(f"{{{{ {k} }}}}", str(v))
+
+    _send_email(subject, body, to_emails)
+    return True
 
 
 # ============================================================
@@ -79,9 +115,10 @@ def _gateway_context() -> dict:
     cfg = _gateway_config()
     return {
         "stripe_publishable_key": getattr(cfg, "stripe_publishable_key", None) if cfg else None,
+        "stripe_public_key": getattr(cfg, "stripe_publishable_key", None) if cfg else None,
         "stripe_secret_key": getattr(cfg, "stripe_secret_key", None) if cfg else None,
         "paypal_client_id": getattr(cfg, "paypal_client_id", None) if cfg else None,
-        "paypal_secret": getattr(cfg, "paypal_secret", None) if cfg else None,
+        "paypal_mode": "live" if (cfg and getattr(settings, "PAYPAL_LIVE", False)) else "sandbox",
         "currency": getattr(cfg, "currency", "CAD") if cfg else "CAD",
     }
 
@@ -97,7 +134,6 @@ def _apply_discount(package: PostingPackage, code_raw: str) -> tuple[Optional[Di
     if not dc:
         return None, base, "Invalid discount code."
 
-    # Package restriction (only if the discount is tied to a specific package)
     if getattr(dc, "applicable_package_id", None) and dc.applicable_package_id != package.id:
         return None, base, "This discount code is not valid for this package."
 
@@ -223,12 +259,24 @@ def login_view(request: HttpRequest) -> HttpResponse:
         if form.is_valid():
             user = form.get_user()
 
+            # ✅ FIX: NEVER block staff/superusers from logging in
+            if user.is_superuser or user.is_staff:
+                login(request, user)
+                nxt = request.GET.get("next")
+                return redirect(nxt) if nxt else redirect("admin:index")
+
             if hasattr(user, "employer") and not user.employer.is_approved:
-                messages.error(request, "Your employer account is pending approval. You will receive an email when admin approves your account.")
+                messages.error(
+                    request,
+                    "Your employer account is pending approval. You will receive an email when admin approves your account."
+                )
                 return render(request, "board/login.html", {"sitesettings": sitesettings, "form": form})
 
             if hasattr(user, "jobseeker") and not user.jobseeker.is_approved:
-                messages.error(request, "Your job seeker account is pending approval. You will receive an email when admin approves your account.")
+                messages.error(
+                    request,
+                    "Your job seeker account is pending approval. You will receive an email when admin approves your account."
+                )
                 return render(request, "board/login.html", {"sitesettings": sitesettings, "form": form})
 
             login(request, user)
@@ -272,11 +320,18 @@ def employer_signup(request: HttpRequest) -> HttpResponse:
     if request.method == "POST" and form.is_valid():
         user = form.save()
 
+        # Contract: on signup -> email admin
         admin_emails = _admin_emails()
         if admin_emails:
-            _send_email("New Employer Signup", f"A new employer signed up: {user.email}", admin_emails)
+            send_templated_email("admin_new_employer", admin_emails, {"email": user.email})
 
-        messages.success(request, "Your account has been created. You will be notified via email when admin approves your account.")
+        # Contract: on signup -> user is pending approval
+        send_templated_email("employer_welcome", [user.email], {"email": user.email})
+
+        messages.success(
+            request,
+            "Your account has been created. You will be notified via email when admin approves your account."
+        )
         return redirect("login")
 
     return render(request, "board/employer_signup.html", {"sitesettings": sitesettings, "form": form})
@@ -285,22 +340,25 @@ def employer_signup(request: HttpRequest) -> HttpResponse:
 def employer_list(request: HttpRequest) -> HttpResponse:
     sitesettings = SiteSettings.objects.first()
 
-    # IMPORTANT FIX:
-    # Your reverse relation is "jobs" (NOT "job"), so annotate/filter must use jobs__...
+    # FIX: Employer -> related_name is "jobs" (plural), not "job"
     employers = (
-        Employer.objects.annotate(active_jobs=Count("jobs", filter=Q(jobs__is_active=True)))
+        Employer.objects.filter(is_approved=True)
+        .annotate(active_jobs=Count("jobs", filter=Q(jobs__is_active=True)))
         .filter(active_jobs__gt=0)
         .order_by("company_name", "id")
     )
-
     return render(request, "board/employer_list.html", {"sitesettings": sitesettings, "employers": employers})
 
 
 def employer_detail(request: HttpRequest, employer_id: int) -> HttpResponse:
     sitesettings = SiteSettings.objects.first()
-    employer = get_object_or_404(Employer, id=employer_id)
+    employer = get_object_or_404(Employer, id=employer_id, is_approved=True)
     jobs = Job.objects.filter(employer=employer, is_active=True).order_by("-posting_date", "-id")
-    return render(request, "board/employer_detail.html", {"sitesettings": sitesettings, "employer": employer, "jobs": jobs})
+    return render(
+        request,
+        "board/employer_detail.html",
+        {"sitesettings": sitesettings, "employer": employer, "jobs": jobs},
+    )
 
 
 # ============================================================
@@ -313,9 +371,13 @@ def jobseeker_signup(request: HttpRequest) -> HttpResponse:
     if request.method == "POST" and form.is_valid():
         user = form.save()
 
+        # Contract: on signup -> email admin
         admin_emails = _admin_emails()
         if admin_emails:
-            _send_email("New Job Seeker Signup", f"A new job seeker signed up: {user.email}", admin_emails)
+            send_templated_email("admin_new_jobseeker", admin_emails, {"email": user.email})
+
+        # Contract: on signup -> user is pending approval
+        send_templated_email("jobseeker_welcome", [user.email], {"email": user.email})
 
         messages.success(request, "Account created. Your job seeker account requires admin approval before login.")
         return redirect("login")
@@ -344,9 +406,13 @@ def job_list(request: HttpRequest) -> HttpResponse:
 
 def job_detail(request: HttpRequest, job_id: int) -> HttpResponse:
     sitesettings = SiteSettings.objects.first()
-    job = get_object_or_404(Job.objects.select_related("employer"), id=job_id)
+    job = get_object_or_404(Job.objects.select_related("employer"), id=job_id, is_active=True)
     job_alert_form = JobAlertForm()
-    return render(request, "board/job_detail.html", {"sitesettings": sitesettings, "job": job, "job_alert_form": job_alert_form})
+    return render(
+        request,
+        "board/job_detail.html",
+        {"sitesettings": sitesettings, "job": job, "job_alert_form": job_alert_form},
+    )
 
 
 @login_required
@@ -395,6 +461,12 @@ def job_create(request: HttpRequest) -> HttpResponse:
                 pkg.credits_remaining = max(0, int(pkg.credits_remaining) - 1)
                 pkg.save(update_fields=["credits_remaining"])
             _sync_employer_credits(employer)
+
+            send_templated_email(
+                "job_posting_confirmation",
+                [getattr(employer, "email", "")],
+                {"job_title": getattr(job, "title", "")},
+            )
 
         messages.success(request, "Job created.")
         return redirect("employer_dashboard")
@@ -496,7 +568,7 @@ def job_duplicate(request: HttpRequest, job_id: int) -> HttpResponse:
         "apply_via": original.apply_via,
         "apply_email": original.apply_email,
         "apply_url": original.apply_url,
-        "relocation_assistance": "yes" if bool(getattr(original, "relocation_assistance", False)) else "no",
+        "relocation_assistance": "yes" if bool(original.relocation_assistance) else "no",
     }
 
     form = JobForm(request.POST or None, initial=initial, max_expiry_date=max_expiry)
@@ -574,6 +646,13 @@ def job_apply(request: HttpRequest, job_id: int) -> HttpResponse:
             app.jobseeker = js
             app.resume = resume_obj
             app.save()
+
+            send_templated_email(
+                "jobseeker_application_confirmation",
+                [getattr(js, "email", "")],
+                {"job_title": getattr(job, "title", "")},
+            )
+
             messages.success(request, "Application submitted.")
             return redirect("jobseeker_dashboard")
 
@@ -647,6 +726,13 @@ def jobseeker_dashboard(request: HttpRequest) -> HttpResponse:
         r = upload_form.save(commit=False)
         r.jobseeker = js
         r.save()
+
+        send_templated_email(
+            "resume_posting_confirmation",
+            [getattr(js, "email", "")],
+            {"email": getattr(js, "email", "")},
+        )
+
         messages.success(request, "Resume uploaded.")
         return redirect("jobseeker_dashboard")
 
@@ -675,7 +761,7 @@ class EmployerProfileEditForm(forms.ModelForm):
 
     class Meta:
         model = Employer
-        fields = ("company_name", "description", "phone", "website", "location", "logo")
+        fields = ("company_name", "company_description", "phone", "website", "location", "logo")
 
     def clean_company_description(self):
         val = self.cleaned_data.get("company_description") or ""
@@ -684,9 +770,9 @@ class EmployerProfileEditForm(forms.ModelForm):
 
 
 class JobSeekerProfileEditForm(forms.ModelForm):
-    is_registered_canada = forms.ChoiceField(choices=[("", "Select…")] + list(YES_NO_CHOICES), required=True)
+    registered_in_canada = forms.ChoiceField(choices=[("", "Select…")] + list(YES_NO_CHOICES), required=True)
     open_to_relocate = forms.ChoiceField(choices=[("", "Select…")] + list(YES_NO_CHOICES), required=True)
-    requires_sponsorship = forms.ChoiceField(choices=[("", "Select…")] + list(YES_NO_CHOICES), required=True)
+    require_sponsorship = forms.ChoiceField(choices=[("", "Select…")] + list(YES_NO_CHOICES), required=True)
     seeking_immigration = forms.ChoiceField(choices=[("", "Select…")] + list(YES_NO_CHOICES), required=True)
 
     class Meta:
@@ -706,9 +792,9 @@ class JobSeekerProfileEditForm(forms.ModelForm):
         def _to_bool(v: str) -> bool:
             return True if (v or "").lower() == "yes" else False
 
-        inst.is_registered_canada = _to_bool(self.cleaned_data.get("is_registered_canada", "no"))
+        inst.registered_in_canada = _to_bool(self.cleaned_data.get("registered_in_canada", "no"))
         inst.open_to_relocate = _to_bool(self.cleaned_data.get("open_to_relocate", "no"))
-        inst.requires_sponsorship = _to_bool(self.cleaned_data.get("requires_sponsorship", "no"))
+        inst.require_sponsorship = _to_bool(self.cleaned_data.get("require_sponsorship", "no"))
         inst.seeking_immigration = _to_bool(self.cleaned_data.get("seeking_immigration", "no"))
 
         if commit:
@@ -727,6 +813,7 @@ def employer_profile_edit(request: HttpRequest) -> HttpResponse:
     if request.method == "POST" and form.is_valid():
         updated = form.save(commit=False)
 
+        # Contract: employer edits profile => becomes unapproved + email admin
         updated.is_approved = False
         updated.save()
 
@@ -799,6 +886,7 @@ def checkout_select(request: HttpRequest, package_id: int) -> HttpResponse:
 
 @login_required
 def checkout_start(request: HttpRequest, package_id: int) -> HttpResponse:
+    # Continue to payment button POSTS here:
     if request.method != "POST":
         return redirect("checkout_select", package_id=package_id)
 
@@ -815,6 +903,7 @@ def checkout_start(request: HttpRequest, package_id: int) -> HttpResponse:
         messages.error(request, err)
         return redirect("checkout_select", package_id=package_id)
 
+    # ===== Stripe: server-side redirect to hosted Checkout =====
     if payment_method in ("card", "stripe"):
         gw = _gateway_context()
         secret = gw.get("stripe_secret_key")
@@ -853,8 +942,10 @@ def checkout_start(request: HttpRequest, package_id: int) -> HttpResponse:
             messages.error(request, "Unable to start Stripe checkout.")
             return redirect("checkout_select", package_id=package_id)
 
+        # Continue to payment launches Stripe:
         return redirect(session.url)
 
+    # ===== PayPal (or other non-stripe flow): show checkout.html =====
     ctx = {
         "sitesettings": SiteSettings.objects.first(),
         "package": package,
@@ -874,6 +965,7 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
     employer = request.user.employer
     session_id = (request.GET.get("session_id") or "").strip()
 
+    # Stripe success: verify session + credit purchase
     if session_id:
         gw = _gateway_context()
         secret = gw.get("stripe_secret_key")
@@ -902,6 +994,7 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
 
         package = get_object_or_404(PostingPackage, id=pkg_id, is_active=True)
 
+        # Prevent duplicates if refreshing success page:
         existing = Invoice.objects.filter(processor="stripe", processor_reference=session_id).first()
         if not existing:
             amount_total = getattr(session, "amount_total", None)
@@ -927,6 +1020,12 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
                 source="stripe",
             )
             _sync_employer_credits(employer)
+
+            send_templated_email(
+                "order_confirmation",
+                [getattr(employer, "email", "")],
+                {"package_name": getattr(package, "name", "")},
+            )
 
         return render(
             request,
@@ -978,6 +1077,12 @@ def paypal_success(request: HttpRequest) -> HttpResponse:
         )
         _sync_employer_credits(employer)
 
+        send_templated_email(
+            "order_confirmation",
+            [getattr(employer, "email", "")],
+            {"package_name": getattr(package, "name", "")},
+        )
+
     return render(
         request,
         "checkout/checkout_success.html",
@@ -988,6 +1093,9 @@ def paypal_success(request: HttpRequest) -> HttpResponse:
 @require_POST
 @login_required
 def stripe_create_session(request: HttpRequest, package_id: int) -> JsonResponse:
+    """
+    Supports checkout.html "Pay with card" button via fetch() -> JSON {id: session.id}
+    """
     if not hasattr(request.user, "employer"):
         return JsonResponse({"error": "Employer login required."}, status=403)
 

@@ -1,8 +1,4 @@
 # board/apps.py
-from __future__ import annotations
-
-import threading
-
 from django.apps import AppConfig
 
 
@@ -15,7 +11,7 @@ class BoardConfig(AppConfig):
         # Ensure signal receivers are registered
         from . import signals  # noqa: F401
 
-        # Startup imports (run in a short delayed thread so app can finish loading)
-        from .startup_import import run_bulk_import_if_enabled  # noqa
+        # Startup bulk import (only runs when env var is enabled)
+        from .startup_import import run_bulk_import_if_enabled  # noqa: F401
 
-        threading.Timer(2.0, run_bulk_import_if_enabled).start()
+        run_bulk_import_if_enabled()

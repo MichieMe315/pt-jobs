@@ -1,101 +1,113 @@
 # board/management/commands/update_employers_status_csv.py
-from __future__ import annotations
-
 import csv
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Any
+from typing import Optional
 
-from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from board.models import Employer
 
 
-def _clean(s: Any) -> str:
-    if s is None:
-        return ""
-    val = str(s).strip()
-    return "" if val.lower() in {"nan", "none", "null"} else val
+EMAIL_KEYS = [
+    "email",
+    "Email",
+    "Employer Email",
+    "employer_email",
+    "EmployerEmail",
+]
 
 
-@dataclass
-class Stats:
-    updated: int = 0
-    skipped: int = 0
-    errors: int = 0
+def pick_email_key(fieldnames: list[str] | None) -> Optional[str]:
+    if not fieldnames:
+        return None
+    for k in EMAIL_KEYS:
+        if k in fieldnames:
+            return k
+    return None
+
+
+def normalize_email(val: str) -> str:
+    return (val or "").strip().lower()
 
 
 class Command(BaseCommand):
-    help = "Update Employer status from legacy CSV exports (employers_deactivated/employers_pending)."
+    help = "Mark employers from CSV as inactive (pending or deactivated legacy lists)."
 
     def add_arguments(self, parser):
         parser.add_argument("csv_path", type=str)
-        parser.add_argument("--kind", choices=["deactivated", "pending"], required=True)
-        parser.add_argument("--dry-run", action="store_true")
+        parser.add_argument(
+            "--kind",
+            required=True,
+            choices=["pending", "deactivated"],
+            help="Legacy status type; both result in inactive employers.",
+        )
+        parser.add_argument("--dry-run", action="store_true", default=False)
 
-    def handle(self, *args, **options):
-        csv_path = options["csv_path"]
-        kind = options["kind"]
-        dry_run = options["dry_run"]
+    def handle(self, *args, **opts):
+        csv_path: str = opts["csv_path"]
+        kind: str = opts["kind"]
+        dry_run: bool = opts["dry_run"]
 
-        p = Path(csv_path)
-        if not p.is_absolute():
-            p = Path(settings.BASE_DIR) / p
-        if not p.exists():
-            raise FileNotFoundError(f"CSV not found: {p}")
+        updated = 0
+        skipped = 0
+        errors = 0
 
-        with p.open(newline="", encoding="utf-8-sig") as f:
+        # CONTRACT RULE:
+        # pending + deactivated => NOT approved, login blocked
+        target_is_approved = False
+        target_login_active = False
+
+        with open(csv_path, newline="", encoding="utf-8-sig") as f:
             reader = csv.DictReader(f)
-            headers = reader.fieldnames or []
-            if "Employer Email" not in set(headers):
-                raise ValueError(f"CSV must include 'Employer Email'. Found headers: {headers}")
+            email_key = pick_email_key(reader.fieldnames)
 
-            stats = Stats()
-            ctx = transaction.atomic() if not dry_run else _NoopCtx()
+            if not email_key:
+                raise ValueError(
+                    f"CSV must include an email column. Found headers: {reader.fieldnames}"
+                )
 
-            with ctx:
-                for idx, row in enumerate(reader, start=2):
-                    try:
-                        email = _clean(row.get("Employer Email")).lower()
-                        if not email:
-                            stats.skipped += 1
-                            continue
+            for idx, row in enumerate(reader, start=2):
+                try:
+                    email = normalize_email(row.get(email_key, ""))
+                    if not email:
+                        skipped += 1
+                        continue
 
-                        emp = Employer.objects.filter(email__iexact=email).first()
-                        if not emp:
-                            stats.skipped += 1
-                            continue
+                    emp = Employer.objects.filter(email__iexact=email).first()
+                    if not emp:
+                        skipped += 1
+                        continue
 
-                        if kind == "deactivated":
-                            emp.is_approved = False
-                            emp.login_active = False
-                        else:  # pending
-                            emp.is_approved = False
-                            emp.login_active = True
+                    # already inactive → skip
+                    if (
+                        emp.is_approved is False
+                        and emp.login_active is False
+                    ):
+                        skipped += 1
+                        continue
 
-                        if not dry_run:
-                            emp.save()
+                    if dry_run:
+                        updated += 1
+                        continue
 
-                        stats.updated += 1
+                    with transaction.atomic():
+                        emp.is_approved = target_is_approved
+                        emp.login_active = target_login_active
+                        emp.save(update_fields=["is_approved", "login_active"])
 
-                    except Exception as e:
-                        stats.errors += 1
-                        stats.skipped += 1
-                        self.stdout.write(self.style.ERROR(f"[employers:{kind}] Row {idx} ERROR: {e}"))
+                    updated += 1
 
-                if dry_run:
-                    self.stdout.write(self.style.WARNING(f"[employers:{kind}] DRY-RUN: no DB writes performed."))
+                except Exception as e:
+                    errors += 1
+                    self.stdout.write(
+                        self.style.ERROR(f"[employers:{kind}] Row {idx} ERROR: {e}")
+                    )
 
-            self.stdout.write(
-                self.style.SUCCESS(f"[employers:{kind}] updated={stats.updated} skipped={stats.skipped} errors={stats.errors}")
+        if dry_run:
+            self.stdout.write(self.style.WARNING("[employers] DRY-RUN: no DB writes performed."))
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"[employers:{kind}] updated={updated} skipped={skipped} errors={errors}"
             )
-
-
-class _NoopCtx:
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc, tb):
-        return False
+        )

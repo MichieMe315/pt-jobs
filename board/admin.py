@@ -1,7 +1,8 @@
-# board/admin.py
 from __future__ import annotations
 
+from django.conf import settings
 from django.contrib import admin, messages
+from django.core.mail import send_mail
 from django.utils import timezone
 
 from import_export import resources
@@ -28,7 +29,67 @@ from .models import (
 
 
 class SafeModelAdmin(admin.ModelAdmin):
-    pass
+    """
+    Force newest records first (last created appears on top).
+    Using -id is safe and consistent across all models.
+    """
+    ordering = ("-id",)
+
+
+# ============================================================
+# EmailTemplate send helpers (NO STUBS)
+# ============================================================
+
+def _get_default_from_email() -> str | None:
+    return getattr(settings, "DEFAULT_FROM_EMAIL", None)
+
+
+def _render_template(key: str, context: dict) -> tuple[str, str] | None:
+    """
+    Minimal token replace:
+      - replaces {{ token }} occurrences in subject/html with context[str(token)] if present.
+    Safe and predictable, no magic.
+    """
+    tpl = EmailTemplate.objects.filter(key=key, is_enabled=True).first()
+    if not tpl:
+        return None
+
+    subject = tpl.subject or ""
+    body = getattr(tpl, "html", "") or ""
+
+    for k, v in context.items():
+        subject = subject.replace(f"{{{{ {k} }}}}", str(v))
+        body = body.replace(f"{{{{ {k} }}}}", str(v))
+
+    return subject, body
+
+
+def _send_email_template(key: str, to_email: str, context: dict) -> bool:
+    """
+    Sends exactly ONE template key. No fallback.
+    Returns True only if:
+      - template exists + enabled, AND
+      - send_mail succeeds
+    """
+    if not to_email:
+        return False
+
+    rendered = _render_template(key, context)
+    if not rendered:
+        return False
+
+    subject, body = rendered
+    try:
+        send_mail(
+            subject,
+            body,
+            _get_default_from_email(),
+            [to_email],
+            fail_silently=False,
+        )
+        return True
+    except Exception:
+        return False
 
 
 # ----------------------------
@@ -77,23 +138,71 @@ class PurchasedPackageResource(resources.ModelResource):
 @admin.action(description="Approve selected Employers")
 def approve_employers(modeladmin, request, queryset):
     updated = 0
+    emailed = 0
+    missing_template = 0
+
     for emp in queryset:
         if hasattr(emp, "is_approved") and not emp.is_approved:
             emp.is_approved = True
             emp.save(update_fields=["is_approved"])
             updated += 1
-    messages.success(request, f"Approved {updated} employer(s).")
+
+            # Contract-required: approval email to employer on approval
+            ok = _send_email_template(
+                "employer_approved",
+                getattr(emp, "email", ""),
+                {"email": getattr(emp, "email", ""), "company_name": getattr(emp, "company_name", "")},
+            )
+            if ok:
+                emailed += 1
+            else:
+                missing_template += 1
+
+    if missing_template:
+        messages.warning(
+            request,
+            f"Approved {updated} employer(s). Sent {emailed} approval email(s). "
+            f"{missing_template} were NOT emailed (missing/disabled template key: employer_approved or SMTP error).",
+        )
+    else:
+        messages.success(request, f"Approved {updated} employer(s). Sent {emailed} approval email(s).")
 
 
 @admin.action(description="Approve selected Job Seekers")
 def approve_jobseekers(modeladmin, request, queryset):
     updated = 0
+    emailed = 0
+    missing_template = 0
+
     for js in queryset:
         if hasattr(js, "is_approved") and not js.is_approved:
             js.is_approved = True
             js.save(update_fields=["is_approved"])
             updated += 1
-    messages.success(request, f"Approved {updated} job seeker(s).")
+
+            # Contract-required: approval email to job seeker on approval
+            ok = _send_email_template(
+                "jobseeker_approved",
+                getattr(js, "email", ""),
+                {
+                    "email": getattr(js, "email", ""),
+                    "first_name": getattr(js, "first_name", ""),
+                    "last_name": getattr(js, "last_name", ""),
+                },
+            )
+            if ok:
+                emailed += 1
+            else:
+                missing_template += 1
+
+    if missing_template:
+        messages.warning(
+            request,
+            f"Approved {updated} job seeker(s). Sent {emailed} approval email(s). "
+            f"{missing_template} were NOT emailed (missing/disabled template key: jobseeker_approved or SMTP error).",
+        )
+    else:
+        messages.success(request, f"Approved {updated} job seeker(s). Sent {emailed} approval email(s).")
 
 
 @admin.action(description="Deactivate selected Employers")
@@ -161,6 +270,12 @@ def _max_expiry_date_last_day(posting_date, duration_days: int):
 
 @admin.action(description="Duplicate selected Jobs (creates inactive copies)")
 def duplicate_jobs(modeladmin, request, queryset):
+    """
+    Admin-side duplicate:
+    - Creates a new Job record with copied fields.
+    - Sets is_active=False by default.
+    - Sets posting_date to today and clamps expiry_date to posting_duration_days.
+    """
     created = 0
     posting_date = timezone.now().date()
     duration_days = _posting_duration_days_default()
@@ -205,6 +320,7 @@ def duplicate_jobs(modeladmin, request, queryset):
 class JobAdmin(ImportExportModelAdmin):
     resource_class = JobResource
     actions = [duplicate_jobs, deactivate_jobs, activate_jobs]
+    ordering = ("-id",)
     list_display_links = ("title",)
     list_display = (
         "id",
@@ -225,6 +341,7 @@ class JobAdmin(ImportExportModelAdmin):
 class JobSeekerAdmin(ImportExportModelAdmin):
     resource_class = JobSeekerResource
     actions = [approve_jobseekers, deactivate_jobseekers, activate_jobseekers]
+    ordering = ("-id",)
     list_display_links = ("last_name", "first_name")
     list_display = (
         "id",
@@ -243,6 +360,7 @@ class JobSeekerAdmin(ImportExportModelAdmin):
 class EmployerAdmin(ImportExportModelAdmin):
     resource_class = EmployerResource
     actions = [approve_employers, deactivate_employers, activate_employers]
+    ordering = ("-id",)
     list_display_links = ("company_name",)
     list_display = (
         "id",
@@ -259,6 +377,7 @@ class EmployerAdmin(ImportExportModelAdmin):
 @admin.register(Application)
 class ApplicationAdmin(ImportExportModelAdmin):
     resource_class = ApplicationResource
+    ordering = ("-id",)
     list_display = ("id", "job", "jobseeker", "created_at")
     list_filter = ("created_at",)
     search_fields = ("job__title", "jobseeker__email", "jobseeker__first_name", "jobseeker__last_name")
@@ -267,6 +386,7 @@ class ApplicationAdmin(ImportExportModelAdmin):
 @admin.register(Resume)
 class ResumeAdmin(ImportExportModelAdmin):
     resource_class = ResumeResource
+    ordering = ("-id",)
     list_display = ("id", "jobseeker", "created_at")
     list_filter = ("created_at",)
     search_fields = ("jobseeker__email", "jobseeker__first_name", "jobseeker__last_name")
@@ -286,6 +406,7 @@ class PostingPackageAdmin(SafeModelAdmin):
 @admin.register(PurchasedPackage)
 class PurchasedPackageAdmin(ImportExportModelAdmin):
     resource_class = PurchasedPackageResource
+    ordering = ("-id",)
     list_display = (
         "id",
         "employer",
@@ -302,6 +423,7 @@ class PurchasedPackageAdmin(ImportExportModelAdmin):
 @admin.register(Invoice)
 class InvoiceAdmin(ImportExportModelAdmin):
     resource_class = InvoiceResource
+    ordering = ("-id",)
     list_display = (
         "id",
         "employer",
@@ -328,81 +450,10 @@ class DiscountCodeAdmin(SafeModelAdmin):
 # Settings + templates
 # ----------------------------
 
-def _field_exists(model, name: str) -> bool:
-    try:
-        model._meta.get_field(name)
-        return True
-    except Exception:
-        return False
-
-
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(SafeModelAdmin):
-    """
-    This is where your "duplicate fields / fields that shouldn't be there" gets fixed.
-
-    We explicitly choose what SiteSettings shows in admin so you ONLY see the fields
-    you actually use. Everything else stays in the model (no renames / no deletions),
-    it just doesn't clutter the admin screen.
-    """
     list_display = ("id", "site_name", "contact_email")
     search_fields = ("site_name", "contact_email")
-
-    def get_fieldsets(self, request, obj=None):
-        # Prefer "new" hero fields if present; otherwise show legacy home_hero_* fields.
-        hero_fields = []
-        if _field_exists(SiteSettings, "hero_image"):
-            hero_fields.append("hero_image")
-        if _field_exists(SiteSettings, "hero_title"):
-            hero_fields.append("hero_title")
-        if _field_exists(SiteSettings, "hero_subtitle"):
-            hero_fields.append("hero_subtitle")
-
-        if not hero_fields:
-            # Legacy names in your uploaded models.py
-            for f in ("home_hero_image", "home_hero_title", "home_hero_subtitle", "home_hero_cta_text", "home_hero_cta_url"):
-                if _field_exists(SiteSettings, f):
-                    hero_fields.append(f)
-
-        core = [f for f in ("site_name", "contact_email") if _field_exists(SiteSettings, f)]
-        search = [f for f in ("mapbox_token", "posting_duration_days") if _field_exists(SiteSettings, f)]
-
-        banners = [f for f in ("side_banner_html", "bottom_banner_html") if _field_exists(SiteSettings, f)]
-
-        seo = [f for f in ("seo_meta_title", "seo_meta_description", "google_analytics_id") if _field_exists(SiteSettings, f)]
-
-        socials = [f for f in ("facebook_url", "instagram_url", "reddit_url", "linkedin_url", "twitter_url", "social_webhook_url") if _field_exists(SiteSettings, f)]
-
-        # ✅ RESTORED: branding fields shown in admin (logo was "gone" because this was empty)
-        branding = []
-        for f in (
-            "branding_logo",
-            "branding_favicon",
-            "branding_primary_color",
-            "branding_secondary_color",
-            "branding_footer_html",
-            "footer_text",
-        ):
-            if _field_exists(SiteSettings, f):
-                branding.append(f)
-
-        fieldsets = [
-            ("Core", {"fields": core}),
-        ]
-        if hero_fields:
-            fieldsets.append(("Homepage Hero", {"fields": hero_fields}))
-        if search:
-            fieldsets.append(("Search / Posting Defaults", {"fields": search}))
-        if banners:
-            fieldsets.append(("Banners", {"fields": banners}))
-        if seo:
-            fieldsets.append(("SEO / Analytics", {"fields": seo}))
-        if socials:
-            fieldsets.append(("Social Links", {"fields": socials}))
-        if branding:
-            fieldsets.append(("Branding", {"fields": branding}))
-
-        return fieldsets
 
 
 @admin.register(EmailTemplate)

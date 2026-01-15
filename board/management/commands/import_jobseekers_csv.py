@@ -1,12 +1,5 @@
-# board/management/commands/import_jobseekers_csv.py
-from __future__ import annotations
-
 import csv
-import re
-from dataclasses import dataclass
-from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional, Tuple
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -16,236 +9,189 @@ from django.utils import timezone
 
 from board.models import JobSeeker
 
-
-def _clean(s: Any) -> str:
-    if s is None:
-        return ""
-    val = str(s).strip()
-    return "" if val.lower() in {"nan", "none", "null"} else val
+User = get_user_model()
 
 
-def _lower(s: Any) -> str:
-    return _clean(s).lower()
+def norm(val):
+    return (val or "").strip()
 
 
-def _parse_bool_yes_no(s: Any) -> bool:
-    s = _lower(s)
-    return s in {"1", "true", "yes", "y", "on"}
+def truncate(val, max_len):
+    v = norm(val)
+    return v[:max_len] if (max_len and isinstance(max_len, int)) else v
 
 
-def _split_name(full: str) -> Tuple[str, str]:
-    full = _clean(full)
-    if not full:
-        return "", ""
-    parts = [p for p in re.split(r"\s+", full) if p]
-    if len(parts) == 1:
-        return parts[0], ""
-    return parts[0], " ".join(parts[1:])
+# Flexible header keys
+EMAIL_KEYS = ["email", "Email", "Job Seeker Email", "jobseeker_email", "JobSeekerEmail"]
+FIRST_NAME_KEYS = ["first_name", "First Name", "firstname", "FirstName"]
+LAST_NAME_KEYS = ["last_name", "Last Name", "lastname", "LastName"]
+POSITION_KEYS = ["position_desired", "Position Desired", "Desired Position", "position"]
+OPPORTUNITY_KEYS = ["opportunity_type", "Opportunity Type", "Type", "opportunity"]
+LOCATION_KEYS = ["current_location", "Current Location", "Location", "location"]
+RELOCATE_WHERE_KEYS = ["relocate_where", "Relocate Where", "Relocation Where", "relocate"]
 
 
-def _parse_datetime(s: Any):
-    s = _clean(s)
-    if not s:
-        return None
-    # Expected: 2025-08-05 16:27:07
-    try:
-        return datetime.strptime(s, "%Y-%m-%d %H:%M:%S")
-    except Exception:
-        return None
+def pick(row, keys):
+    for k in keys:
+        if k in row and norm(row.get(k)):
+            return norm(row.get(k))
+    return ""
 
 
-OPPORTUNITY_MAP = {
-    "full-time": "full_time",
-    "full time": "full_time",
-    "full_time": "full_time",
-    "part-time": "part_time",
-    "part time": "part_time",
-    "part_time": "part_time",
-    "contractor": "contractor",
-    "contract": "contractor",
-    "casual": "casual",
-    "locum": "locum",
-    "temporary": "temporary",
-}
-
-
-@dataclass
-class ImportStats:
-    users_created: int = 0
-    users_existing: int = 0
-    jobseekers_created: int = 0
-    jobseekers_updated: int = 0
-    skipped: int = 0
-    errors: int = 0
+def _mode_from_filename(filename: str) -> str:
+    """
+    Auto-detect jobseeker status from file name.
+    - *pending* => inactive (new site: pending should NOT be active)
+    - *inactive* / *deactivated* => inactive
+    - default => active
+    """
+    name = (filename or "").lower()
+    if "pending" in name:
+        return "inactive"
+    if "inactive" in name or "deactivated" in name:
+        return "inactive"
+    if "active" in name:
+        return "active"
+    return "active"
 
 
 class Command(BaseCommand):
-    help = "Import Job Seekers from legacy export CSVs (jobseekers_active/inactive/pending)."
+    help = "Import JobSeekers from one or more CSVs. Pending treated as inactive."
 
     def add_arguments(self, parser):
-        parser.add_argument("csv_path", type=str)
+        parser.add_argument("csv_paths", nargs="+", type=str)
         parser.add_argument(
             "--mode",
-            choices=["active", "inactive", "pending", "infer"],
-            default="infer",
-            help="Force is_approved/login_active based on file type.",
+            choices=["active", "inactive"],
+            default=None,
+            help="Force a single mode for all files (otherwise auto-detected from filename).",
         )
-        parser.add_argument("--dry-run", action="store_true", help="Parse + validate, but do not write to DB.")
+        parser.add_argument("--dry-run", action="store_true")
 
-    def handle(self, *args, **options):
-        csv_path = options["csv_path"]
-        mode = options["mode"]
-        dry_run = options["dry_run"]
+    def handle(self, *args, **opts):
+        csv_paths = opts["csv_paths"]
+        forced_mode = opts["mode"]
+        dry_run = opts["dry_run"]
 
-        p = Path(csv_path)
-        if not p.is_absolute():
-            p = Path(settings.BASE_DIR) / p
+        users_created = 0
+        users_updated = 0
+        users_existing = 0
+        js_created = 0
+        js_updated = 0
+        skipped = 0
+        errors = 0
 
-        if not p.exists():
-            raise FileNotFoundError(f"CSV not found: {p}")
+        def _abs_path(p: str) -> Path:
+            pp = Path(p)
+            if not pp.is_absolute():
+                pp = Path(settings.BASE_DIR) / pp
+            return pp
 
-        with p.open(newline="", encoding="utf-8-sig") as f:
-            reader = csv.DictReader(f)
-            headers = reader.fieldnames or []
+        with transaction.atomic():
+            for raw_path in csv_paths:
+                path = _abs_path(raw_path)
+                if not path.exists():
+                    raise FileNotFoundError(f"CSV not found: {path}")
 
-            required = {"Email", "Full Name"}
-            missing = [h for h in required if h not in set(headers)]
-            if missing:
-                raise ValueError(f"CSV missing required columns: {missing}. Found headers: {headers}")
+                mode = forced_mode or _mode_from_filename(path.name)
+                is_approved = mode == "active"
+                login_active = mode == "active"
 
-            stats = ImportStats()
-            User = get_user_model()
-
-            ctx = transaction.atomic() if not dry_run else _NoopCtx()
-
-            with ctx:
-                for idx, row in enumerate(reader, start=2):
-                    try:
-                        email = _clean(row.get("Email")).lower()
-                        if not email:
-                            stats.skipped += 1
-                            continue
-
-                        full_name = _clean(row.get("Full Name"))
-                        first_name, last_name = _split_name(full_name)
-
-                        position_desired = _clean(row.get("Position Desired"))
-                        registered = _parse_bool_yes_no(row.get("Are you a Registered Professional in Canada?"))
-
-                        opp_raw = _lower(row.get("What type of opportunity are you interested in?"))
-                        opp = OPPORTUNITY_MAP.get(opp_raw, "")
-
-                        current_location = _clean(row.get("Where are you currently located?"))
-                        open_to_relocate = _parse_bool_yes_no(row.get("Are you open to relocating?"))
-                        relocate_where = _clean(row.get("If yes, where?"))
-
-                        require_sponsorship = _parse_bool_yes_no(row.get("Do you require sponsorship to work in Canada?"))
-                        seeking_immigration = _parse_bool_yes_no(row.get("Are you seeking immigration to Canada?"))
-
-                        status_raw = _lower(row.get("Status"))
-                        reg_dt = _parse_datetime(row.get("Registration Date"))
-
-                        # Decide approval/login based on mode
-                        if mode == "active":
-                            is_approved = True
-                            login_active = True
-                        elif mode == "inactive":
-                            is_approved = False
-                            login_active = False
-                        elif mode == "pending":
-                            is_approved = False
-                            login_active = True
-                        else:
-                            # infer from Status
-                            if "not active" in status_raw or "inactive" in status_raw:
-                                is_approved = False
-                                login_active = False
-                            elif "pending" in status_raw:
-                                is_approved = False
-                                login_active = True
-                            else:
-                                is_approved = True
-                                login_active = True
-
-                        if len(position_desired) > 200:
-                            raise ValueError(f"Position Desired too long (len={len(position_desired)} > 200) for {email}")
-                        if len(current_location) > 200:
-                            raise ValueError(f"Current Location too long (len={len(current_location)} > 200) for {email}")
-                        if len(relocate_where) > 200:
-                            raise ValueError(f"Relocate Where too long (len={len(relocate_where)} > 200) for {email}")
-
-                        # Create or fetch User
-                        user = User.objects.filter(username__iexact=email).first()
-                        created_user = False
-                        if not user:
-                            user = User(username=email, email=email)
-                            if not dry_run:
-                                # Imported users should use password reset to set their password
-                                user.set_unusable_password()
-                                user.save()
-                            created_user = True
-                            stats.users_created += 1
-                        else:
-                            stats.users_existing += 1
-
-                        # Create/update JobSeeker
-                        js = JobSeeker.objects.filter(user=user).first()
-                        if dry_run:
-                            if js:
-                                stats.jobseekers_updated += 1
-                            else:
-                                stats.jobseekers_created += 1
-                            continue
-
-                        if not js:
-                            js = JobSeeker(user=user)
-                            stats.jobseekers_created += 1
-                        else:
-                            stats.jobseekers_updated += 1
-
-                        js.email = email
-                        js.first_name = first_name
-                        js.last_name = last_name
-                        js.position_desired = position_desired
-                        js.registered_in_canada = registered
-                        js.opportunity_type = opp
-                        js.current_location = current_location
-                        js.open_to_relocate = open_to_relocate
-                        js.relocate_where = relocate_where
-                        js.require_sponsorship = require_sponsorship
-                        js.seeking_immigration = seeking_immigration
-
-                        js.is_approved = is_approved
-                        js.login_active = login_active
-
-                        if is_approved and not js.approved_at:
-                            js.approved_at = timezone.now()
-
-                        # NOTE: resume import is NOT supported from these exports
-                        # (Has Resume column is informational only)
-                        js.save()
-
-                    except Exception as e:
-                        stats.errors += 1
-                        stats.skipped += 1
-                        self.stdout.write(self.style.ERROR(f"[jobseekers] Row {idx} ERROR: {e}"))
-
-                if dry_run:
-                    self.stdout.write(self.style.WARNING("[jobseekers] DRY-RUN: no DB writes performed."))
-
-            self.stdout.write(
-                self.style.SUCCESS(
-                    "[jobseekers] "
-                    f"users_created={stats.users_created} users_existing={stats.users_existing} "
-                    f"js_created={stats.jobseekers_created} js_updated={stats.jobseekers_updated} "
-                    f"skipped={stats.skipped} errors={stats.errors}"
+                self.stdout.write(
+                    self.style.WARNING(
+                        f"\n--- Importing: {path.name} | mode={mode} "
+                        f"(is_approved={is_approved}, login_active={login_active}) ---"
+                    )
                 )
+
+                with path.open(newline="", encoding="utf-8-sig") as f:
+                    reader = csv.DictReader(f)
+
+                    for idx, row in enumerate(reader, start=2):
+                        try:
+                            email = pick(row, EMAIL_KEYS).lower()
+                            if not email:
+                                skipped += 1
+                                continue
+
+                            # DRY RUN: do NOT write anything (no get_or_create), just count
+                            if dry_run:
+                                user_exists = User.objects.filter(email=email).exists()
+                                js_exists = JobSeeker.objects.filter(email=email).exists()
+
+                                if user_exists:
+                                    users_existing += 1
+                                else:
+                                    users_created += 1  # would create
+
+                                if js_exists:
+                                    js_updated += 1  # would update
+                                else:
+                                    js_created += 1  # would create
+
+                                continue
+
+                            # REAL RUN: create/update user
+                            user = User.objects.filter(email=email).first()
+                            if not user:
+                                user = User.objects.create_user(
+                                    username=email,
+                                    email=email,
+                                    password=None,
+                                    is_active=login_active,
+                                )
+                                users_created += 1
+                            else:
+                                users_existing += 1
+                                if user.is_active != login_active:
+                                    user.is_active = login_active
+                                    user.save(update_fields=["is_active"])
+                                    users_updated += 1
+
+                            # REAL RUN: create/update jobseeker (user_id must never be null)
+                            js, created = JobSeeker.objects.get_or_create(
+                                email=email,
+                                defaults={"user": user},
+                            )
+
+                            if js.user_id != user.id:
+                                js.user = user
+
+                            js.first_name = truncate(pick(row, FIRST_NAME_KEYS), 80)
+                            js.last_name = truncate(pick(row, LAST_NAME_KEYS), 80)
+                            js.position_desired = truncate(pick(row, POSITION_KEYS), 200)
+                            js.opportunity_type = truncate(pick(row, OPPORTUNITY_KEYS), 30)
+                            js.current_location = truncate(pick(row, LOCATION_KEYS), 200)
+                            js.relocate_where = truncate(pick(row, RELOCATE_WHERE_KEYS), 200)
+
+                            js.is_approved = is_approved
+                            js.login_active = login_active
+                            js.approved_at = timezone.now() if is_approved else None
+
+                            js.save()
+
+                            if created:
+                                js_created += 1
+                            else:
+                                js_updated += 1
+
+                        except Exception as e:
+                            errors += 1
+                            self.stderr.write(f"[Row {idx}] ERROR: {e}")
+
+            # Dry-run rollback safety (no writes should have happened anyway)
+            if dry_run:
+                transaction.set_rollback(True)
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "\nDONE\n"
+                f"Users would be created: {users_created}\n"
+                f"Users existing: {users_existing}\n"
+                f"Users would be updated: {users_updated}\n"
+                f"JobSeekers would be created: {js_created}\n"
+                f"JobSeekers would be updated: {js_updated}\n"
+                f"Rows skipped (missing email): {skipped}\n"
+                f"Errors: {errors}\n"
             )
-
-
-class _NoopCtx:
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc, tb):
-        return False
+        )

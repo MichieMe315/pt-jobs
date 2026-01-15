@@ -31,26 +31,24 @@
               <li>{{ job.get_job_type_display }}</li>
             {% endif %}
 
-            {% if job.compensation_type == "Hourly" %}
-              {% if job.compensation_min and job.compensation_max %}
-                <li>Hourly ${{ job.compensation_min }} – ${{ job.compensation_max }}</li>
-              {% else %}
-                <li>Hourly</li>
-              {% endif %}
+            {% if job.compensation_type %}
+              <li>{{ job.get_compensation_type_display }}</li>
+            {% endif %}
 
-            {% elif job.compensation_type == "Salary" %}
-              {% if job.compensation_min and job.compensation_max %}
-                <li>Yearly ${{ job.compensation_min }} – ${{ job.compensation_max }}</li>
-              {% else %}
-                <li>Yearly</li>
-              {% endif %}
-
-            {% elif job.compensation_type == "Other" %}
-              {% if job.compensation_min and job.compensation_max %}
-                <li>Split {{ job.compensation_min|floatformat:"0" }}% – {{ job.compensation_max|floatformat:"0" }}%</li>
-              {% else %}
-                <li>Split</li>
-              {% endif %}
+            {% if job.compensation_min or job.compensation_max %}
+              <li>
+                {% if job.get_compensation_type_display == "Other" %}
+                  Split
+                  {% if job.compensation_min %} {{ job.compensation_min|floatformat:"0" }}%{% endif %}
+                  {% if job.compensation_min and job.compensation_max %} –{% endif %}
+                  {% if job.compensation_max %} {{ job.compensation_max|floatformat:"0" }}%{% endif %}
+                {% else %}
+                  Compensation:
+                  {% if job.compensation_min %}${{ job.compensation_min }}{% endif %}
+                  {% if job.compensation_min and job.compensation_max %} – {% endif %}
+                  {% if job.compensation_max %}${{ job.compensation_max }}{% endif %}
+                {% endif %}
+              </li>
             {% endif %}
           </ul>
 
