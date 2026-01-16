@@ -1,4 +1,3 @@
-# board/startup_import.py
 import os
 from pathlib import Path
 
@@ -22,6 +21,66 @@ def _safe_call_management_command(command_name: str, *args: str) -> None:
     """Call a management command via Django's call_command (no shell needed)."""
     from django.core.management import call_command
     call_command(command_name, *args)
+
+
+def _ensure_superuser_if_enabled() -> None:
+    """
+    Ensures you can log into /admin in production (NO shell needed).
+    Controlled by env var: ENSURE_SUPERUSER_ON_STARTUP=1
+
+    Requires env vars:
+      - DJANGO_SUPERUSER_USERNAME
+      - DJANGO_SUPERUSER_EMAIL
+      - DJANGO_SUPERUSER_PASSWORD
+
+    Behavior:
+      - If user exists by username OR email, it will:
+          * set is_staff=True, is_superuser=True
+          * set password from env
+      - If user does not exist, it will create it.
+    """
+    if not _env_true("ENSURE_SUPERUSER_ON_STARTUP"):
+        return
+
+    username = (os.environ.get("DJANGO_SUPERUSER_USERNAME") or "").strip()
+    email = (os.environ.get("DJANGO_SUPERUSER_EMAIL") or "").strip()
+    password = (os.environ.get("DJANGO_SUPERUSER_PASSWORD") or "").strip()
+
+    if not username or not email or not password:
+        _print("[startup_import] ENSURE_SUPERUSER_ON_STARTUP=1 but missing DJANGO_SUPERUSER_* vars. Skipping.")
+        return
+
+    User = get_user_model()
+
+    try:
+        user = User.objects.filter(username=username).first()
+    except Exception:
+        user = None
+
+    if user is None:
+        try:
+            user = User.objects.filter(email__iexact=email).first()
+        except Exception:
+            user = None
+
+    if user is None:
+        try:
+            user = User.objects.create_user(username=username, email=email)
+            _print(f"[startup_import] Created superuser base account: {username} ({email})")
+        except Exception as e:
+            _print(f"[startup_import] ERROR creating base user: {e}")
+            return
+
+    # Force staff + superuser + password
+    try:
+        user.email = email
+        user.is_staff = True
+        user.is_superuser = True
+        user.set_password(password)
+        user.save()
+        _print(f"[startup_import] Ensured superuser login: {username} ({email})")
+    except Exception as e:
+        _print(f"[startup_import] ERROR ensuring superuser flags/password: {e}")
 
 
 def _wipe_prod_data_if_enabled() -> None:
@@ -95,13 +154,14 @@ def run_bulk_import_if_enabled() -> None:
     Runs bulk CSV imports inside the deployed container on web start.
 
     Turn ON in Railway just for one deploy:
+      - ENSURE_SUPERUSER_ON_STARTUP=1 (guarantee /admin access)
       - RUN_BULK_WIPE_ON_STARTUP=1   (wipe old production data)
       - RUN_BULK_IMPORT_ON_STARTUP=1 (import CSVs + seed emails if empty)
 
     Note: also supports your existing Railway var name:
       - RUN_BULK_DATA_IMPORT_ON_STARTUP=1
 
-    Then REMOVE the wipe/import vars after success.
+    Then REMOVE the wipe/import/ensure vars after success.
     """
     if not (_env_true("RUN_BULK_IMPORT_ON_STARTUP") or _env_true("RUN_BULK_DATA_IMPORT_ON_STARTUP")):
         return
@@ -114,6 +174,10 @@ def run_bulk_import_if_enabled() -> None:
         _print("[startup_import] DB not ready yet; skipping this boot.")
         return
 
+    # 0) Ensure you can log in to admin (before wipe/import)
+    _ensure_superuser_if_enabled()
+
+    # 1) Optional wipe
     _wipe_prod_data_if_enabled()
 
     base_dir = Path(settings.BASE_DIR)
@@ -131,7 +195,7 @@ def run_bulk_import_if_enabled() -> None:
 
     invoices_csv = base_dir / "board" / "data" / "invoices.csv"
 
-    # 1) Employers
+    # 2) Employers
     if employers_csv.exists():
         _print("[startup_import] Importing employers...")
         _safe_call_management_command(
@@ -154,37 +218,28 @@ def run_bulk_import_if_enabled() -> None:
     except Exception as e:
         _print(f"[startup_import] WARN: employer status update failed: {e}")
 
-    # 2) Jobs (only if empty)
-    if Job.objects.count() == 0:
-        _print("[startup_import] Importing jobs...")
-        _safe_call_management_command(
-            "import_jobs_csv",
-            str(jobs_active_csv),
-            str(jobs_expired_csv),
-        )
-    else:
-        _print("[startup_import] Jobs already exist; skipping job import.")
+    # 3) Jobs
+    _print("[startup_import] Importing jobs...")
+    _safe_call_management_command(
+        "import_jobs_csv",
+        str(jobs_active_csv),
+        str(jobs_expired_csv),
+    )
 
-    # 3) Job seekers (only if empty) INCLUDING pending file
-    if JobSeeker.objects.count() == 0:
-        _print("[startup_import] Importing job seekers...")
-        _safe_call_management_command(
-            "import_jobseekers_csv",
-            str(jobseekers_active_csv),
-            str(jobseekers_inactive_csv),
-            str(jobseekers_pending_csv),
-        )
-    else:
-        _print("[startup_import] JobSeekers already exist; skipping jobseeker import.")
+    # 4) Job seekers (including pending -> your command should set them inactive)
+    _print("[startup_import] Importing job seekers...")
+    _safe_call_management_command(
+        "import_jobseekers_csv",
+        str(jobseekers_active_csv),
+        str(jobseekers_inactive_csv),
+        str(jobseekers_pending_csv),
+    )
 
-    # 4) Invoices (only if empty)
-    if Invoice.objects.count() == 0:
-        _print("[startup_import] Importing invoices...")
-        _safe_call_management_command("import_invoices_csv", str(invoices_csv))
-    else:
-        _print("[startup_import] Invoices already exist; skipping invoice import.")
+    # 5) Invoices
+    _print("[startup_import] Importing invoices...")
+    _safe_call_management_command("import_invoices_csv", str(invoices_csv))
 
-    # 5) Seed email templates if empty
+    # 6) Seed email templates if empty
     if EmailTemplate.objects.count() == 0:
         _print("[startup_import] Seeding email templates...")
         try:

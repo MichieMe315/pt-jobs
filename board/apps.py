@@ -1,4 +1,3 @@
-# board/apps.py
 from django.apps import AppConfig
 
 
@@ -11,7 +10,7 @@ class BoardConfig(AppConfig):
         # Ensure signal receivers are registered
         from . import signals  # noqa: F401
 
-        # Startup bulk import (only runs when env var is enabled)
+        # Startup bulk import (only runs when env vars are enabled)
         from .startup_import import run_bulk_import_if_enabled  # noqa: F401
 
         run_bulk_import_if_enabled()
