@@ -13,57 +13,37 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 
+import dj_database_url
+
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# ============================================================
-# Core
-# ============================================================
+# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
 
-# IMPORTANT:
-# Set DEBUG=0 in Railway variables for production.
-DEBUG = os.environ.get("DEBUG", "1").strip() == "1"
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = os.environ.get("DEBUG", "1") == "1"
+
+# ------------------------------------------------------------
+# Allowed hosts (robust parsing + Railway domain support)
+# ------------------------------------------------------------
+_raw_hosts = os.environ.get("ALLOWED_HOSTS", "127.0.0.1,localhost")
+ALLOWED_HOSTS = [h.strip() for h in _raw_hosts.split(",") if h.strip()]
+
+# Railway commonly provides this; if present, allow it automatically
+RAILWAY_PUBLIC_DOMAIN = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "").strip()
+if RAILWAY_PUBLIC_DOMAIN and RAILWAY_PUBLIC_DOMAIN not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(RAILWAY_PUBLIC_DOMAIN)
+
+# This is a safe fallback for your current Railway URL style
+# (does not harm local dev)
+if "web-production-314f.up.railway.app" not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append("web-production-314f.up.railway.app")
 
 
-def _split_env_list(name: str, default: str = "") -> list[str]:
-    """
-    Comma-separated env var -> cleaned list, stripping spaces/newlines.
-    """
-    raw = os.environ.get(name, default) or ""
-    items = []
-    for part in raw.split(","):
-        p = (part or "").strip()
-        if p:
-            items.append(p)
-    return items
-
-
-# ============================================================
-# Allowed hosts (FIX for Railway DisallowedHost)
-# ============================================================
-# Your Railway UI can wrap values; strip() matters.
-ALLOWED_HOSTS = _split_env_list("ALLOWED_HOSTS", "127.0.0.1,localhost")
-
-# Always allow Railway *.up.railway.app hosts (covers web-production-xxxx.up.railway.app)
-# Leading dot means "any subdomain of".
-if ".up.railway.app" not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append(".up.railway.app")
-
-# If Railway provides a public domain env var, include it automatically (safe).
-# (No harm if it doesn't exist.)
-for var in ("RAILWAY_PUBLIC_DOMAIN", "RAILWAY_URL", "PUBLIC_DOMAIN", "APP_DOMAIN"):
-    val = (os.environ.get(var) or "").strip()
-    if val:
-        # RAILWAY_URL might be a full URL; keep only host if so.
-        val = val.replace("https://", "").replace("http://", "").split("/")[0].strip()
-        if val and val not in ALLOWED_HOSTS:
-            ALLOWED_HOSTS.append(val)
-
-
-# ============================================================
 # Application definition
-# ============================================================
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -98,6 +78,7 @@ TEMPLATES = [
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
+                # Django defaults (keep these)
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
@@ -113,31 +94,20 @@ TEMPLATES = [
 WSGI_APPLICATION = "pt_jobs.wsgi.application"
 
 
-# ============================================================
-# Database (supports Railway DATABASE_URL)
-# ============================================================
-# Default: sqlite for local
+# ------------------------------------------------------------
+# Database
+# ------------------------------------------------------------
+# Railway provides DATABASE_URL (Postgres). Use it if present.
+# Falls back to SQLite only for local dev / no DATABASE_URL.
 DATABASES = {
-    "default": {
-        "ENGINE": os.environ.get("DB_ENGINE", "django.db.backends.sqlite3"),
-        "NAME": os.environ.get("DB_NAME", BASE_DIR / "db.sqlite3"),
-    }
+    "default": dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+    )
 }
 
-# If DATABASE_URL is present (Railway Postgres), use it.
-DATABASE_URL = (os.environ.get("DATABASE_URL") or "").strip()
-if DATABASE_URL:
-    try:
-        import dj_database_url
-        DATABASES["default"] = dj_database_url.config(default=DATABASE_URL, conn_max_age=600, ssl_require=True)
-    except Exception:
-        # If dj_database_url isn't available for any reason, fall back to default DB.
-        pass
 
-
-# ============================================================
 # Password validation
-# ============================================================
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -146,43 +116,38 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# ============================================================
 # Internationalization
-# ============================================================
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "America/Toronto"
 USE_I18N = True
 USE_TZ = True
 
 
-# ============================================================
-# Static
-# ============================================================
+# Static files (CSS, JavaScript, Images)
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-
-# ============================================================
-# Media (local default; optional Cloudflare R2)
-# ============================================================
+# Media (local default)
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-R2_ACCOUNT_ID = (os.environ.get("R2_ACCOUNT_ID") or "").strip()
-R2_ACCESS_KEY_ID = (os.environ.get("R2_ACCESS_KEY_ID") or "").strip()
-R2_SECRET_ACCESS_KEY = (os.environ.get("R2_SECRET_ACCESS_KEY") or "").strip()
-R2_BUCKET_NAME = (os.environ.get("R2_BUCKET_NAME") or "").strip()
-R2_PUBLIC_BASE_URL = (os.environ.get("R2_PUBLIC_BASE_URL") or "").strip()
+# -------------------------------------------------------------------
+# STORAGE: Default local, optional Cloudflare R2 for MEDIA via STORAGES
+# -------------------------------------------------------------------
+R2_ACCOUNT_ID = os.environ.get("R2_ACCOUNT_ID", "").strip()
+R2_ACCESS_KEY_ID = os.environ.get("R2_ACCESS_KEY_ID", "").strip()
+R2_SECRET_ACCESS_KEY = os.environ.get("R2_SECRET_ACCESS_KEY", "").strip()
+R2_BUCKET_NAME = os.environ.get("R2_BUCKET_NAME", "").strip()
+R2_PUBLIC_BASE_URL = os.environ.get("R2_PUBLIC_BASE_URL", "").strip()
 
-# Default storages (safe even without django-storages installed)
 STORAGES = {
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
 }
 
-# Switch MEDIA storage to R2 only when all required vars are present
 if R2_ACCOUNT_ID and R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY and R2_BUCKET_NAME:
+    # Requires: pip install django-storages boto3
     if "storages" not in INSTALLED_APPS:
         INSTALLED_APPS.append("storages")
 
@@ -191,42 +156,22 @@ if R2_ACCOUNT_ID and R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY and R2_BUCKET_NAM
     AWS_ACCESS_KEY_ID = R2_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY = R2_SECRET_ACCESS_KEY
     AWS_STORAGE_BUCKET_NAME = R2_BUCKET_NAME
+
     AWS_S3_REGION_NAME = "auto"
     AWS_S3_ENDPOINT_URL = f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
     AWS_S3_ADDRESSING_STYLE = "path"
 
-    # Public bucket/custom domain: use direct URLs, no signed querystrings
+    # public bucket/custom domain => no signed querystrings
     AWS_QUERYSTRING_AUTH = False
 
-    # MEDIA_URL must be the public base (custom domain), not the S3 API endpoint
     if R2_PUBLIC_BASE_URL:
         MEDIA_URL = R2_PUBLIC_BASE_URL.rstrip("/") + "/"
 
 
-# ============================================================
-# Security / CSRF (needed once you go HTTPS)
-# ============================================================
-# If you're using Cloudflare + HTTPS, CSRF_TRUSTED_ORIGINS avoids CSRF failures on forms.
-CSRF_TRUSTED_ORIGINS = _split_env_list("CSRF_TRUSTED_ORIGINS", "")
-
-# If you put your production domain in ALLOWED_HOSTS, we can safely add https://domain as trusted.
-# This helps prevent “CSRF verification failed” after you enable HTTPS.
-for h in ALLOWED_HOSTS:
-    if h and not h.startswith(".") and "." in h and "localhost" not in h and "127.0.0.1" not in h:
-        https = f"https://{h}"
-        if https not in CSRF_TRUSTED_ORIGINS:
-            CSRF_TRUSTED_ORIGINS.append(https)
-
-
-# ============================================================
-# Default primary key field type
-# ============================================================
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-# ============================================================
-# Email settings (SendGrid)
-# ============================================================
+# Email settings (SendGrid via Railway env vars)
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.sendgrid.net")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
@@ -234,12 +179,14 @@ EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "1") == "1"
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "apikey")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 
-# Site "from" email (contract: site/from email comes from settings/env)
+# Site "from" email
 SITE_FROM_EMAIL = os.environ.get("SITE_FROM_EMAIL", "no-reply@physiotherapyjobscanada.ca")
 DEFAULT_FROM_EMAIL = SITE_FROM_EMAIL
 
 # Admin notifications
-ADMIN_EMAILS = (os.environ.get("ADMIN_EMAILS") or "").strip()
+ADMIN_EMAILS = os.environ.get("ADMIN_EMAILS", "").strip()
 SITE_ADMIN_EMAIL = (
-    ADMIN_EMAILS.split(",")[0].strip() if ADMIN_EMAILS else (os.environ.get("SITE_ADMIN_EMAIL") or "").strip()
+    ADMIN_EMAILS.split(",")[0].strip()
+    if ADMIN_EMAILS
+    else os.environ.get("SITE_ADMIN_EMAIL", "").strip()
 )
