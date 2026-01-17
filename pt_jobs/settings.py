@@ -13,18 +13,28 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-insecure-please-change-thi
 DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
 
 # ------------------------------------------------------------
+# HELPERS
+# ------------------------------------------------------------
+def _split_csv(v: str) -> list[str]:
+    return [x.strip() for x in (v or "").split(",") if x.strip()]
+
+
+def _is_local_host(h: str) -> bool:
+    return h in ("127.0.0.1", "localhost") or h.startswith("127.") or h == ""
+
+
+# ------------------------------------------------------------
 # HOSTS / CSRF (Railway + custom domains)
 # ------------------------------------------------------------
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
-# Railway public domain (Railway sets this on the web service once you generate a domain)
+# Railway public domain (sometimes present, sometimes not)
 railway_public_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN")
 if railway_public_domain:
     ALLOWED_HOSTS.append(railway_public_domain)
 
 # IMPORTANT:
-# You were setting Railway var "ALLOWED_HOSTS" but this file previously only read "DJANGO_ALLOWED_HOSTS".
-# We now support BOTH, so either one works.
+# Support BOTH env names (you’ve used ALLOWED_HOSTS in Railway UI)
 extra_hosts = (
     os.environ.get("DJANGO_ALLOWED_HOSTS", "").strip()
     or os.environ.get("ALLOWED_HOSTS", "").strip()
@@ -42,6 +52,18 @@ CSRF_TRUSTED_ORIGINS = [
 if railway_public_domain:
     CSRF_TRUSTED_ORIGINS.append(f"https://{railway_public_domain}")
 
+# Auto-add https://<host> for every allowed host (except local / wildcards)
+# This prevents the “403 CSRF verification failed” problem on Railway/admin.
+for host in ALLOWED_HOSTS:
+    if _is_local_host(host):
+        continue
+    # ignore leading-dot cookie-style domains or wildcards
+    if host.startswith(".") or "*" in host:
+        continue
+    origin_https = f"https://{host}"
+    if origin_https not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(origin_https)
+
 # Optional: comma-separated extra CSRF trusted origins
 # We support BOTH env names for convenience.
 extra_csrf = (
@@ -51,12 +73,21 @@ extra_csrf = (
 if extra_csrf:
     CSRF_TRUSTED_ORIGINS += [o.strip() for o in extra_csrf.split(",") if o.strip()]
 
-# Production proxy/https settings (fixes CSRF behind Railway/Cloudflare)
-if not DEBUG:
-    # Tell Django to trust the proxy header that indicates HTTPS
+# ------------------------------------------------------------
+# Proxy/HTTPS settings (Railway/Cloudflare)
+# ------------------------------------------------------------
+# IMPORTANT:
+# Railway/Cloudflare terminate HTTPS before your container. Django must trust
+# X-Forwarded-Proto or you get CSRF/session weirdness in production.
+#
+# We enable these whenever DEBUG is False OR whenever we're clearly on Railway.
+ON_RAILWAY = bool(os.environ.get("RAILWAY_PUBLIC_DOMAIN")) or bool(os.environ.get("RAILWAY_ENVIRONMENT"))
+
+if (not DEBUG) or ON_RAILWAY:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     USE_X_FORWARDED_HOST = True
 
+    # Cookies secure in prod-like environments
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
