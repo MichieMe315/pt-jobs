@@ -1,6 +1,3 @@
-# board/apps.py
-from __future__ import annotations
-
 from django.apps import AppConfig
 
 
@@ -9,7 +6,12 @@ class BoardConfig(AppConfig):
     name = "board"
 
     def ready(self):
-        # Keep startup work safe; never crash the worker.
-        from .startup_import import safe_startup_tasks
-
-        safe_startup_tasks()
+        # IMPORTANT:
+        # We only run the startup import when explicitly enabled by env var,
+        # and we skip during migrate/collectstatic to avoid boot issues.
+        try:
+            from .startup_import import run_startup_tasks_if_enabled
+            run_startup_tasks_if_enabled()
+        except Exception:
+            # Never crash the app during startup
+            return

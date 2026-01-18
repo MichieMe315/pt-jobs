@@ -28,6 +28,10 @@ def _is_local_host(h: str) -> bool:
 # ------------------------------------------------------------
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
+# Always allow Railway subdomains (prevents DisallowedHost when Railway URL changes)
+# Leading dot allows subdomains in Django ALLOWED_HOSTS.
+ALLOWED_HOSTS.append(".up.railway.app")
+
 # Railway public domain (sometimes present, sometimes not)
 railway_public_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN")
 if railway_public_domain:
@@ -47,6 +51,9 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://localhost:8000",
 ]
+
+# Trust Railway subdomains for admin login CSRF
+CSRF_TRUSTED_ORIGINS.append("https://.up.railway.app")
 
 # Add Railway https domain to CSRF if present
 if railway_public_domain:
@@ -76,11 +83,8 @@ if extra_csrf:
 # ------------------------------------------------------------
 # Proxy/HTTPS settings (Railway/Cloudflare)
 # ------------------------------------------------------------
-# IMPORTANT:
 # Railway/Cloudflare terminate HTTPS before your container. Django must trust
 # X-Forwarded-Proto or you get CSRF/session weirdness in production.
-#
-# We enable these whenever DEBUG is False OR whenever we're clearly on Railway.
 ON_RAILWAY = bool(os.environ.get("RAILWAY_PUBLIC_DOMAIN")) or bool(os.environ.get("RAILWAY_ENVIRONMENT"))
 
 if (not DEBUG) or ON_RAILWAY:
@@ -91,7 +95,7 @@ if (not DEBUG) or ON_RAILWAY:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
-    # Optional but recommended once your domain is HTTPS:
+    # Redirect http->https in prod if you want it (can disable via env if needed)
     SECURE_SSL_REDIRECT = os.environ.get("DJANGO_SECURE_SSL_REDIRECT", "1") == "1"
 
 INSTALLED_APPS = [
@@ -208,6 +212,7 @@ R2_PUBLIC_BASE_URL = os.environ.get("R2_PUBLIC_BASE_URL", "").strip()  # e.g. ht
 # Only enable R2 storage if configured
 USE_R2 = all([R2_ACCOUNT_ID, R2_BUCKET_NAME, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_PUBLIC_BASE_URL])
 
+# Always define STORAGES (Django 5+)
 if USE_R2:
     AWS_ACCESS_KEY_ID = R2_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY = R2_SECRET_ACCESS_KEY
@@ -224,7 +229,6 @@ if USE_R2:
         "CacheControl": "max-age=31536000, public",
     }
 
-    # Django 5+ STORAGES setting
     STORAGES = {
         "default": {"BACKEND": "storages.backends.s3boto3.S3Boto3Storage"},
         "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
@@ -232,6 +236,11 @@ if USE_R2:
 
     # Your public custom domain for R2
     MEDIA_URL = R2_PUBLIC_BASE_URL.rstrip("/") + "/"
+else:
+    STORAGES = {
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+    }
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
