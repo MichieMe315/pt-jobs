@@ -1,179 +1,190 @@
 import csv
-from datetime import datetime
+import re
 from pathlib import Path
-from typing import Optional
 
-from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.utils import timezone
 
 from board.models import Employer, Job
 
 
-EMAIL_KEYS = ["Employer Email", "EmployerEmail", "email", "Email", "employer_email"]
-TITLE_KEYS = ["Title", "Job Title", "job_title"]
-DESC_KEYS = ["Description", "Job Description", "description"]
-CITY_KEYS = ["City", "city"]
-PROV_KEYS = ["Province", "State", "province", "state"]
-LOCATION_KEYS = ["Location", "location"]
-JOB_TYPE_KEYS = ["Job Type", "job_type", "Type"]
-COMP_TYPE_KEYS = ["Compensation Type", "compensation_type"]
-COMP_MIN_KEYS = ["Compensation Min", "compensation_min", "Min Pay", "min_pay"]
-COMP_MAX_KEYS = ["Compensation Max", "compensation_max", "Max Pay", "max_pay"]
-APPLY_VIA_KEYS = ["Apply Via", "apply_via"]
-APPLY_EMAIL_KEYS = ["Apply Email", "apply_email"]
-APPLY_URL_KEYS = ["Apply URL", "apply_url"]
-POSTING_DATE_KEYS = ["Posting Date", "posting_date", "Date Posted"]
-EXPIRY_DATE_KEYS = ["Expiry Date", "expiry_date", "Expiration Date"]
-FEATURED_KEYS = ["Featured", "is_featured"]
+def _clean_str(v):
+    if v is None:
+        return ""
+    s = str(v).strip()
+    s = re.sub(r"\s+", " ", s)
+    return s
 
 
-def norm(val):
-    return (val or "").strip()
-
-
-def pick(row, keys):
-    for k in keys:
-        if k in row and norm(row.get(k)):
-            return norm(row.get(k))
-    return ""
-
-
-def parse_date(val: str) -> Optional[datetime]:
-    v = norm(val)
-    if not v:
-        return None
-
-    # CSV exports often include time; handle both date and datetime strings.
-    for fmt in (
-        "%Y-%m-%d %H:%M:%S",
-        "%Y-%m-%d %H:%M",
-        "%Y-%m-%d",
-        "%m/%d/%Y",
-        "%Y/%m/%d",
-        "%d/%m/%Y",
-    ):
-        try:
-            return datetime.strptime(v, fmt)
-        except Exception:
-            pass
-
-    return None
-
-
-def parse_decimal(val: str):
-    v = norm(val).replace("$", "").replace(",", "")
-    if not v:
-        return None
+def _max_len_for(model_cls, field_name: str):
     try:
-        return float(v)
+        f = model_cls._meta.get_field(field_name)
+        return getattr(f, "max_length", None)
     except Exception:
         return None
 
 
-def mode_from_filename(filename: str) -> str:
-    name = (filename or "").lower()
-    if "expired" in name or "inactive" in name:
-        return "expired"
-    return "active"
+def _truncate_to_field(model_cls, field_name: str, value):
+    if value is None:
+        return None
+    s = str(value)
+    max_len = _max_len_for(model_cls, field_name)
+    if max_len and len(s) > int(max_len):
+        return s[: int(max_len)]
+    return s
 
 
 class Command(BaseCommand):
-    help = "Import Jobs from CSVs (active vs expired inferred from filename)."
+    help = "Import Jobs from one CSV file. Use --mode active|expired to set is_active."
 
     def add_arguments(self, parser):
-        parser.add_argument("csv_paths", nargs="+", type=str)
-        parser.add_argument("--dry-run", action="store_true")
+        parser.add_argument("csv_path", type=str)
+        parser.add_argument("--mode", type=str, default="active", choices=["active", "expired"])
+        parser.add_argument("--dry-run", action="store_true", default=False)
 
     def handle(self, *args, **opts):
-        csv_paths = opts["csv_paths"]
-        dry_run = opts["dry_run"]
+        csv_path = Path(opts["csv_path"])
+        mode = (opts["mode"] or "active").strip().lower()
+        dry_run = bool(opts["dry_run"])
+
+        is_active = True if mode == "active" else False
+
+        if not csv_path.exists():
+            self.stderr.write(self.style.ERROR(f"CSV not found: {csv_path}"))
+            return
 
         created = 0
+        updated = 0
         skipped = 0
-        missing_employer = 0
         errors = 0
+        truncated_fields = 0
 
-        def abs_path(p: str) -> Path:
-            pp = Path(p)
-            return pp if pp.is_absolute() else Path(settings.BASE_DIR) / pp
+        def _set(data: dict, field_name: str, raw_value, allow_blank=True):
+            nonlocal truncated_fields
+            s = _clean_str(raw_value)
+            if not s and allow_blank:
+                data[field_name] = ""
+                return
+            before = s
+            s2 = _truncate_to_field(Job, field_name, s)
+            if s2 is not None and before != s2:
+                truncated_fields += 1
+            data[field_name] = s2
 
-        with transaction.atomic():
-            for raw in csv_paths:
-                path = abs_path(raw)
-                if not path.exists():
-                    raise FileNotFoundError(f"CSV not found: {path}")
+        with csv_path.open("r", encoding="utf-8-sig", newline="") as f:
+            reader = csv.DictReader(f)
 
-                mode = mode_from_filename(path.name)
-                is_active = mode == "active"
+            for i, row in enumerate(reader, start=1):
+                try:
+                    # Employer lookup
+                    employer_email = _clean_str(row.get("employer_email") or row.get("Employer Email") or row.get("email") or "")
+                    employer = None
+                    if employer_email:
+                        employer = Employer.objects.filter(email__iexact=employer_email).first()
 
-                self.stdout.write(
-                    f"\n--- Importing {path.name} | mode={mode} (is_active={is_active}) ---"
-                )
+                    if employer is None:
+                        # fallback: employer_id if present
+                        employer_id = _clean_str(row.get("employer_id") or row.get("Employer ID") or "")
+                        if employer_id.isdigit():
+                            employer = Employer.objects.filter(id=int(employer_id)).first()
 
-                with path.open(newline="", encoding="utf-8-sig") as f:
-                    reader = csv.DictReader(f)
+                    if employer is None:
+                        skipped += 1
+                        continue
 
-                    for idx, row in enumerate(reader, start=2):
-                        try:
-                            employer_email = pick(row, EMAIL_KEYS).lower()
-                            title = pick(row, TITLE_KEYS)
-                            description = pick(row, DESC_KEYS)
+                    data = {}
+                    _set(data, "title", row.get("title") or row.get("Title") or "", allow_blank=False)
+                    _set(data, "location", row.get("location") or row.get("Location") or "", allow_blank=True)
 
-                            if not employer_email or not title:
-                                skipped += 1
-                                continue
+                    # Description is typically TextField; keep as-is (your cleanup script can sanitize HTML later)
+                    desc = row.get("description") or row.get("Description") or ""
+                    data["description"] = desc if desc is not None else ""
 
-                            employer = Employer.objects.filter(email__iexact=employer_email).first()
-                            if not employer:
-                                missing_employer += 1
-                                continue
+                    # Optional fields (only if they exist on your model)
+                    for fld, keys in [
+                        ("job_type", ["job_type", "Job Type"]),
+                        ("compensation_type", ["compensation_type", "Compensation Type"]),
+                        ("apply_via", ["apply_via", "Apply Via"]),
+                        ("apply_email", ["apply_email", "Apply Email"]),
+                        ("apply_url", ["apply_url", "Apply URL"]),
+                    ]:
+                        if hasattr(Job, fld):
+                            v = ""
+                            for k in keys:
+                                if row.get(k):
+                                    v = row.get(k)
+                                    break
+                            _set(data, fld, v, allow_blank=True)
 
-                            location = pick(row, LOCATION_KEYS)
-                            if not location:
-                                city = pick(row, CITY_KEYS)
-                                prov = pick(row, PROV_KEYS)
-                                location = ", ".join([p for p in [city, prov] if p])
+                    # Min/max comp numeric
+                    if hasattr(Job, "compensation_min"):
+                        raw = _clean_str(row.get("compensation_min") or row.get("Min Compensation") or "")
+                        if raw:
+                            try:
+                                data["compensation_min"] = float(raw)
+                            except Exception:
+                                pass
 
-                            job = Job(
-                                employer=employer,
-                                title=title,
-                                description=description,
-                                location=location,
-                                job_type=pick(row, JOB_TYPE_KEYS),
-                                compensation_type=pick(row, COMP_TYPE_KEYS),
-                                compensation_min=parse_decimal(pick(row, COMP_MIN_KEYS)),
-                                compensation_max=parse_decimal(pick(row, COMP_MAX_KEYS)),
-                                apply_via=pick(row, APPLY_VIA_KEYS),
-                                apply_email=pick(row, APPLY_EMAIL_KEYS),
-                                apply_url=pick(row, APPLY_URL_KEYS),
-                                is_active=is_active,
-                                is_featured=pick(row, FEATURED_KEYS).lower() in ("1", "true", "yes"),
-                            )
+                    if hasattr(Job, "compensation_max"):
+                        raw = _clean_str(row.get("compensation_max") or row.get("Max Compensation") or "")
+                        if raw:
+                            try:
+                                data["compensation_max"] = float(raw)
+                            except Exception:
+                                pass
 
-                            posting_dt = parse_date(pick(row, POSTING_DATE_KEYS))
-                            expiry_dt = parse_date(pick(row, EXPIRY_DATE_KEYS))
-                            if posting_dt:
-                                job.posting_date = posting_dt.date()
-                            if expiry_dt:
-                                job.expiry_date = expiry_dt.date()
+                    # Posting/expiry (only set if present; otherwise keep defaults)
+                    # IMPORTANT: do NOT overwrite posting_date/expiry_date with "today" unless your CSV is missing them.
+                    if hasattr(Job, "posting_date"):
+                        raw = _clean_str(row.get("posting_date") or row.get("Posting Date") or "")
+                        if raw:
+                            try:
+                                data["posting_date"] = timezone.datetime.fromisoformat(raw).date()
+                            except Exception:
+                                pass
 
-                            if not dry_run:
-                                job.save()
+                    if hasattr(Job, "expiry_date"):
+                        raw = _clean_str(row.get("expiry_date") or row.get("Expiry Date") or row.get("Expiration Date") or "")
+                        if raw:
+                            try:
+                                data["expiry_date"] = timezone.datetime.fromisoformat(raw).date()
+                            except Exception:
+                                pass
 
+                    data["is_active"] = bool(is_active)
+                    data["employer"] = employer
+
+                    # Upsert key: if your CSV has id, use it; otherwise use (employer,title)
+                    existing = None
+                    raw_id = _clean_str(row.get("id") or row.get("Job ID") or "")
+                    if raw_id.isdigit():
+                        existing = Job.objects.filter(id=int(raw_id)).first()
+
+                    if existing is None:
+                        existing = Job.objects.filter(employer=employer, title=data["title"]).order_by("-id").first()
+
+                    if dry_run:
+                        created += 1 if existing is None else 0
+                        updated += 1 if existing is not None else 0
+                        continue
+
+                    with transaction.atomic():
+                        if existing is None:
+                            Job.objects.create(**data)
                             created += 1
+                        else:
+                            for k, v in data.items():
+                                setattr(existing, k, v)
+                            existing.save()
+                            updated += 1
 
-                        except Exception as e:
-                            errors += 1
-                            self.stderr.write(f"[Row {idx}] ERROR: {e}")
-
-            if dry_run:
-                transaction.set_rollback(True)
+                except Exception as e:
+                    errors += 1
+                    self.stderr.write(self.style.ERROR(f"[Row {i}] ERROR: {e}"))
 
         self.stdout.write(
-            "\nDONE\n"
-            f"Jobs created: {created}\n"
-            f"Skipped rows: {skipped}\n"
-            f"Missing employer: {missing_employer}\n"
-            f"Errors: {errors}\n"
+            self.style.SUCCESS(
+                f"[jobs:{mode}] done. created={created} updated={updated} skipped={skipped} errors={errors} truncated_fields={truncated_fields}"
+            )
         )

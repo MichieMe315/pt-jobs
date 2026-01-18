@@ -1,6 +1,5 @@
-from __future__ import annotations
-
 import csv
+import re
 from pathlib import Path
 
 from django.contrib.auth import get_user_model
@@ -10,181 +9,208 @@ from django.db import IntegrityError, transaction
 from board.models import Employer
 
 
-def _norm(val: str | None) -> str:
-    return (val or "").strip()
+def _clean_str(v):
+    if v is None:
+        return ""
+    s = str(v).strip()
+    # collapse internal whitespace
+    s = re.sub(r"\s+", " ", s)
+    return s
 
 
-def _fit(model_cls, field_name: str, value):
-    """Trim strings to the model field's max_length (if present).
+def _max_len_for(model_cls, field_name: str):
+    try:
+        f = model_cls._meta.get_field(field_name)
+        return getattr(f, "max_length", None)
+    except Exception:
+        return None
 
-    This prevents Postgres errors like:
-      value too long for type character varying(200)
 
-    We do *not* rename any fields; we simply ensure imported CSV values
-    fit the existing schema.
+def _truncate_to_field(model_cls, field_name: str, value):
+    """
+    Enforce model field max_length WITHOUT changing models.
+    If field has max_length and value is longer, truncate safely.
     """
     if value is None:
         return None
-
-    # Only trim strings
-    if not isinstance(value, str):
-        return value
-
-    try:
-        f = model_cls._meta.get_field(field_name)
-        max_len = getattr(f, "max_length", None)
-    except Exception:
-        max_len = None
-
-    if max_len and len(value) > int(max_len):
-        return value[: int(max_len)]
-    return value
-
-
-def _pick_status_from_filename(path: Path) -> str:
-    name = path.name.lower()
-    if "pending" in name:
-        return "pending"
-    if "deactiv" in name or "inactive" in name:
-        return "inactive"
-    return "active"
+    s = str(value)
+    max_len = _max_len_for(model_cls, field_name)
+    if max_len and len(s) > int(max_len):
+        return s[: int(max_len)]
+    return s
 
 
 class Command(BaseCommand):
-    help = "Import employers from one or more CSV files."
+    help = "Import Employers from a CSV file."
 
     def add_arguments(self, parser):
-        parser.add_argument("csv_paths", nargs="+", type=str)
+        parser.add_argument("csv_path", type=str)
         parser.add_argument("--dry-run", action="store_true", default=False)
 
-    def handle(self, *args, **options):
-        User = get_user_model()
+    def handle(self, *args, **opts):
+        csv_path = Path(opts["csv_path"])
+        dry_run = bool(opts["dry_run"])
 
-        dry_run: bool = bool(options.get("dry_run"))
-        csv_paths = [Path(p) for p in options["csv_paths"]]
+        if not csv_path.exists():
+            self.stderr.write(self.style.ERROR(f"CSV not found: {csv_path}"))
+            return
 
         created = 0
         updated = 0
         skipped = 0
         errors = 0
+        truncated_fields = 0
 
-        # Use a single outer transaction; per-row savepoints keep the transaction usable
-        # even if one row fails.
-        outer_ctx = transaction.atomic() if not dry_run else transaction.atomic()
-        with outer_ctx:
-            for csv_path in csv_paths:
-                status = _pick_status_from_filename(csv_path)
+        User = get_user_model()
 
-                if status == "active":
-                    is_approved = True
-                    login_active = True
-                elif status == "inactive":
-                    is_approved = False
-                    login_active = False
-                else:  # pending
-                    # You said: pending shouldn't be active / can't login.
-                    is_approved = False
-                    login_active = False
+        # You want: most recent in admin = order_by("-id") in admin.py (separate),
+        # this importer just ensures data is safe + consistent.
 
-                self.stdout.write(
-                    f"--- Importing: {csv_path.name} | status={status} (is_approved={is_approved}, login_active={login_active}) ---"
-                )
+        def _set(data: dict, field_name: str, raw_value, allow_blank=True):
+            nonlocal truncated_fields
+            s = _clean_str(raw_value)
 
-                if not csv_path.exists():
-                    self.stdout.write(self.style.ERROR(f"File not found: {csv_path}"))
-                    errors += 1
-                    continue
+            if not s and allow_blank:
+                data[field_name] = ""
+                return
 
-                with csv_path.open("r", encoding="utf-8-sig", newline="") as f:
-                    reader = csv.DictReader(f)
-                    for row_idx, row in enumerate(reader, start=2):
-                        # Per-row savepoint so DataError/IntegrityError doesn't poison the transaction.
-                        with transaction.atomic():
+            # Enforce max_length if applicable
+            before = s
+            s2 = _truncate_to_field(Employer, field_name, s)
+            if s2 is not None and before != s2:
+                truncated_fields += 1
+            data[field_name] = s2
+
+        with csv_path.open("r", encoding="utf-8-sig", newline="") as f:
+            reader = csv.DictReader(f)
+
+            for i, row in enumerate(reader, start=1):
+                try:
+                    # --- REQUIRED MINIMUMS ---
+                    email = _clean_str(row.get("email") or row.get("Email") or "")
+                    if not email:
+                        skipped += 1
+                        continue
+
+                    # Find or create user
+                    user = User.objects.filter(email__iexact=email).first()
+                    if not user:
+                        # Username fallback (if your auth model uses username)
+                        username = _clean_str(row.get("username") or row.get("Username") or "")
+                        if not username:
+                            username = email.split("@")[0][:150]
+
+                        # Create user WITHOUT setting a password (unusable) unless CSV provides one
+                        password = row.get("password") or row.get("Password") or None
+                        user = User.objects.create_user(
+                            username=username,
+                            email=email,
+                            password=password if password else None,
+                        )
+
+                    # Employer row
+                    employer = Employer.objects.filter(user=user).first()
+
+                    data = {}
+
+                    # These field names MUST match your model (contract: no renames).
+                    # We defensively map common CSV headers -> your model fields.
+                    _set(data, "email", email, allow_blank=False)
+
+                    # Prefer company_name if present, else name
+                    company_name = _clean_str(
+                        row.get("company_name")
+                        or row.get("Company Name")
+                        or row.get("company")
+                        or row.get("Company")
+                        or row.get("name")
+                        or row.get("Name")
+                        or ""
+                    )
+                    if company_name:
+                        _set(data, "company_name", company_name)
+                    else:
+                        # Some projects use Employer.name; keep both if your model has both.
+                        # Only set fields that exist.
+                        if hasattr(Employer, "name"):
+                            _set(data, "name", _clean_str(row.get("name") or row.get("Name") or ""), allow_blank=True)
+
+                    # Description fields (often long; only max_length enforced if model has it)
+                    if hasattr(Employer, "company_description"):
+                        _set(
+                            data,
+                            "company_description",
+                            row.get("company_description") or row.get("Company Description") or "",
+                            allow_blank=True,
+                        )
+                    if hasattr(Employer, "description"):
+                        _set(
+                            data,
+                            "description",
+                            row.get("description") or row.get("Description") or "",
+                            allow_blank=True,
+                        )
+
+                    # Contact & meta
+                    if hasattr(Employer, "phone"):
+                        _set(data, "phone", row.get("phone") or row.get("Phone") or "", allow_blank=True)
+                    if hasattr(Employer, "website"):
+                        _set(data, "website", row.get("website") or row.get("Website") or "", allow_blank=True)
+                    if hasattr(Employer, "location"):
+                        _set(data, "location", row.get("location") or row.get("Location") or "", allow_blank=True)
+
+                    # Credits
+                    if hasattr(Employer, "credits"):
+                        raw_credits = _clean_str(row.get("credits") or row.get("Credits") or "")
+                        if raw_credits:
                             try:
-                                email = _norm(row.get("email") or row.get("Email") or row.get("EMAIL"))
-                                if not email:
-                                    skipped += 1
-                                    continue
+                                data["credits"] = int(float(raw_credits))
+                            except Exception:
+                                pass
 
-                                # Company name can appear under different headers in your exports.
-                                company_name = _norm(
-                                    row.get("company_name")
-                                    or row.get("Company Name")
-                                    or row.get("company")
-                                    or row.get("name")
-                                    or row.get("Name")
-                                )
+                    # Approval/login flags
+                    # If your CSV includes these, honor them; else default approved+active for main employers.csv
+                    # (Your status CSV scripts handle pending/deactivated separately.)
+                    if hasattr(Employer, "is_approved"):
+                        raw = _clean_str(row.get("is_approved") or row.get("approved") or "")
+                        if raw:
+                            data["is_approved"] = raw.lower() in ("1", "true", "yes", "y")
+                        else:
+                            data["is_approved"] = True
 
-                                # Optional fields
-                                phone = _norm(row.get("phone") or row.get("Phone"))
-                                website = _norm(row.get("website") or row.get("Website"))
-                                location = _norm(row.get("location") or row.get("Location"))
+                    if hasattr(Employer, "login_active"):
+                        raw = _clean_str(row.get("login_active") or row.get("active") or "")
+                        if raw:
+                            data["login_active"] = raw.lower() in ("1", "true", "yes", "y")
+                        else:
+                            data["login_active"] = True
 
-                                # Some datasets use company_description; others use description.
-                                company_description = row.get("company_description")
-                                if company_description is None:
-                                    company_description = row.get("company_description ")
-                                company_description = (company_description if company_description is not None else row.get("description"))
-                                company_description = (company_description or "").strip()
+                    if dry_run:
+                        # Do not write anything
+                        created += 1 if employer is None else 0
+                        updated += 1 if employer is not None else 0
+                        continue
 
-                                # Create/update user first.
-                                user = User.objects.filter(email__iexact=email).first()
-                                if not user:
-                                    # username max_length is usually 150 (Django default) - trim if necessary.
-                                    username_val = _fit(User, "username", email)
-                                    user = User.objects.create(username=username_val, email=_fit(User, "email", email))
-                                    user.set_unusable_password()
-                                    user.is_active = True
-                                    user.save(update_fields=["password", "is_active"])
+                    with transaction.atomic():
+                        if employer is None:
+                            data["user"] = user
+                            Employer.objects.create(**data)
+                            created += 1
+                        else:
+                            for k, v in data.items():
+                                setattr(employer, k, v)
+                            employer.save()
+                            updated += 1
 
-                                data = {
-                                    "user": user,
-                                    "email": _fit(Employer, "email", email),
-                                    "company_name": _fit(Employer, "company_name", company_name),
-                                    "company_description": company_description,
-                                    "phone": _fit(Employer, "phone", phone),
-                                    "website": _fit(Employer, "website", website),
-                                    "location": _fit(Employer, "location", location),
-                                    "is_approved": is_approved,
-                                    "login_active": login_active,
-                                }
+                except IntegrityError as e:
+                    errors += 1
+                    self.stderr.write(self.style.ERROR(f"[Row {i}] ERROR (Integrity): {e}"))
+                except Exception as e:
+                    errors += 1
+                    self.stderr.write(self.style.ERROR(f"[Row {i}] ERROR: {e}"))
 
-                                employer = Employer.objects.filter(email__iexact=email).first()
-                                if employer:
-                                    for k, v in data.items():
-                                        setattr(employer, k, v)
-                                    if not dry_run:
-                                        employer.save()
-                                    updated += 1
-                                else:
-                                    if not dry_run:
-                                        Employer.objects.create(**data)
-                                    created += 1
-
-                            except (IntegrityError,) as e:
-                                errors += 1
-                                self.stdout.write(
-                                    self.style.ERROR(
-                                        f"[Row {row_idx}] ERROR: {type(e).__name__}: {e}"
-                                    )
-                                )
-                            except Exception as e:
-                                # Includes DataError 'value too long...' and any unexpected column weirdness.
-                                errors += 1
-                                self.stdout.write(
-                                    self.style.ERROR(
-                                        f"[Row {row_idx}] ERROR: {type(e).__name__}: {e}"
-                                    )
-                                )
-
-            if dry_run:
-                # Roll back everything.
-                transaction.set_rollback(True)
-
-        if dry_run:
-            self.stdout.write(self.style.WARNING("[employers] DRY-RUN: no DB writes performed."))
         self.stdout.write(
             self.style.SUCCESS(
-                f"[employers] created={created} updated={updated} skipped={skipped} errors={errors}"
+                f"[employers] done. created={created} updated={updated} skipped={skipped} errors={errors} truncated_fields={truncated_fields}"
             )
         )
