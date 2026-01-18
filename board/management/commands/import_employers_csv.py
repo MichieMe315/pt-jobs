@@ -1,216 +1,204 @@
+# board/management/commands/import_employers_csv.py
+from __future__ import annotations
+
 import csv
-import re
 from pathlib import Path
+from typing import Any
 
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
-from django.db import IntegrityError, transaction
+from django.db import transaction
 
 from board.models import Employer
 
 
-def _clean_str(v):
-    if v is None:
-        return ""
-    s = str(v).strip()
-    # collapse internal whitespace
-    s = re.sub(r"\s+", " ", s)
-    return s
+User = get_user_model()
 
 
-def _max_len_for(model_cls, field_name: str):
-    try:
-        f = model_cls._meta.get_field(field_name)
-        return getattr(f, "max_length", None)
-    except Exception:
-        return None
+def _norm(s: Any) -> str:
+    return ("" if s is None else str(s)).strip()
 
 
-def _truncate_to_field(model_cls, field_name: str, value):
+def _lower_keys(row: dict[str, Any]) -> dict[str, Any]:
+    return {str(k).strip().lower(): v for k, v in row.items()}
+
+
+def _truncate_to_field(model, field_name: str, value: Any) -> Any:
     """
-    Enforce model field max_length WITHOUT changing models.
-    If field has max_length and value is longer, truncate safely.
+    If the model field is a CharField with max_length, truncate safely.
     """
     if value is None:
         return None
-    s = str(value)
-    max_len = _max_len_for(model_cls, field_name)
-    if max_len and len(s) > int(max_len):
-        return s[: int(max_len)]
-    return s
+    val = str(value)
+    try:
+        field = model._meta.get_field(field_name)
+        max_len = getattr(field, "max_length", None)
+        if max_len and isinstance(max_len, int) and len(val) > max_len:
+            return val[:max_len]
+    except Exception:
+        pass
+    return value
+
+
+def _pick(row: dict[str, Any], *keys: str) -> str:
+    for k in keys:
+        v = row.get(k)
+        if v not in (None, ""):
+            return _norm(v)
+    return ""
 
 
 class Command(BaseCommand):
-    help = "Import Employers from a CSV file."
+    help = "Import employers from CSV (active/inactive/pending). Creates/updates Users + Employer rows."
 
     def add_arguments(self, parser):
         parser.add_argument("csv_path", type=str)
-        parser.add_argument("--dry-run", action="store_true", default=False)
+        parser.add_argument(
+            "--status",
+            choices=["active", "inactive", "pending"],
+            default="active",
+            help="Controls is_approved/login_active.",
+        )
+        parser.add_argument("--dry-run", action="store_true", help="Validate only; no DB writes.")
 
     def handle(self, *args, **opts):
         csv_path = Path(opts["csv_path"])
+        status = opts["status"]
         dry_run = bool(opts["dry_run"])
 
+        is_approved = status == "active"
+        login_active = status == "active"
+
         if not csv_path.exists():
-            self.stderr.write(self.style.ERROR(f"CSV not found: {csv_path}"))
+            self.stderr.write(self.style.ERROR(f"File not found: {csv_path}"))
             return
 
         created = 0
         updated = 0
         skipped = 0
         errors = 0
-        truncated_fields = 0
 
-        User = get_user_model()
+        self.stdout.write(
+            f"--- Importing: {csv_path.name} | status={status} (is_approved={is_approved}, login_active={login_active}) ---"
+        )
 
-        # You want: most recent in admin = order_by("-id") in admin.py (separate),
-        # this importer just ensures data is safe + consistent.
+        # Wrap whole run so --dry-run can rollback cleanly.
+        atomic_ctx = transaction.atomic()
+        atomic_ctx.__enter__()
+        try:
+            with csv_path.open("r", encoding="utf-8-sig", newline="") as f:
+                reader = csv.DictReader(f)
+                for i, raw in enumerate(reader, start=2):
+                    row = _lower_keys(raw or {})
 
-        def _set(data: dict, field_name: str, raw_value, allow_blank=True):
-            nonlocal truncated_fields
-            s = _clean_str(raw_value)
-
-            if not s and allow_blank:
-                data[field_name] = ""
-                return
-
-            # Enforce max_length if applicable
-            before = s
-            s2 = _truncate_to_field(Employer, field_name, s)
-            if s2 is not None and before != s2:
-                truncated_fields += 1
-            data[field_name] = s2
-
-        with csv_path.open("r", encoding="utf-8-sig", newline="") as f:
-            reader = csv.DictReader(f)
-
-            for i, row in enumerate(reader, start=1):
-                try:
-                    # --- REQUIRED MINIMUMS ---
-                    email = _clean_str(row.get("email") or row.get("Email") or "")
+                    # REQUIRED: email
+                    email = _pick(row, "email", "email address", "email_address", "employer_email", "contact email")
                     if not email:
                         skipped += 1
                         continue
 
-                    # Find or create user
-                    user = User.objects.filter(email__iexact=email).first()
-                    if not user:
-                        # Username fallback (if your auth model uses username)
-                        username = _clean_str(row.get("username") or row.get("Username") or "")
-                        if not username:
-                            username = email.split("@")[0][:150]
+                    # Normalized user identity
+                    email_lc = email.lower()
 
-                        # Create user WITHOUT setting a password (unusable) unless CSV provides one
-                        password = row.get("password") or row.get("Password") or None
-                        user = User.objects.create_user(
-                            username=username,
-                            email=email,
-                            password=password if password else None,
-                        )
-
-                    # Employer row
-                    employer = Employer.objects.filter(user=user).first()
-
-                    data = {}
-
-                    # These field names MUST match your model (contract: no renames).
-                    # We defensively map common CSV headers -> your model fields.
-                    _set(data, "email", email, allow_blank=False)
-
-                    # Prefer company_name if present, else name
-                    company_name = _clean_str(
-                        row.get("company_name")
-                        or row.get("Company Name")
-                        or row.get("company")
-                        or row.get("Company")
-                        or row.get("name")
-                        or row.get("Name")
-                        or ""
+                    # Core employer fields (best-effort mapping)
+                    company_name = _pick(row, "company_name", "company name", "company", "clinic", "name")
+                    phone = _pick(row, "phone", "phone number", "phone_number", "tel", "telephone")
+                    website = _pick(row, "website", "url", "site", "web")
+                    location = _pick(row, "location", "city", "province", "address")
+                    company_description = _pick(
+                        row,
+                        "company_description",
+                        "company description",
+                        "description",
+                        "about",
+                        "about_company",
                     )
+
+                    # Create/get the auth user (NEVER skip employer creation just because user exists)
+                    user, user_created = User.objects.get_or_create(
+                        email=email_lc,
+                        defaults={
+                            "username": email_lc,
+                            "is_active": True,
+                        },
+                    )
+                    # Keep username aligned (Django may require it)
+                    if getattr(user, "username", None) != email_lc:
+                        try:
+                            user.username = email_lc
+                        except Exception:
+                            pass
+
+                    # IMPORTANT: do NOT accidentally lock staff/superuser accounts
+                    if not (user.is_staff or user.is_superuser):
+                        user.is_active = True  # keep auth account active; you gate login via Employer.login_active
+                    user.email = email_lc
+                    user.save()
+
+                    # Create or update Employer linked to this user
+                    emp, emp_created = Employer.objects.get_or_create(
+                        user=user,
+                        defaults={
+                            "email": email_lc,
+                        },
+                    )
+
+                    # Apply status flags
+                    emp.is_approved = bool(is_approved)
+                    emp.login_active = bool(login_active)
+
+                    # Fill fields if present
                     if company_name:
-                        _set(data, "company_name", company_name)
+                        # some projects have both company_name and name; set both if they exist
+                        if hasattr(emp, "company_name"):
+                            emp.company_name = _truncate_to_field(Employer, "company_name", company_name)
+                        if hasattr(emp, "name"):
+                            emp.name = _truncate_to_field(Employer, "name", company_name)
+
+                    if phone and hasattr(emp, "phone"):
+                        emp.phone = _truncate_to_field(Employer, "phone", phone)
+
+                    if website and hasattr(emp, "website"):
+                        emp.website = _truncate_to_field(Employer, "website", website)
+
+                    if location and hasattr(emp, "location"):
+                        emp.location = _truncate_to_field(Employer, "location", location)
+
+                    # Prefer company_description field if it exists, else fallback to description
+                    if company_description:
+                        if hasattr(emp, "company_description"):
+                            # company_description often TextField; still safe to assign
+                            emp.company_description = company_description
+                        elif hasattr(emp, "description"):
+                            emp.description = _truncate_to_field(Employer, "description", company_description)
+
+                    # Ensure email stored on Employer if model has it
+                    if hasattr(emp, "email"):
+                        emp.email = _truncate_to_field(Employer, "email", email_lc)
+
+                    emp.save()
+
+                    if emp_created:
+                        created += 1
                     else:
-                        # Some projects use Employer.name; keep both if your model has both.
-                        # Only set fields that exist.
-                        if hasattr(Employer, "name"):
-                            _set(data, "name", _clean_str(row.get("name") or row.get("Name") or ""), allow_blank=True)
+                        updated += 1
 
-                    # Description fields (often long; only max_length enforced if model has it)
-                    if hasattr(Employer, "company_description"):
-                        _set(
-                            data,
-                            "company_description",
-                            row.get("company_description") or row.get("Company Description") or "",
-                            allow_blank=True,
-                        )
-                    if hasattr(Employer, "description"):
-                        _set(
-                            data,
-                            "description",
-                            row.get("description") or row.get("Description") or "",
-                            allow_blank=True,
-                        )
+            if dry_run:
+                raise transaction.TransactionManagementError("Dry-run complete (rolled back).")
 
-                    # Contact & meta
-                    if hasattr(Employer, "phone"):
-                        _set(data, "phone", row.get("phone") or row.get("Phone") or "", allow_blank=True)
-                    if hasattr(Employer, "website"):
-                        _set(data, "website", row.get("website") or row.get("Website") or "", allow_blank=True)
-                    if hasattr(Employer, "location"):
-                        _set(data, "location", row.get("location") or row.get("Location") or "", allow_blank=True)
+        except transaction.TransactionManagementError:
+            # expected for dry-run
+            pass
+        except Exception as e:
+            errors += 1
+            self.stderr.write(self.style.ERROR(f"FATAL import error: {e}"))
+        finally:
+            # rollback if dry-run, otherwise commit
+            if dry_run:
+                transaction.set_rollback(True)
+            atomic_ctx.__exit__(None, None, None)
 
-                    # Credits
-                    if hasattr(Employer, "credits"):
-                        raw_credits = _clean_str(row.get("credits") or row.get("Credits") or "")
-                        if raw_credits:
-                            try:
-                                data["credits"] = int(float(raw_credits))
-                            except Exception:
-                                pass
+        if dry_run:
+            self.stdout.write(self.style.WARNING("[employers] DRY-RUN: no DB writes performed."))
 
-                    # Approval/login flags
-                    # If your CSV includes these, honor them; else default approved+active for main employers.csv
-                    # (Your status CSV scripts handle pending/deactivated separately.)
-                    if hasattr(Employer, "is_approved"):
-                        raw = _clean_str(row.get("is_approved") or row.get("approved") or "")
-                        if raw:
-                            data["is_approved"] = raw.lower() in ("1", "true", "yes", "y")
-                        else:
-                            data["is_approved"] = True
-
-                    if hasattr(Employer, "login_active"):
-                        raw = _clean_str(row.get("login_active") or row.get("active") or "")
-                        if raw:
-                            data["login_active"] = raw.lower() in ("1", "true", "yes", "y")
-                        else:
-                            data["login_active"] = True
-
-                    if dry_run:
-                        # Do not write anything
-                        created += 1 if employer is None else 0
-                        updated += 1 if employer is not None else 0
-                        continue
-
-                    with transaction.atomic():
-                        if employer is None:
-                            data["user"] = user
-                            Employer.objects.create(**data)
-                            created += 1
-                        else:
-                            for k, v in data.items():
-                                setattr(employer, k, v)
-                            employer.save()
-                            updated += 1
-
-                except IntegrityError as e:
-                    errors += 1
-                    self.stderr.write(self.style.ERROR(f"[Row {i}] ERROR (Integrity): {e}"))
-                except Exception as e:
-                    errors += 1
-                    self.stderr.write(self.style.ERROR(f"[Row {i}] ERROR: {e}"))
-
-        self.stdout.write(
-            self.style.SUCCESS(
-                f"[employers] done. created={created} updated={updated} skipped={skipped} errors={errors} truncated_fields={truncated_fields}"
-            )
-        )
+        self.stdout.write(f"[employers] created={created} updated={updated} skipped={skipped} errors={errors}")

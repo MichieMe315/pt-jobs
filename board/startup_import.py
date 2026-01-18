@@ -1,129 +1,161 @@
 # board/startup_import.py
+from __future__ import annotations
+
 import os
-import sys
 from pathlib import Path
 
-from django.conf import settings
-from django.db import OperationalError, ProgrammingError
+from django.contrib.auth import get_user_model
+from django.core.management import call_command
+from django.db import connection
+
+
+User = get_user_model()
+
+
+def _env_bool(name: str, default: str = "0") -> bool:
+    return str(os.getenv(name, default)).strip().lower() in ("1", "true", "yes", "on")
+
+
+def _log(msg: str) -> None:
+    print(f"[startup_import] {msg}", flush=True)
+
+
+def ensure_admin_login() -> None:
+    """
+    Ensures a known superuser exists in production without breaking existing staff accounts.
+    Uses env vars:
+      DJANGO_SUPERUSER_USERNAME
+      DJANGO_SUPERUSER_EMAIL
+      DJANGO_SUPERUSER_PASSWORD
+    """
+    username = (os.getenv("DJANGO_SUPERUSER_USERNAME") or "").strip()
+    email = (os.getenv("DJANGO_SUPERUSER_EMAIL") or "").strip().lower()
+    password = os.getenv("DJANGO_SUPERUSER_PASSWORD") or ""
+
+    if not username or not email or not password:
+        return
+
+    # Prefer username match, else email match
+    user = User.objects.filter(username=username).first() or User.objects.filter(email=email).first()
+    if not user:
+        user = User.objects.create_superuser(username=username, email=email, password=password)
+        _log(f"Ensured superuser login: {username} ({email})")
+        return
+
+    # Make sure it's staff/superuser (do not reset passwords unless explicitly requested)
+    changed = False
+    if not user.is_staff:
+        user.is_staff = True
+        changed = True
+    if not user.is_superuser:
+        user.is_superuser = True
+        changed = True
+    if user.email != email:
+        user.email = email
+        changed = True
+    if changed:
+        user.save()
+    _log(f"Ensured superuser login: {user.username} ({user.email})")
+
+
+def wipe_business_data() -> None:
+    """
+    Deletes business rows but keeps auth + admin accounts.
+    Controlled by BULK_WIPE_ENABLED=1.
+    """
+    from board.models import Employer, JobSeeker, Job, Application, Resume, Invoice, PurchasedPackage, DiscountCode, EmailTemplate
+
+    _log("WIPE ENABLED: deleting business data...")
+
+    # Order matters due to FK constraints
+    Application.objects.all().delete()
+    Resume.objects.all().delete()
+    Job.objects.all().delete()
+    Invoice.objects.all().delete()
+    PurchasedPackage.objects.all().delete()
+    DiscountCode.objects.all().delete()
+    EmailTemplate.objects.all().delete()
+    JobSeeker.objects.all().delete()
+    Employer.objects.all().delete()
+
+    _log("WIPE DONE.")
 
 
 def run_bulk_import_if_enabled() -> None:
     """
-    Runs bulk CSV imports ONCE on web start, controlled by env var.
-
-    Set in production env vars:
-      RUN_BULK_IMPORT_ON_STARTUP=1
-
-    Optional overrides:
-      BULK_IMPORT_EMPLOYERS=board/data/employers.csv
-      BULK_IMPORT_EMPLOYERS_PENDING=board/data/employers_pending.csv
-      BULK_IMPORT_EMPLOYERS_DEACTIVATED=board/data/employers_deactivated.csv
-      BULK_IMPORT_JOBSEEKERS_ACTIVE=board/data/jobseekers_active.csv
-      BULK_IMPORT_JOBSEEKERS_INACTIVE=board/data/jobseekers_inactive.csv
-      BULK_IMPORT_JOBSEEKERS_PENDING=board/data/jobseekers_pending.csv
-      BULK_IMPORT_JOBS_ACTIVE=board/data/jobs_active.csv
-      BULK_IMPORT_JOBS_EXPIRED=board/data/jobs_expired.csv
-      BULK_IMPORT_INVOICES=board/data/invoices.csv
+    Runs imports ONLY if BULK_IMPORT_ENABLED=1.
+    Expects CSVs in repo under board/data by default.
     """
-    if os.environ.get("RUN_BULK_IMPORT_ON_STARTUP") != "1":
+    if not _env_bool("BULK_IMPORT_ENABLED", "0"):
         return
 
-    # Never run during these management commands
-    blocked = {
-        "migrate",
-        "makemigrations",
-        "collectstatic",
-        "shell",
-        "createsuperuser",
-        "dbshell",
-        "check",
-        "test",
-    }
-    if any(cmd in sys.argv for cmd in blocked):
-        return
+    base = Path(os.getenv("BULK_IMPORT_BASE", "board/data"))
 
-    files = {
-        "employers": os.environ.get("BULK_IMPORT_EMPLOYERS", "board/data/employers.csv"),
-        "employers_pending": os.environ.get("BULK_IMPORT_EMPLOYERS_PENDING", "board/data/employers_pending.csv"),
-        "employers_deactivated": os.environ.get("BULK_IMPORT_EMPLOYERS_DEACTIVATED", "board/data/employers_deactivated.csv"),
-        "jobseekers_active": os.environ.get("BULK_IMPORT_JOBSEEKERS_ACTIVE", "board/data/jobseekers_active.csv"),
-        "jobseekers_inactive": os.environ.get("BULK_IMPORT_JOBSEEKERS_INACTIVE", "board/data/jobseekers_inactive.csv"),
-        "jobseekers_pending": os.environ.get("BULK_IMPORT_JOBSEEKERS_PENDING", "board/data/jobseekers_pending.csv"),
-        "jobs_active": os.environ.get("BULK_IMPORT_JOBS_ACTIVE", "board/data/jobs_active.csv"),
-        "jobs_expired": os.environ.get("BULK_IMPORT_JOBS_EXPIRED", "board/data/jobs_expired.csv"),
-        "invoices": os.environ.get("BULK_IMPORT_INVOICES", "board/data/invoices.csv"),
-    }
+    employers_csv = base / "employers.csv"
+    employers_deactivated_csv = base / "employers_deactivated.csv"
+    employers_pending_csv = base / "employers_pending.csv"
 
-    resolved = {k: (Path(settings.BASE_DIR) / v) for k, v in files.items()}
+    jobseekers_active_csv = base / "jobseekers_active.csv"
+    jobseekers_inactive_csv = base / "jobseekers_inactive.csv"
+    jobseekers_pending_csv = base / "jobseekers_pending.csv"
 
-    if not any(p.exists() for p in resolved.values()):
-        print("[startup_import] SKIP: no CSV files found.")
-        return
+    jobs_active_csv = base / "jobs_active.csv"
+    jobs_expired_csv = base / "jobs_expired.csv"
 
-    # DB readiness check
+    invoices_csv = base / "invoices.csv"
+
+    _log("IMPORT ENABLED: starting bulk CSV imports.")
+
+    # Employers
+    _log("Importing employers.")
+    call_command("import_employers_csv", str(employers_csv), "--status=active")
+    call_command("import_employers_csv", str(employers_deactivated_csv), "--status=inactive")
+    call_command("import_employers_csv", str(employers_pending_csv), "--status=pending")
+
+    # Jobseekers
+    _log("Importing jobseekers (active/inactive/pending).")
+    call_command("import_jobseekers_csv", str(jobseekers_active_csv), "--mode=active")
+    call_command("import_jobseekers_csv", str(jobseekers_inactive_csv), "--mode=inactive")
+    # Contract decision: pending -> inactive/login blocked
+    call_command("import_jobseekers_csv", str(jobseekers_pending_csv), "--mode=inactive")
+
+    # Jobs
+    _log("Importing jobs (active/expired).")
+    call_command("import_jobs_csv", str(jobs_active_csv), str(jobs_expired_csv))
+
+    # Invoices
+    _log("Importing invoices.")
+    call_command("import_invoices_csv", str(invoices_csv))
+
+    _log("IMPORT DONE.")
+
+
+def safe_startup_tasks() -> None:
+    """
+    This is called by AppConfig.ready().
+    It must NEVER crash the worker.
+    """
     try:
-        from board.models import Employer as EmployerModel
-        EmployerModel.objects.exists()
-    except (OperationalError, ProgrammingError) as e:
-        print(f"[startup_import] SKIP: DB not ready: {e}")
+        # Touch DB to ensure connection is ready (prevents weird first-query issues)
+        with connection.cursor() as cur:
+            cur.execute("SELECT 1;")
+    except Exception:
+        # If DB isn't ready, don't do anything on this boot.
         return
-    except Exception as e:
-        print(f"[startup_import] SKIP: DB check failed: {e}")
-        return
-
-    def _safe(label: str, fn):
-        try:
-            fn()
-        except Exception as e:
-            # CRITICAL: never crash web boot
-            print(f"[startup_import] ERROR during {label} (non-fatal): {e}")
 
     try:
-        from board.management.commands.import_employers_csv import Command as ImportEmployers
-        from board.management.commands.update_employers_status_csv import Command as UpdateEmployerStatus
-        from board.management.commands.import_jobseekers_csv import Command as ImportJobSeekers
-        from board.management.commands.import_jobs_csv import Command as ImportJobs
-        from board.management.commands.import_invoices_csv import Command as ImportInvoices
-        from board.models import JobSeeker, Job, Invoice
+        ensure_admin_login()
     except Exception as e:
-        print(f"[startup_import] SKIP: could not import commands/models: {e}")
-        return
+        _log(f"ensure_admin_login failed: {e}")
 
-    print("[startup_import] IMPORT ENABLED: starting bulk CSV imports.")
+    try:
+        if _env_bool("BULK_WIPE_ENABLED", "0"):
+            wipe_business_data()
+    except Exception as e:
+        _log(f"wipe failed: {e}")
 
-    if resolved["employers"].exists():
-        _safe("import_employers", lambda: ImportEmployers().handle(csv_path=str(resolved["employers"]), dry_run=False))
-
-    if resolved["employers_pending"].exists():
-        _safe("employers_pending_status", lambda: UpdateEmployerStatus().handle(csv_path=str(resolved["employers_pending"]), kind="pending", dry_run=False))
-
-    if resolved["employers_deactivated"].exists():
-        _safe("employers_deactivated_status", lambda: UpdateEmployerStatus().handle(csv_path=str(resolved["employers_deactivated"]), kind="deactivated", dry_run=False))
-
-    js_count = JobSeeker.objects.count()
-    if js_count == 0:
-        if resolved["jobseekers_active"].exists():
-            _safe("jobseekers_active", lambda: ImportJobSeekers().handle(csv_path=str(resolved["jobseekers_active"]), mode="active"))
-        if resolved["jobseekers_inactive"].exists():
-            _safe("jobseekers_inactive", lambda: ImportJobSeekers().handle(csv_path=str(resolved["jobseekers_inactive"]), mode="inactive"))
-        if resolved["jobseekers_pending"].exists():
-            _safe("jobseekers_pending", lambda: ImportJobSeekers().handle(csv_path=str(resolved["jobseekers_pending"]), mode="pending"))
-    else:
-        print(f"[startup_import] SKIP: JobSeekers already exist (count={js_count}).")
-
-    jobs_count = Job.objects.count()
-    if jobs_count == 0:
-        if resolved["jobs_active"].exists():
-            _safe("jobs_active", lambda: ImportJobs().handle(csv_path=str(resolved["jobs_active"]), mode="active", dry_run=False))
-        if resolved["jobs_expired"].exists():
-            _safe("jobs_expired", lambda: ImportJobs().handle(csv_path=str(resolved["jobs_expired"]), mode="expired", dry_run=False))
-    else:
-        print(f"[startup_import] SKIP: Jobs already exist (count={jobs_count}).")
-
-    inv_count = Invoice.objects.count()
-    if inv_count == 0 and resolved["invoices"].exists():
-        _safe("invoices", lambda: ImportInvoices().handle(csv_path=str(resolved["invoices"]), dry_run=False))
-    else:
-        print(f"[startup_import] SKIP: Invoices already exist (count={inv_count}).")
-
-    print("[startup_import] DONE")
+    try:
+        run_bulk_import_if_enabled()
+    except Exception as e:
+        # IMPORTANT: never crash boot
+        _log(f"bulk import failed: {e}")
