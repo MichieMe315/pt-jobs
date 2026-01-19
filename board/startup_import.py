@@ -1,219 +1,144 @@
-from __future__ import annotations
-
 import os
-import sys
-from pathlib import Path
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.management import call_command
-from django.db import connection, transaction
+
+from board.management.commands.import_employers_csv import Command as ImportEmployers
+from board.management.commands.import_jobseekers_csv import Command as ImportJobSeekers
+from board.management.commands.import_jobs_csv import Command as ImportJobs
+from board.management.commands.import_invoices_csv import Command as ImportInvoices
+
+from board.models import Employer, JobSeeker, Job, Invoice
 
 
-LOCK_KEY = 923487234  # arbitrary constant for advisory lock
+def _env_bool(name: str, default: str = "0") -> bool:
+    return (os.getenv(name, default) or "").strip().lower() in ("1", "true", "yes", "on")
 
 
-def _env_true(name: str, default: str = "0") -> bool:
-    return str(os.getenv(name, default)).strip().lower() in ("1", "true", "yes", "on")
-
-
-def _should_skip_for_command_context() -> bool:
+def ensure_superuser():
     """
-    Avoid running imports during deploy steps that call Django:
-    - migrate
-    - collectstatic
-    - any management command
-    """
-    argv = " ".join(sys.argv).lower()
-    if "manage.py" in argv:
-        # If ANY explicit management command is running, skip.
-        # (Railway runs migrate/collectstatic in predeploy.)
-        if any(cmd in argv for cmd in ["migrate", "collectstatic", "createsuperuser", "shell", "loaddata"]):
-            return True
-        # If it is a management command at all, safest to skip:
-        if len(sys.argv) > 1:
-            return True
-    return False
-
-
-def _try_advisory_lock() -> bool:
-    """
-    Prevent the import from running multiple times (e.g., multiple gunicorn workers).
-    Works on Postgres. On SQLite, just runs once per process.
-    """
-    try:
-        if connection.vendor == "postgresql":
-            with connection.cursor() as cur:
-                cur.execute("SELECT pg_try_advisory_lock(%s);", [LOCK_KEY])
-                row = cur.fetchone()
-                return bool(row and row[0])
-    except Exception:
-        return True
-    return True
-
-
-def _release_advisory_lock() -> None:
-    try:
-        if connection.vendor == "postgresql":
-            with connection.cursor() as cur:
-                cur.execute("SELECT pg_advisory_unlock(%s);", [LOCK_KEY])
-    except Exception:
-        return
-
-
-def _log(msg: str) -> None:
-    print(f"[startup_import] {msg}", flush=True)
-
-
-def _ensure_superuser_from_env() -> None:
-    """
-    Optional: ensure an admin exists if env is provided.
-    Uses:
-      DJANGO_SUPERUSER_USERNAME (or email if not provided)
+    Ensures a known superuser exists so you can get into /admin even after wipes.
+    Controlled by env vars:
       DJANGO_SUPERUSER_EMAIL
+      DJANGO_SUPERUSER_USERNAME
       DJANGO_SUPERUSER_PASSWORD
     """
-    username = (os.getenv("DJANGO_SUPERUSER_USERNAME") or "").strip()
-    email = (os.getenv("DJANGO_SUPERUSER_EMAIL") or "").strip()
-    password = (os.getenv("DJANGO_SUPERUSER_PASSWORD") or "").strip()
+    email = (os.getenv("DJANGO_SUPERUSER_EMAIL") or "").strip().lower()
+    username = (os.getenv("DJANGO_SUPERUSER_USERNAME") or email).strip()
+    password = os.getenv("DJANGO_SUPERUSER_PASSWORD") or ""
 
     if not email or not password:
         return
 
-    if not username:
-        username = email
-
     User = get_user_model()
-    try:
-        u = User.objects.filter(username=username).first() or User.objects.filter(email=email).first()
-        if not u:
-            u = User.objects.create_superuser(username=username, email=email, password=password)
-            _log(f"Ensured superuser login: {u.username} ({u.email}) [CREATED]")
-        else:
-            # Ensure staff/superuser flags are correct, and reset password (optional but useful)
-            changed = False
-            if not u.is_staff:
-                u.is_staff = True
-                changed = True
-            if not u.is_superuser:
-                u.is_superuser = True
-                changed = True
-            if changed:
-                u.save(update_fields=["is_staff", "is_superuser"])
-            # If you want to force the password to match the env:
+    u = User.objects.filter(email__iexact=email).first()
+    if not u:
+        u = User.objects.create_superuser(username=username, email=email, password=password)
+    else:
+        # Ensure staff/superuser and password are correct
+        changed = False
+        if not u.is_staff:
+            u.is_staff = True
+            changed = True
+        if not u.is_superuser:
+            u.is_superuser = True
+            changed = True
+        if password:
             u.set_password(password)
-            u.save(update_fields=["password"])
-            _log(f"Ensured superuser login: {u.username} ({u.email})")
-    except Exception:
+            changed = True
+        if changed:
+            u.save()
+
+    print(f"[startup_import] Ensured superuser login: {username} ({email})")
+
+
+def wipe_business_data():
+    """
+    Wipes ONLY business data (not auth users, not migrations):
+    Employer/JobSeeker/Job/Invoice (and related rows via cascade).
+    """
+    print("[startup_import] WIPE ENABLED: deleting business data...")
+
+    Invoice.objects.all().delete()
+    Job.objects.all().delete()
+    JobSeeker.objects.all().delete()
+    Employer.objects.all().delete()
+
+    print("[startup_import] WIPE DONE.")
+
+
+def run_bulk_import_if_enabled():
+    """
+    Run imports exactly when PTJOBS_STARTUP_IMPORT=1.
+    After it succeeds, you MUST set PTJOBS_STARTUP_IMPORT=0 and redeploy
+    so the app stops importing on every restart.
+    """
+    if not _env_bool("PTJOBS_STARTUP_IMPORT", "0"):
         return
 
+    print("[startup_import] IMPORT ENABLED: starting bulk CSV imports.")
 
-def _wipe_business_data() -> None:
-    """
-    Deletes only business data from board app.
-    Does NOT delete superusers/staff users.
-    """
-    from board.models import (
-        Application,
-        DiscountCode,
-        EmailTemplate,
-        Employer,
-        Invoice,
-        Job,
-        JobSeeker,
-        PostingPackage,
-        PurchasedPackage,
-        Resume,
-        SiteSettings,
+    base_dir = getattr(settings, "BASE_DIR", None)
+    if not base_dir:
+        print("[startup_import] ERROR: BASE_DIR not available.")
+        return
+
+    # CSV locations inside repo
+    data_dir = os.path.join(str(base_dir), "board", "data")
+
+    employers_csv = os.path.join(data_dir, "employers.csv")
+    employers_deactivated_csv = os.path.join(data_dir, "employers_deactivated.csv")
+    employers_pending_csv = os.path.join(data_dir, "employers_pending.csv")
+
+    jobseekers_active_csv = os.path.join(data_dir, "jobseekers_active.csv")
+    jobseekers_inactive_csv = os.path.join(data_dir, "jobseekers_inactive.csv")
+    jobseekers_pending_csv = os.path.join(data_dir, "jobseekers_pending.csv")  # treat as inactive (cannot log in)
+
+    jobs_active_csv = os.path.join(data_dir, "jobs_active.csv")
+    jobs_expired_csv = os.path.join(data_dir, "jobs_expired.csv")
+
+    invoices_csv = os.path.join(data_dir, "invoices.csv")
+
+    # 1) Employers FIRST (active + deactivated + pending)
+    print("[startup_import] Importing employers (active/deactivated/pending).")
+    ImportEmployers().handle(
+        employers_csv,
+        employers_deactivated_csv,
+        employers_pending_csv,
+        dry_run=False,
     )
 
-    _log("WIPE ENABLED: deleting business data...")
+    # 2) Jobseekers (active + inactive + pending->inactive)
+    print("[startup_import] Importing jobseekers (active/inactive/pending->inactive).")
+    ImportJobSeekers().handle(
+        jobseekers_active_csv,
+        dry_run=False,
+        mode="active",
+    )
+    ImportJobSeekers().handle(
+        jobseekers_inactive_csv,
+        dry_run=False,
+        mode="inactive",
+    )
+    ImportJobSeekers().handle(
+        jobseekers_pending_csv,
+        dry_run=False,
+        mode="inactive",
+    )
 
-    # Order matters due to FK constraints
-    with transaction.atomic():
-        Application.objects.all().delete()
-        Resume.objects.all().delete()
-        Job.objects.all().delete()
-        Invoice.objects.all().delete()
-        PurchasedPackage.objects.all().delete()
-        PostingPackage.objects.all().delete()
-        DiscountCode.objects.all().delete()
+    # 3) Jobs
+    print("[startup_import] Importing jobs (active/expired).")
+    ImportJobs().handle(
+        jobs_active_csv,
+        jobs_expired_csv,
+        dry_run=False,
+    )
 
-        # Keep SiteSettings + EmailTemplate if you want, but you can wipe too.
-        # If you do NOT want them wiped, comment these out.
-        EmailTemplate.objects.all().delete()
-        SiteSettings.objects.all().delete()
+    # 4) Invoices
+    print("[startup_import] Importing invoices.")
+    ImportInvoices().handle(
+        invoices_csv,
+        dry_run=False,
+    )
 
-        JobSeeker.objects.all().delete()
-        Employer.objects.all().delete()
-
-    _log("WIPE DONE.")
-
-
-def _data_dir() -> Path:
-    base = Path(getattr(settings, "BASE_DIR", Path(__file__).resolve().parent.parent))
-    return base / "board" / "data"
-
-
-def run_startup_tasks_if_enabled() -> None:
-    """
-    Entry point called from apps.py ready().
-    """
-    if _should_skip_for_command_context():
-        return
-
-    # Always allow ensuring a superuser if env provided
-    _ensure_superuser_from_env()
-
-    do_wipe = _env_true("RUN_STARTUP_WIPE", "0")
-    do_import = _env_true("RUN_STARTUP_IMPORT", "0")
-
-    if not do_wipe and not do_import:
-        return
-
-    if not _try_advisory_lock():
-        _log("Another worker/process holds the startup lock. Skipping.")
-        return
-
-    try:
-        if do_wipe:
-            _wipe_business_data()
-
-        if do_import:
-            d = _data_dir()
-
-            employers_csv = d / "employers.csv"
-            employers_deactivated_csv = d / "employers_deactivated.csv"
-            employers_pending_csv = d / "employers_pending.csv"
-
-            jobseekers_active_csv = d / "jobseekers_active.csv"
-            jobseekers_inactive_csv = d / "jobseekers_inactive.csv"
-            jobseekers_pending_csv = d / "jobseekers_pending.csv"
-
-            jobs_active_csv = d / "jobs_active.csv"
-            jobs_expired_csv = d / "jobs_expired.csv"
-
-            invoices_csv = d / "invoices.csv"
-
-            _log("IMPORT ENABLED: starting bulk CSV imports.")
-
-            _log("Importing employers.")
-            call_command("import_employers_csv", str(employers_csv))
-            call_command("import_employers_csv", str(employers_deactivated_csv))
-            call_command("import_employers_csv", str(employers_pending_csv))
-
-            _log("Importing jobseekers (active/inactive/pending).")
-            call_command("import_jobseekers_csv", str(jobseekers_active_csv))
-            call_command("import_jobseekers_csv", str(jobseekers_inactive_csv))
-            # Contract: you said pending should import as inactive so they cannot log in
-            call_command("import_jobseekers_csv", str(jobseekers_pending_csv))
-
-            _log("Importing jobs (active/expired).")
-            call_command("import_jobs_csv", str(jobs_active_csv), str(jobs_expired_csv))
-
-            _log("Importing invoices.")
-            call_command("import_invoices_csv", str(invoices_csv))
-
-            _log("IMPORT DONE.")
-    finally:
-        _release_advisory_lock()
+    print("[startup_import] IMPORT DONE.")

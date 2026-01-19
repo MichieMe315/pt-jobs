@@ -1,145 +1,206 @@
-from __future__ import annotations
-
 import csv
-from datetime import date, datetime
+from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.utils import timezone
+from django.db import transaction
 
 from board.models import Employer, Job
 
 
-def _norm(s: str) -> str:
-    return (s or "").strip()
+EMAIL_KEYS = ["Employer Email", "EmployerEmail", "email", "Email", "employer_email"]
+TITLE_KEYS = ["Title", "Job Title", "job_title"]
+DESC_KEYS = ["Description", "Job Description", "description"]
+CITY_KEYS = ["City", "city"]
+PROV_KEYS = ["Province", "State", "province", "state"]
+LOCATION_KEYS = ["Location", "location"]
+JOB_TYPE_KEYS = ["Job Type", "job_type", "Type"]
+COMP_TYPE_KEYS = ["Compensation Type", "compensation_type"]
+COMP_MIN_KEYS = ["Compensation Min", "compensation_min", "Min Pay", "min_pay"]
+COMP_MAX_KEYS = ["Compensation Max", "compensation_max", "Max Pay", "max_pay"]
+APPLY_VIA_KEYS = ["Apply Via", "apply_via"]
+APPLY_EMAIL_KEYS = ["Apply Email", "apply_email"]
+APPLY_URL_KEYS = ["Apply URL", "apply_url"]
+POSTING_DATE_KEYS = ["Posting Date", "posting_date", "Date Posted"]
+EXPIRY_DATE_KEYS = ["Expiry Date", "expiry_date", "Expiration Date"]
+FEATURED_KEYS = ["Featured", "is_featured"]
 
 
-def _parse_date(val: str) -> date | None:
-    val = _norm(val)
-    if not val:
+def norm(val):
+    return (val or "").strip()
+
+
+def pick(row, keys):
+    for k in keys:
+        if k in row and norm(row.get(k)):
+            return norm(row.get(k))
+    return ""
+
+
+def parse_date(val: str) -> Optional[datetime]:
+    v = norm(val)
+    if not v:
         return None
-    for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%Y/%m/%d", "%d/%m/%Y"):
+
+    for fmt in (
+        "%Y-%m-%d %H:%M:%S",
+        "%Y-%m-%d %H:%M",
+        "%Y-%m-%d",
+        "%m/%d/%Y",
+        "%Y/%m/%d",
+        "%d/%m/%Y",
+    ):
         try:
-            return datetime.strptime(val, fmt).date()
+            return datetime.strptime(v, fmt)
         except Exception:
             pass
+
     return None
 
 
-def _trim_to_model(field_name: str, value: str) -> str:
+def parse_decimal(val: str):
+    v = norm(val).replace("$", "").replace(",", "")
+    if not v:
+        return None
     try:
-        f = Job._meta.get_field(field_name)
-        max_len = getattr(f, "max_length", None)
-        if max_len and isinstance(value, str) and len(value) > max_len:
-            return value[: max_len].strip()
+        return float(v)
+    except Exception:
+        return None
+
+
+def mode_from_filename(filename: str) -> str:
+    name = (filename or "").lower()
+    if "expired" in name or "inactive" in name:
+        return "expired"
+    return "active"
+
+
+def _truncate_for_model(model_cls, field_name: str, value: str) -> str:
+    if value is None:
+        return ""
+    value = str(value).strip()
+    try:
+        field = model_cls._meta.get_field(field_name)
+        max_len = getattr(field, "max_length", None)
+        if max_len and len(value) > max_len:
+            return value[:max_len]
     except Exception:
         pass
     return value
 
 
-def _first(row: dict, keys: list[str]) -> str:
-    for k in keys:
-        if k in row and row[k] not in (None, ""):
-            return _norm(row[k])
-    return ""
-
-
 class Command(BaseCommand):
-    help = "Import jobs from active + expired CSVs (idempotent best-effort)."
+    help = "Import Jobs from CSVs (active vs expired inferred from filename)."
 
     def add_arguments(self, parser):
-        parser.add_argument("active_csv", type=str)
-        parser.add_argument("expired_csv", type=str)
+        parser.add_argument("csv_paths", nargs="+", type=str)
+        parser.add_argument("--dry-run", action="store_true")
 
-    def _import_one(self, csv_path: Path, is_active: bool) -> tuple[int, int, int, int]:
-        created = skipped = missing_employer = errors = 0
+    def handle(self, *args, **opts):
+        csv_paths = opts["csv_paths"]
+        dry_run = bool(opts["dry_run"])
 
-        label = "active" if is_active else "expired"
-        self.stdout.write(f"--- Importing {csv_path.name} | mode={label} (is_active={is_active}) ---")
+        created = 0
+        skipped = 0
+        missing_employer = 0
+        errors = 0
 
-        with csv_path.open("r", encoding="utf-8-sig", newline="") as f:
-            reader = csv.DictReader(f)
-            for idx, row in enumerate(reader, start=1):
-                try:
-                    title = _first(row, ["title", "Title", "job_title", "Job Title"])
-                    if not title:
-                        skipped += 1
-                        continue
+        def abs_path(p: str) -> Path:
+            pp = Path(p)
+            return pp if pp.is_absolute() else Path(settings.BASE_DIR) / pp
 
-                    employer_email = _first(row, ["employer_email", "Employer Email", "company_email", "email", "Email"])
-                    employer_name = _first(row, ["company_name", "Company Name", "employer_name", "Employer", "clinic_name"])
+        with transaction.atomic():
+            for raw in csv_paths:
+                path = abs_path(raw)
+                if not path.exists():
+                    raise FileNotFoundError(f"CSV not found: {path}")
 
-                    employer = None
-                    if employer_email:
-                        employer = Employer.objects.filter(email__iexact=employer_email).first()
-                    if not employer and employer_name:
-                        employer = Employer.objects.filter(company_name__iexact=employer_name).first()
+                mode = mode_from_filename(path.name)
+                is_active = mode == "active"
 
-                    if not employer:
-                        missing_employer += 1
-                        continue
+                self.stdout.write(f"\n--- Importing {path.name} | mode={mode} (is_active={is_active}) ---")
 
-                    description = _first(row, ["description", "Description", "job_description", "Job Description"])
+                with path.open(newline="", encoding="utf-8-sig") as f:
+                    reader = csv.DictReader(f)
 
-                    location = _first(row, ["location", "Location", "city", "City"])
-                    job_type = _first(row, ["job_type", "Job Type", "type"])
-                    compensation_type = _first(row, ["compensation_type", "Compensation Type"])
-                    comp_min = _first(row, ["compensation_min", "Compensation Min", "min_compensation", "min"])
-                    comp_max = _first(row, ["compensation_max", "Compensation Max", "max_compensation", "max"])
-
-                    posting_date = _parse_date(_first(row, ["posting_date", "Posting Date", "date_posted"])) or timezone.now().date()
-                    expiration_date = _parse_date(_first(row, ["expiration_date", "Expiry Date", "expires_at", "expiry"]))
-
-                    data = {
-                        "employer": employer,
-                        "title": _trim_to_model("title", title),
-                        "description": description,  # TextField usually
-                        "location": _trim_to_model("location", location),
-                        "job_type": _trim_to_model("job_type", job_type),
-                        "compensation_type": _trim_to_model("compensation_type", compensation_type),
-                        "posting_date": posting_date,
-                        "expiration_date": expiration_date,
-                        "is_active": is_active,
-                    }
-
-                    # Only set min/max if those fields exist in your Job model
-                    if hasattr(Job, "compensation_min"):
+                    for idx, row in enumerate(reader, start=2):
                         try:
-                            data["compensation_min"] = comp_min if comp_min != "" else None
-                        except Exception:
-                            pass
-                    if hasattr(Job, "compensation_max"):
-                        try:
-                            data["compensation_max"] = comp_max if comp_max != "" else None
-                        except Exception:
-                            pass
+                            employer_email = pick(row, EMAIL_KEYS).lower()
+                            title = pick(row, TITLE_KEYS)
+                            description = pick(row, DESC_KEYS)
 
-                    # Create-only import (safe). If you want “update if same employer+title”, we can add it later.
-                    Job.objects.create(**data)
-                    created += 1
+                            if not employer_email or not title:
+                                skipped += 1
+                                continue
 
-                except Exception as e:
-                    errors += 1
-                    self.stdout.write(self.style.ERROR(f"[jobs][Row {idx}] ERROR: {e}"))
+                            employer = Employer.objects.filter(email__iexact=employer_email).first()
+                            if not employer:
+                                missing_employer += 1
+                                continue
 
-        return created, skipped, missing_employer, errors
+                            location = pick(row, LOCATION_KEYS)
+                            if not location:
+                                city = pick(row, CITY_KEYS)
+                                prov = pick(row, PROV_KEYS)
+                                location = ", ".join([p for p in [city, prov] if p])
 
-    def handle(self, *args, **options):
-        active_csv = Path(options["active_csv"])
-        expired_csv = Path(options["expired_csv"])
+                            job_type = pick(row, JOB_TYPE_KEYS)
+                            comp_type = pick(row, COMP_TYPE_KEYS)
+                            apply_via = pick(row, APPLY_VIA_KEYS)
+                            apply_email = pick(row, APPLY_EMAIL_KEYS)
+                            apply_url = pick(row, APPLY_URL_KEYS)
 
-        if not active_csv.exists():
-            self.stdout.write(self.style.ERROR(f"[jobs] File not found: {active_csv}"))
-            return
-        if not expired_csv.exists():
-            self.stdout.write(self.style.ERROR(f"[jobs] File not found: {expired_csv}"))
-            return
+                            # ---- TRUNCATE to Job model max_length for CharFields ----
+                            title = _truncate_for_model(Job, "title", title)
+                            location = _truncate_for_model(Job, "location", location)
+                            job_type = _truncate_for_model(Job, "job_type", job_type)
+                            comp_type = _truncate_for_model(Job, "compensation_type", comp_type)
+                            apply_via = _truncate_for_model(Job, "apply_via", apply_via)
+                            apply_email = _truncate_for_model(Job, "apply_email", apply_email)
+                            apply_url = _truncate_for_model(Job, "apply_url", apply_url)
 
-        c1, s1, m1, e1 = self._import_one(active_csv, is_active=True)
-        c2, s2, m2, e2 = self._import_one(expired_csv, is_active=False)
+                            job = Job(
+                                employer=employer,
+                                title=title,
+                                description=description,  # TextField: no varchar limit
+                                location=location,
+                                job_type=job_type,
+                                compensation_type=comp_type,
+                                compensation_min=parse_decimal(pick(row, COMP_MIN_KEYS)),
+                                compensation_max=parse_decimal(pick(row, COMP_MAX_KEYS)),
+                                apply_via=apply_via,
+                                apply_email=apply_email,
+                                apply_url=apply_url,
+                                is_active=is_active,
+                                is_featured=pick(row, FEATURED_KEYS).lower() in ("1", "true", "yes"),
+                            )
 
-        self.stdout.write("DONE")
-        self.stdout.write(f"Jobs created: {c1 + c2}")
-        self.stdout.write(f"Skipped rows: {s1 + s2}")
-        self.stdout.write(f"Missing employer: {m1 + m2}")
-        self.stdout.write(f"Errors: {e1 + e2}")
+                            posting_dt = parse_date(pick(row, POSTING_DATE_KEYS))
+                            expiry_dt = parse_date(pick(row, EXPIRY_DATE_KEYS))
+                            if posting_dt:
+                                job.posting_date = posting_dt.date()
+                            if expiry_dt:
+                                job.expiry_date = expiry_dt.date()
+
+                            if not dry_run:
+                                job.save()
+
+                            created += 1
+
+                        except Exception as e:
+                            errors += 1
+                            self.stderr.write(f"[Row {idx}] ERROR: {e}")
+
+            if dry_run:
+                transaction.set_rollback(True)
+
+        self.stdout.write(
+            "\nDONE\n"
+            + ("[jobs] DRY-RUN: no DB writes performed.\n" if dry_run else "")
+            + f"Jobs created: {created}\n"
+            + f"Skipped rows: {skipped}\n"
+            + f"Missing employer: {missing_employer}\n"
+            + f"Errors: {errors}\n"
+        )

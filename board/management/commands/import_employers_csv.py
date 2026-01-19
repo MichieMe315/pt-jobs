@@ -1,120 +1,171 @@
-from __future__ import annotations
-
 import csv
+import re
 from pathlib import Path
 
+from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from board.models import Employer
 
 
-def _norm(s: str) -> str:
-    return (s or "").strip()
+def _norm(val) -> str:
+    return (val or "").strip()
 
 
-def _trim_to_model(field_name: str, value: str) -> str:
+def _strip_html(text: str) -> str:
+    if not text:
+        return ""
+    text = re.sub(r"<br\s*/?>", "\n", text, flags=re.I)
+    text = re.sub(r"</p\s*>", "\n", text, flags=re.I)
+    text = re.sub(r"<[^>]+>", "", text)
+    return re.sub(r"\n{3,}", "\n\n", text).strip()
+
+
+def _truncate_for_model(model_cls, field_name: str, value: str) -> str:
     """
-    If Employer.<field_name> is a CharField with max_length, trim to max_length.
+    Truncate string values to the model field's max_length (if any).
+    Prevents Postgres: value too long for type character varying(N)
     """
+    if value is None:
+        return ""
+    value = str(value).strip()
+
     try:
-        f = Employer._meta.get_field(field_name)
-        max_len = getattr(f, "max_length", None)
-        if max_len and isinstance(value, str) and len(value) > max_len:
-            return value[: max_len].strip()
+        field = model_cls._meta.get_field(field_name)
+        max_len = getattr(field, "max_length", None)
+        if max_len and len(value) > max_len:
+            return value[:max_len]
     except Exception:
         pass
+
     return value
 
 
-def _first(row: dict, keys: list[str]) -> str:
-    for k in keys:
-        if k in row and row[k] not in (None, ""):
-            return _norm(row[k])
-    return ""
+def status_from_filename(filename: str) -> str:
+    name = (filename or "").lower()
+    if "pending" in name:
+        return "pending"
+    if "deactivated" in name or "inactive" in name:
+        return "inactive"
+    return "active"
 
 
 class Command(BaseCommand):
-    help = "Import employers from a CSV into Employer table (idempotent by email)."
+    help = "Import employers from CSV. Status inferred from filename (active/pending/inactive)."
 
     def add_arguments(self, parser):
-        parser.add_argument("csv_path", type=str)
+        parser.add_argument("csv_paths", nargs="+", type=str)
+        parser.add_argument("--dry-run", action="store_true")
 
-    @transaction.atomic
-    def handle(self, *args, **options):
-        csv_path = Path(options["csv_path"])
-        if not csv_path.exists():
-            self.stdout.write(self.style.ERROR(f"[employers] File not found: {csv_path}"))
-            return
+    def handle(self, *args, **opts):
+        csv_paths = opts["csv_paths"]
+        dry_run = bool(opts["dry_run"])
 
-        # Determine status from filename (your existing convention)
-        name = csv_path.name.lower()
-        if "deactivated" in name or "inactive" in name:
-            is_approved = False
-            login_active = False
-            status = "inactive"
-        elif "pending" in name:
-            is_approved = False
-            login_active = False
-            status = "pending"
-        else:
-            is_approved = True
-            login_active = True
-            status = "active"
+        created = 0
+        updated = 0
+        skipped = 0
+        errors = 0
 
-        self.stdout.write(f"--- Importing: {csv_path.name} | status={status} (is_approved={is_approved}, login_active={login_active}) ---")
+        User = get_user_model()
 
-        created = updated = skipped = errors = 0
+        def abs_path(p: str) -> Path:
+            pp = Path(p)
+            return pp if pp.is_absolute() else Path(settings.BASE_DIR) / pp
 
-        with csv_path.open("r", encoding="utf-8-sig", newline="") as f:
-            reader = csv.DictReader(f)
-            for idx, row in enumerate(reader, start=1):
-                try:
-                    # Email is the stable unique key
-                    email = _first(row, ["email", "Email", "company_email", "contact_email", "login_email"])
-                    if not email:
-                        skipped += 1
-                        continue
+        with transaction.atomic():
+            for raw in csv_paths:
+                path = abs_path(raw)
+                if not path.exists():
+                    raise FileNotFoundError(f"CSV not found: {path}")
 
-                    company_name = _first(row, ["company_name", "Company Name", "clinic_name", "employer_name", "name"]) or email.split("@")[0]
-                    phone = _first(row, ["phone", "Phone", "telephone"])
-                    website = _first(row, ["website", "Website", "url"])
-                    location = _first(row, ["location", "Location", "city", "province"])
+                status = status_from_filename(path.name)
+                is_approved = status == "active"
+                login_active = status == "active"
 
-                    company_description = _first(row, ["company_description", "Company Description", "description", "about"])
+                self.stdout.write(
+                    f"\n--- Importing: {path.name} | status={status} (is_approved={is_approved}, login_active={login_active}) ---"
+                )
 
-                    data = {
-                        "email": _trim_to_model("email", email.lower()),
-                        "company_name": _trim_to_model("company_name", company_name),
-                        "phone": _trim_to_model("phone", phone),
-                        "website": _trim_to_model("website", website),
-                        "location": _trim_to_model("location", location),
-                        "company_description": company_description,  # TextField typically, no max_length
-                        "is_approved": is_approved,
-                        "login_active": login_active,
-                    }
+                with path.open(newline="", encoding="utf-8-sig") as f:
+                    reader = csv.DictReader(f)
 
-                    # Remove keys that don't exist in your Employer model (contract-safe)
-                    safe_data = {}
-                    for k, v in data.items():
+                    for idx, row in enumerate(reader, start=2):
                         try:
-                            Employer._meta.get_field(k)
-                            safe_data[k] = v
-                        except Exception:
-                            continue
+                            # --- Required ---
+                            email = _norm(row.get("Email") or row.get("email") or row.get("Employer Email") or "").lower()
+                            if not email:
+                                skipped += 1
+                                continue
 
-                    obj = Employer.objects.filter(email__iexact=safe_data["email"]).first()
-                    if obj:
-                        for k, v in safe_data.items():
-                            setattr(obj, k, v)
-                        obj.save()
-                        updated += 1
-                    else:
-                        Employer.objects.create(**safe_data)
-                        created += 1
+                            company_name = _norm(
+                                row.get("Company Name")
+                                or row.get("Company")
+                                or row.get("Clinic")
+                                or row.get("Employer Name")
+                                or ""
+                            )
 
-                except Exception as e:
-                    errors += 1
-                    self.stdout.write(self.style.ERROR(f"[employers][Row {idx}] ERROR: {e}"))
+                            # --- Optional fields (keep your existing mappings) ---
+                            phone = _norm(row.get("Phone") or row.get("phone") or "")
+                            website = _norm(row.get("Website") or row.get("website") or "")
+                            location = _norm(row.get("Location") or row.get("location") or "")
 
-        self.stdout.write(f"[employers] created={created} updated={updated} skipped={skipped} errors={errors}")
+                            # Some files have long HTML-ish descriptions
+                            company_description = _strip_html(_norm(row.get("Company Description") or row.get("Description") or ""))
+
+                            # ---- TRUNCATE to model max_length (prevents varchar(200) crash) ----
+                            email = _truncate_for_model(Employer, "email", email)
+                            company_name = _truncate_for_model(Employer, "company_name", company_name)
+                            phone = _truncate_for_model(Employer, "phone", phone)
+                            website = _truncate_for_model(Employer, "website", website)
+                            location = _truncate_for_model(Employer, "location", location)
+
+                            # company_description is usually TextField; still cap for sanity (won't break DB)
+                            company_description = (company_description or "")[:5000]
+
+                            # Create/ensure user
+                            user = User.objects.filter(email__iexact=email).first()
+                            if not user:
+                                user = User.objects.create_user(username=email, email=email, password=None)
+                                user.set_unusable_password()
+                                user.save(update_fields=["password"])
+
+                            # Create or update employer
+                            employer = Employer.objects.filter(email__iexact=email).first()
+                            data = {
+                                "user": user,
+                                "email": email,
+                                "company_name": company_name or email,
+                                "company_description": company_description,
+                                "phone": phone,
+                                "website": website,
+                                "location": location,
+                                "is_approved": bool(is_approved),
+                                "login_active": bool(login_active),
+                            }
+
+                            if employer:
+                                for k, v in data.items():
+                                    setattr(employer, k, v)
+                                if not dry_run:
+                                    employer.save()
+                                updated += 1
+                            else:
+                                if not dry_run:
+                                    Employer.objects.create(**data)
+                                created += 1
+
+                        except Exception as e:
+                            errors += 1
+                            self.stderr.write(f"[Row {idx}] ERROR: {e}")
+
+            if dry_run:
+                transaction.set_rollback(True)
+
+        self.stdout.write(
+            "\n[employers] "
+            + ("DRY-RUN: no DB writes performed.\n" if dry_run else "")
+            + f"created={created} updated={updated} skipped={skipped} errors={errors}\n"
+        )
