@@ -848,11 +848,7 @@ def jobseeker_profile_edit(request: HttpRequest) -> HttpResponse:
         messages.success(request, "Profile updated.")
         return redirect("jobseeker_dashboard")
 
-    return render(
-        request,
-        "board/jobseeker_profile_edit.html",
-        {"sitesettings": SiteSettings.objects.first(), "form": form, "jobseeker": js},
-    )
+    return render(request, "board/jobseeker_profile_edit.html", {"sitesettings": SiteSettings.objects.first(), "form": form, "jobseeker": js})
 
 
 # ============================================================
@@ -878,6 +874,12 @@ def checkout_select(request: HttpRequest, package_id: int) -> HttpResponse:
     if not hasattr(request.user, "employer"):
         return redirect("package_list")
 
+    # ✅ CONTRACT: Posting packages can only be purchased by APPROVED employers
+    employer = request.user.employer
+    if not employer.is_approved:
+        messages.error(request, "Your employer account is pending approval.")
+        return redirect("employer_dashboard")
+
     package = get_object_or_404(PostingPackage, id=package_id, is_active=True)
     ctx = {"sitesettings": SiteSettings.objects.first(), "package": package}
     ctx.update(_gateway_context())
@@ -892,6 +894,12 @@ def checkout_start(request: HttpRequest, package_id: int) -> HttpResponse:
 
     if not hasattr(request.user, "employer"):
         return redirect("package_list")
+
+    # ✅ CONTRACT: Posting packages can only be purchased by APPROVED employers
+    employer = request.user.employer
+    if not employer.is_approved:
+        messages.error(request, "Your employer account is pending approval.")
+        return redirect("employer_dashboard")
 
     package = get_object_or_404(PostingPackage, id=package_id, is_active=True)
 
