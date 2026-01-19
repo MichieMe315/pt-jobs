@@ -455,6 +455,16 @@ class SiteSettingsAdmin(SafeModelAdmin):
     list_display = ("id", "site_name", "contact_email")
     search_fields = ("site_name", "contact_email")
 
+    # ✅ Fix the “duplicate hero fields” you see in the screenshot:
+    # hide the legacy home_hero_* fields so only hero_* is editable.
+    exclude = (
+        "home_hero_image",
+        "home_hero_title",
+        "home_hero_subtitle",
+        "home_hero_cta_text",
+        "home_hero_cta_url",
+    )
+
 
 @admin.register(EmailTemplate)
 class EmailTemplateAdmin(SafeModelAdmin):
