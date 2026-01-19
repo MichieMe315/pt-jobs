@@ -1,6 +1,7 @@
 # pt_jobs/settings.py
 from pathlib import Path
 import os
+from urllib.parse import urlparse
 
 import dj_database_url
 from django.contrib.messages import constants as messages
@@ -137,6 +138,8 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                # allow {{ MEDIA_URL }} if templates ever use it
+                "django.template.context_processors.media",
                 # inject SiteSettings everywhere
                 "board.context_processors.site_settings",
             ],
@@ -229,12 +232,15 @@ if USE_R2:
         "CacheControl": "max-age=31536000, public",
     }
 
+    # ✅ CRITICAL FIX: make FileField.url use your public domain (media.physiotherapyjobscanada.ca)
+    # Without this, employer.logo.url often comes out as the raw R2 endpoint URL.
+    AWS_S3_CUSTOM_DOMAIN = urlparse(R2_PUBLIC_BASE_URL).netloc
+
     STORAGES = {
         "default": {"BACKEND": "storages.backends.s3boto3.S3Boto3Storage"},
         "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
     }
 
-    # Your public custom domain for R2
     MEDIA_URL = R2_PUBLIC_BASE_URL.rstrip("/") + "/"
 else:
     STORAGES = {
