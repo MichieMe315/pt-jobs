@@ -249,20 +249,28 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # ----------------
 EMAIL_SUBJECT_PREFIX = "[PT Jobs] "
 
-# ✅ FIX: default sender should be info@ (matches what you actually have verified)
+# ✅ You said default must be info@ (NOT no-reply@)
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "info@physiotherapyjobscanada.ca")
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
-# ✅ FIX: default backend should be SendGrid Web API backend in production setups
-# (You can still override via EMAIL_BACKEND env var.)
+# Default: console for local dev unless overridden by EMAIL_BACKEND env var
 EMAIL_BACKEND = os.environ.get(
     "EMAIL_BACKEND",
-    "board.email_backend_sendgrid.SendGridAPIEmailBackend",
+    "django.core.mail.backends.console.EmailBackend",
 )
 
-# Optional SMTP settings (not used by the SendGrid API backend, but kept for flexibility)
+# ✅ If Railway env var was set to the wrong class name earlier, normalize it
+# (prevents a hard crash while you correct Railway env vars)
+if EMAIL_BACKEND == "board.email_backend_sendgrid.SendGridAPIEmailBackend":
+    EMAIL_BACKEND = "board.email_backend_sendgrid.SendGridAPIBackend"
+
+# Optional SMTP settings (only used if you switch EMAIL_BACKEND to SMTP)
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587")) if os.environ.get("EMAIL_PORT") else 587
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "1") == "1"
+
+# ✅ Log-only warning if SendGrid is selected but key missing (shows in Railway logs)
+if ("board.email_backend_sendgrid" in (EMAIL_BACKEND or "")) and not os.environ.get("SENDGRID_API_KEY"):
+    print("WARNING: SENDGRID_API_KEY is not set, so SendGrid emails will NOT send.")
