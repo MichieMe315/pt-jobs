@@ -3,11 +3,12 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
+# =====================
+# Core security
+# =====================
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG", "1") == "1"
+DEBUG = os.environ.get("DEBUG", "0") == "1"
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
@@ -17,8 +18,11 @@ ALLOWED_HOSTS = [
     "physiotherapyjobscanada.ca",
     "www.physiotherapyjobscanada.ca",
 ]
-# If you use a custom Railway domain like xxx.up.railway.app, add it:
-railway_domain = os.environ.get("RAILWAY_STATIC_URL") or os.environ.get("RAILWAY_PUBLIC_DOMAIN")
+
+railway_domain = (
+    os.environ.get("RAILWAY_PUBLIC_DOMAIN")
+    or os.environ.get("RAILWAY_STATIC_URL")
+)
 if railway_domain:
     ALLOWED_HOSTS.append(railway_domain)
 
@@ -29,6 +33,9 @@ CSRF_TRUSTED_ORIGINS = [
     "https://www.physiotherapyjobscanada.ca",
 ]
 
+# =====================
+# Applications
+# =====================
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -36,9 +43,17 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
+    # Third-party
+    "import_export",
+
+    # Local
     "board",
 ]
 
+# =====================
+# Middleware
+# =====================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -52,6 +67,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "pt_jobs.urls"
 
+# =====================
+# Templates
+# =====================
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -70,6 +88,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "pt_jobs.wsgi.application"
 
+# =====================
+# Database
+# =====================
 DATABASES = {
     "default": {
         "ENGINE": os.environ.get("DB_ENGINE", "django.db.backends.sqlite3"),
@@ -81,6 +102,9 @@ DATABASES = {
     }
 }
 
+# =====================
+# Auth / Passwords
+# =====================
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -88,11 +112,21 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "home"
+LOGOUT_REDIRECT_URL = "home"
+
+# =====================
+# Locale / Time
+# =====================
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "America/Toronto"
 USE_I18N = True
 USE_TZ = True
 
+# =====================
+# Static & Media
+# =====================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
@@ -100,48 +134,56 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-LOGIN_URL = "login"
-LOGIN_REDIRECT_URL = "home"
-LOGOUT_REDIRECT_URL = "home"
-
-# If behind Railway proxy/Cloudflare:
+# =====================
+# Proxy / SSL
+# =====================
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-
-# Only force HTTPS in production:
 SECURE_SSL_REDIRECT = os.environ.get("SECURE_SSL_REDIRECT", "0") == "1"
 SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "0") == "1"
 CSRF_COOKIE_SECURE = os.environ.get("CSRF_COOKIE_SECURE", "0") == "1"
 
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
-# WhiteNoise storage
+# =====================
+# WhiteNoise
+# =====================
 if not DEBUG:
     STORAGES = {
-        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-        "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
     }
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# ----------------
-# Email (IMPORTANT)
-# ----------------
-EMAIL_SUBJECT_PREFIX = "[PT Jobs] "
+# =====================
+# EMAIL — CRITICAL
+# =====================
+EMAIL_SUBJECT_PREFIX = "[Physiotherapy Jobs Canada] "
 
-# ✅ Default sender MUST be info@ (unless you override via env var)
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "info@physiotherapyjobscanada.ca")
+DEFAULT_FROM_EMAIL = os.environ.get(
+    "DEFAULT_FROM_EMAIL",
+    "info@physiotherapyjobscanada.ca",
+)
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
-# ✅ On Railway: default to SendGrid Web API backend
-# ✅ Locally: default to console backend (so you can dev without real email)
-ON_RAILWAY = bool(os.environ.get("RAILWAY_ENVIRONMENT") or os.environ.get("RAILWAY_PROJECT_ID") or os.environ.get("RAILWAY_PUBLIC_DOMAIN"))
+ON_RAILWAY = bool(
+    os.environ.get("RAILWAY_ENVIRONMENT")
+    or os.environ.get("RAILWAY_PROJECT_ID")
+    or os.environ.get("RAILWAY_PUBLIC_DOMAIN")
+)
 
 EMAIL_BACKEND = os.environ.get(
     "EMAIL_BACKEND",
-    "board.email_backend_sendgrid.SendGridAPIEmailBackend" if ON_RAILWAY else "django.core.mail.backends.console.EmailBackend",
+    "board.email_backend_sendgrid.SendGridAPIEmailBackend"
+    if ON_RAILWAY
+    else "django.core.mail.backends.console.EmailBackend",
 )
 
-# Optional SMTP settings (only used if you switch EMAIL_BACKEND to SMTP)
+# SMTP fallback (not used with SendGrid API backend)
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587")) if os.environ.get("EMAIL_PORT") else 587
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
