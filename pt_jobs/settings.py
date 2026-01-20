@@ -1,36 +1,34 @@
 import os
 from pathlib import Path
-from urllib.parse import urlparse
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key")
 
-# ------------------------------------------------------------
-# Core
-# ------------------------------------------------------------
-SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
-DEBUG = os.environ.get("DEBUG", "0") == "1"
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = os.environ.get("DEBUG", "1") == "1"
 
-DJANGO_ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "")
-if DJANGO_ALLOWED_HOSTS:
-    ALLOWED_HOSTS = [h.strip() for h in DJANGO_ALLOWED_HOSTS.split(",") if h.strip()]
-else:
-    ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    ".railway.app",
+    ".up.railway.app",
+    "physiotherapyjobscanada.ca",
+    "www.physiotherapyjobscanada.ca",
+]
+# If you use a custom Railway domain like xxx.up.railway.app, add it:
+railway_domain = os.environ.get("RAILWAY_STATIC_URL") or os.environ.get("RAILWAY_PUBLIC_DOMAIN")
+if railway_domain:
+    ALLOWED_HOSTS.append(railway_domain)
 
-CSRF_TRUSTED_ORIGINS_ENV = os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "")
-if CSRF_TRUSTED_ORIGINS_ENV:
-    CSRF_TRUSTED_ORIGINS = [o.strip() for o in CSRF_TRUSTED_ORIGINS_ENV.split(",") if o.strip()]
-else:
-    CSRF_TRUSTED_ORIGINS = []
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.railway.app",
+    "https://*.up.railway.app",
+    "https://physiotherapyjobscanada.ca",
+    "https://www.physiotherapyjobscanada.ca",
+]
 
-# If you set secure-cookie vars in Railway, respect them
-CSRF_COOKIE_SECURE = os.environ.get("DJANGO_CSRF_COOKIE_SECURE", "0") == "1"
-SESSION_COOKIE_SECURE = os.environ.get("DJANGO_SESSION_COOKIE_SECURE", "0") == "1"
-SECURE_SSL_REDIRECT = os.environ.get("DJANGO_SECURE_SSL_REDIRECT", "0") == "1"
-
-# ------------------------------------------------------------
-# Applications
-# ------------------------------------------------------------
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -72,36 +70,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "pt_jobs.wsgi.application"
 
-
-# ------------------------------------------------------------
-# Database (Railway DATABASE_URL)
-# ------------------------------------------------------------
-DATABASE_URL = os.environ.get("DATABASE_URL", "")
-if DATABASE_URL:
-    url = urlparse(DATABASE_URL)
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": url.path.lstrip("/"),
-            "USER": url.username,
-            "PASSWORD": url.password,
-            "HOST": url.hostname,
-            "PORT": url.port or 5432,
-            "CONN_MAX_AGE": int(os.environ.get("CONN_MAX_AGE", "60")),
-        }
+DATABASES = {
+    "default": {
+        "ENGINE": os.environ.get("DB_ENGINE", "django.db.backends.sqlite3"),
+        "NAME": os.environ.get("DB_NAME", BASE_DIR / "db.sqlite3"),
+        "USER": os.environ.get("DB_USER", ""),
+        "PASSWORD": os.environ.get("DB_PASSWORD", ""),
+        "HOST": os.environ.get("DB_HOST", ""),
+        "PORT": os.environ.get("DB_PORT", ""),
     }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
+}
 
-
-# ------------------------------------------------------------
-# Auth
-# ------------------------------------------------------------
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -110,54 +89,61 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = "en-us"
-TIME_ZONE = os.environ.get("TIME_ZONE", "America/Toronto")
+TIME_ZONE = "America/Toronto"
 USE_I18N = True
 USE_TZ = True
 
-LOGIN_URL = "/login/"
-LOGIN_REDIRECT_URL = "/"
-LOGOUT_REDIRECT_URL = "/"
-
-
-# ------------------------------------------------------------
-# Static / Media
-# ------------------------------------------------------------
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATICFILES_DIRS = [BASE_DIR / "static"]
 
-MEDIA_URL = os.environ.get("MEDIA_URL", "/media/")
+MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "home"
+LOGOUT_REDIRECT_URL = "home"
+
+# If behind Railway proxy/Cloudflare:
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# Only force HTTPS in production:
+SECURE_SSL_REDIRECT = os.environ.get("SECURE_SSL_REDIRECT", "0") == "1"
+SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "0") == "1"
+CSRF_COOKIE_SECURE = os.environ.get("CSRF_COOKIE_SECURE", "0") == "1"
+
+X_FRAME_OPTIONS = "SAMEORIGIN"
+
+# WhiteNoise storage
+if not DEBUG:
+    STORAGES = {
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+    }
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# ----------------
+# Email (IMPORTANT)
+# ----------------
+EMAIL_SUBJECT_PREFIX = "[PT Jobs] "
 
-# ------------------------------------------------------------
-# Email (SendGrid Web API backend)
-# ------------------------------------------------------------
-# You told me you want info@ as the default sender (NOT no-reply@)
+# ✅ Default sender MUST be info@ (unless you override via env var)
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "info@physiotherapyjobscanada.ca")
-SERVER_EMAIL = os.environ.get("SERVER_EMAIL", DEFAULT_FROM_EMAIL)
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
-# In local dev (DEBUG=1) console backend is safest; in production default to SendGrid Web API.
-EMAIL_BACKEND = (
-    os.environ.get("EMAIL_BACKEND")
-    or ("django.core.mail.backends.console.EmailBackend" if DEBUG else "board.email_backend_sendgrid.SendGridAPIBackend")
+# ✅ On Railway: default to SendGrid Web API backend
+# ✅ Locally: default to console backend (so you can dev without real email)
+ON_RAILWAY = bool(os.environ.get("RAILWAY_ENVIRONMENT") or os.environ.get("RAILWAY_PROJECT_ID") or os.environ.get("RAILWAY_PUBLIC_DOMAIN"))
+
+EMAIL_BACKEND = os.environ.get(
+    "EMAIL_BACKEND",
+    "board.email_backend_sendgrid.SendGridAPIEmailBackend" if ON_RAILWAY else "django.core.mail.backends.console.EmailBackend",
 )
 
-# Used by board.email_backend_sendgrid.SendGridAPIBackend
-SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "")
-
-# Keep these for completeness (not used by the Web API backend, but may be present in Railway vars)
+# Optional SMTP settings (only used if you switch EMAIL_BACKEND to SMTP)
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587")) if os.environ.get("EMAIL_PORT") else 587
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
-EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587") or 587)
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "1") == "1"
-
-
-# ------------------------------------------------------------
-# Security headers (basic)
-# ------------------------------------------------------------
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-X_FRAME_OPTIONS = "SAMEORIGIN"
