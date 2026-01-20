@@ -19,10 +19,7 @@ ALLOWED_HOSTS = [
     "www.physiotherapyjobscanada.ca",
 ]
 
-railway_domain = (
-    os.environ.get("RAILWAY_PUBLIC_DOMAIN")
-    or os.environ.get("RAILWAY_STATIC_URL")
-)
+railway_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN") or os.environ.get("RAILWAY_STATIC_URL")
 if railway_domain:
     ALLOWED_HOSTS.append(railway_domain)
 
@@ -89,18 +86,29 @@ TEMPLATES = [
 WSGI_APPLICATION = "pt_jobs.wsgi.application"
 
 # =====================
-# Database
+# Database (CRITICAL)
 # =====================
-DATABASES = {
-    "default": {
-        "ENGINE": os.environ.get("DB_ENGINE", "django.db.backends.sqlite3"),
-        "NAME": os.environ.get("DB_NAME", BASE_DIR / "db.sqlite3"),
-        "USER": os.environ.get("DB_USER", ""),
-        "PASSWORD": os.environ.get("DB_PASSWORD", ""),
-        "HOST": os.environ.get("DB_HOST", ""),
-        "PORT": os.environ.get("DB_PORT", ""),
+DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
+
+if DATABASE_URL:
+    # Railway Postgres should always come in as DATABASE_URL
+    import dj_database_url
+
+    DATABASES = {
+        "default": dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=True,
+        )
     }
-}
+else:
+    # Local dev fallback ONLY
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 # =====================
 # Auth / Passwords
@@ -149,25 +157,18 @@ X_FRAME_OPTIONS = "SAMEORIGIN"
 # =====================
 if not DEBUG:
     STORAGES = {
-        "default": {
-            "BACKEND": "django.core.files.storage.FileSystemStorage",
-        },
-        "staticfiles": {
-            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-        },
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
     }
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # =====================
-# EMAIL — CRITICAL
+# EMAIL
 # =====================
 EMAIL_SUBJECT_PREFIX = "[Physiotherapy Jobs Canada] "
 
-DEFAULT_FROM_EMAIL = os.environ.get(
-    "DEFAULT_FROM_EMAIL",
-    "info@physiotherapyjobscanada.ca",
-)
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "info@physiotherapyjobscanada.ca")
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 ON_RAILWAY = bool(
@@ -178,12 +179,10 @@ ON_RAILWAY = bool(
 
 EMAIL_BACKEND = os.environ.get(
     "EMAIL_BACKEND",
-    "board.email_backend_sendgrid.SendGridAPIEmailBackend"
-    if ON_RAILWAY
-    else "django.core.mail.backends.console.EmailBackend",
+    "board.email_backend_sendgrid.SendGridAPIEmailBackend" if ON_RAILWAY else "django.core.mail.backends.console.EmailBackend",
 )
 
-# SMTP fallback (not used with SendGrid API backend)
+# Optional SMTP fallback (not used by SendGrid API backend)
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587")) if os.environ.get("EMAIL_PORT") else 587
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
