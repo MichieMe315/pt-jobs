@@ -1,37 +1,58 @@
 from pathlib import Path
 import os
 
-import dj_database_url
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
-DEBUG = os.environ.get("DEBUG", "").lower() in ("1", "true", "yes", "on")
+SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key")
 
-# Allow Railway + your domains
+# Railway sets RAILWAY_ENVIRONMENT_NAME=production in prod
+DEBUG = os.environ.get("DEBUG", "").lower() in ("1", "true", "yes", "on")
+ENV_NAME = os.environ.get("RAILWAY_ENVIRONMENT_NAME", "").lower()
+if ENV_NAME == "production":
+    DEBUG = False
+
+# -----------------------------
+# Hosts / CSRF (fix 400 + Cloudflare)
+# -----------------------------
+CUSTOM_DOMAIN = os.environ.get("CUSTOM_DOMAIN", "").strip()  # e.g. physiotherapyjobscanada.ca
+CUSTOM_DOMAIN_WWW = f"www.{CUSTOM_DOMAIN}" if CUSTOM_DOMAIN else ""
+
+# Railway sometimes gives you a public URL like https://xxxx.up.railway.app
+RAILWAY_PUBLIC_URL = os.environ.get("RAILWAY_PUBLIC_URL", "").strip()
+RAILWAY_PUBLIC_HOST = (
+    RAILWAY_PUBLIC_URL.replace("https://", "").replace("http://", "").strip("/")
+    if RAILWAY_PUBLIC_URL
+    else ""
+)
+
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
     ".railway.app",
 ]
 
-# If you set a custom domain, add it here (and keep it even if DEBUG=False)
-# e.g. physiotherapyjobscanada.ca, www.physiotherapyjobscanada.ca
-CUSTOM_DOMAIN = os.environ.get("CUSTOM_DOMAIN", "").strip()
 if CUSTOM_DOMAIN:
-    ALLOWED_HOSTS.append(CUSTOM_DOMAIN)
-    ALLOWED_HOSTS.append(f"www.{CUSTOM_DOMAIN}")
+    ALLOWED_HOSTS += [CUSTOM_DOMAIN, CUSTOM_DOMAIN_WWW]
 
+if RAILWAY_PUBLIC_HOST:
+    ALLOWED_HOSTS += [RAILWAY_PUBLIC_HOST]
+
+# Optional extra hosts (comma-separated) if you ever need quick hotfix without code edits
+EXTRA_ALLOWED_HOSTS = os.environ.get("EXTRA_ALLOWED_HOSTS", "").strip()
+if EXTRA_ALLOWED_HOSTS:
+    ALLOWED_HOSTS += [h.strip() for h in EXTRA_ALLOWED_HOSTS.split(",") if h.strip()]
+
+# CSRF trusted origins (must be full scheme+host)
 CSRF_TRUSTED_ORIGINS = []
 if CUSTOM_DOMAIN:
-    CSRF_TRUSTED_ORIGINS += [
-        f"https://{CUSTOM_DOMAIN}",
-        f"https://www.{CUSTOM_DOMAIN}",
-    ]
-# Railway URL (optional but helpful)
-RAILWAY_PUBLIC_URL = os.environ.get("RAILWAY_PUBLIC_URL", "").strip()
-if RAILWAY_PUBLIC_URL.startswith("https://"):
-    CSRF_TRUSTED_ORIGINS.append(RAILWAY_PUBLIC_URL)
+    CSRF_TRUSTED_ORIGINS += [f"https://{CUSTOM_DOMAIN}", f"https://{CUSTOM_DOMAIN_WWW}"]
+if RAILWAY_PUBLIC_HOST:
+    CSRF_TRUSTED_ORIGINS += [f"https://{RAILWAY_PUBLIC_HOST}"]
+
+# If you ever test via http locally, Django doesn’t need CSRF_TRUSTED_ORIGINS for localhost.
+
+# If you're behind a proxy (Railway/Cloudflare), keep these:
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -40,11 +61,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Third-party
+    "board",
     "storages",
     "import_export",
-    # Local
-    "board",
 ]
 
 MIDDLEWARE = [
@@ -71,7 +90,6 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "board.context_processors.site_settings",
             ],
         },
     },
@@ -79,17 +97,25 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "pt_jobs.wsgi.application"
 
-# Database (Railway uses DATABASE_URL)
-DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
-if DATABASE_URL:
-    DATABASES = {"default": dj_database_url.parse(DATABASE_URL, conn_max_age=600)}
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql"
+        if os.environ.get("DATABASE_URL")
+        else "django.db.backends.sqlite3",
+        "NAME": os.environ.get("PGDATABASE", BASE_DIR / "db.sqlite3"),
+        "USER": os.environ.get("PGUSER", ""),
+        "PASSWORD": os.environ.get("PGPASSWORD", ""),
+        "HOST": os.environ.get("PGHOST", ""),
+        "PORT": os.environ.get("PGPORT", ""),
     }
+}
+
+if os.environ.get("DATABASE_URL"):
+    import dj_database_url
+
+    DATABASES["default"] = dj_database_url.config(
+        default=os.environ["DATABASE_URL"], conn_max_age=600, ssl_require=True
+    )
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -98,82 +124,56 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-LANGUAGE_CODE = "en-ca"
+LANGUAGE_CODE = "en-us"
 TIME_ZONE = "America/Toronto"
 USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = [BASE_DIR / "static"]
+
+# Always use WhiteNoise hashed static in production-like deploys
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# ============================================================
-# EMAIL
-# ============================================================
-# You told me you are using the SendGrid Web API backend class we created:
+# -----------------------------
+# Email (SendGrid Web API backend)
+# -----------------------------
 EMAIL_BACKEND = os.environ.get(
-    "EMAIL_BACKEND",
-    "board.email_backend_sendgrid.SendGridAPIEmailBackend",
+    "EMAIL_BACKEND", "board.email_backend_sendgrid.SendGridAPIEmailBackend"
 )
 
-# Web API backend needs SENDGRID_API_KEY (or SENDGRID_API_KEY in Railway)
-SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "").strip()
+SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "")
 
-# IMPORTANT: default FROM should be info@ unless you override in env vars
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "info@physiotherapyjobscanada.ca")
-SERVER_EMAIL = os.environ.get("SERVER_EMAIL", DEFAULT_FROM_EMAIL)
+# You explicitly want info@ as the default sender:
+DEFAULT_FROM_EMAIL = os.environ.get(
+    "DEFAULT_FROM_EMAIL", "info@physiotherapyjobscanada.ca"
+)
 
-# If your backend uses these (safe to keep even if not used)
-EMAIL_TIMEOUT = int(os.environ.get("EMAIL_TIMEOUT", "10"))
+# Optional admin recipient fallback if SiteSettings.contact_email isn't set:
+SITE_ADMIN_EMAIL = os.environ.get("SITE_ADMIN_EMAIL", DEFAULT_FROM_EMAIL)
 
-# ============================================================
-# MEDIA: Cloudflare R2 (django-storages)
-# ------------------------------------------------------------
-# This project uses Cloudflare R2 for user-uploaded media (logos, hero images, resumes).
-#
-# Env vars supported (Railway):
-#   R2_ACCOUNT_ID
-#   R2_BUCKET_NAME
-#   R2_ACCESS_KEY_ID
-#   R2_SECRET_ACCESS_KEY
-#   R2_PUBLIC_BASE_URL   (e.g. https://media.physiotherapyjobscanada.ca)
-# Optional/alternate names also supported:
-#   AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_STORAGE_BUCKET_NAME
-#   AWS_S3_ENDPOINT_URL / R2_ENDPOINT_URL
-#   AWS_S3_CUSTOM_DOMAIN / R2_CUSTOM_DOMAIN
-#
-# IMPORTANT: If these env vars are missing locally, we fall back to local FileSystemStorage
-# so dev can run without R2. In production, set the env vars so media URLs are NOT /media/*.
-# ------------------------------------------------------------
-R2_ACCOUNT_ID = os.environ.get("R2_ACCOUNT_ID", "").strip()
-R2_BUCKET_NAME = os.environ.get("R2_BUCKET_NAME", os.environ.get("AWS_STORAGE_BUCKET_NAME", "")).strip()
+# -----------------------------
+# Media / R2 (Cloudflare R2)
+# -----------------------------
+USE_R2 = os.environ.get("USE_R2", "1").lower() in ("1", "true", "yes", "on")
 
-# Credentials (support either R2_* or AWS_* env var names)
-R2_ACCESS_KEY_ID = os.environ.get("R2_ACCESS_KEY_ID", os.environ.get("AWS_ACCESS_KEY_ID", "")).strip()
-R2_SECRET_ACCESS_KEY = os.environ.get("R2_SECRET_ACCESS_KEY", os.environ.get("AWS_SECRET_ACCESS_KEY", "")).strip()
-
-# Endpoint URL (Cloudflare R2 S3-compatible endpoint)
-R2_ENDPOINT_URL = (
-    os.environ.get("R2_ENDPOINT_URL")
-    or os.environ.get("AWS_S3_ENDPOINT_URL")
-    or (f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com" if R2_ACCOUNT_ID else "")
-).strip()
-
-# Public base URL (your custom domain / public bucket URL)
-R2_PUBLIC_BASE_URL = (
-    os.environ.get("R2_PUBLIC_BASE_URL")
-    or os.environ.get("R2_PUBLIC_URL")
-    or os.environ.get("R2_CUSTOM_DOMAIN")
-    or os.environ.get("AWS_S3_CUSTOM_DOMAIN")
-    or ""
-).strip()
-
-# Enable R2 if the minimum required pieces exist
-USE_R2 = bool(R2_BUCKET_NAME and R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY and R2_ENDPOINT_URL)
+R2_BUCKET_NAME = os.environ.get("R2_BUCKET_NAME", "")
+R2_ACCESS_KEY_ID = os.environ.get("R2_ACCESS_KEY_ID", "")
+R2_SECRET_ACCESS_KEY = os.environ.get("R2_SECRET_ACCESS_KEY", "")
+R2_ENDPOINT_URL = os.environ.get("R2_ENDPOINT_URL", "")  # e.g. https://<accountid>.r2.cloudflarestorage.com
+R2_PUBLIC_BASE_URL = os.environ.get("R2_PUBLIC_BASE_URL", "").strip()  # e.g. https://media.yourdomain.com OR https://<bucket>.<acct>.r2.dev
 
 # Django 5+ storage config
-if USE_R2:
+if USE_R2 and R2_BUCKET_NAME and R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY and R2_ENDPOINT_URL:
+    # custom_domain must be just the host (no scheme)
+    custom_domain = ""
+    if R2_PUBLIC_BASE_URL:
+        custom_domain = (
+            R2_PUBLIC_BASE_URL.replace("https://", "")
+            .replace("http://", "")
+            .strip("/")
+        )
+
     STORAGES = {
         "default": {
             "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
@@ -183,31 +183,47 @@ if USE_R2:
                 "secret_key": R2_SECRET_ACCESS_KEY,
                 "endpoint_url": R2_ENDPOINT_URL,
                 "region_name": "auto",
-                # If you have a public/custom domain, this makes .url() return that domain
-                # (preferred, so media doesn't point at /media/ on your app).
-                **({"custom_domain": R2_PUBLIC_BASE_URL.replace("https://", "").replace("http://", "")} if R2_PUBLIC_BASE_URL else {}),
                 "default_acl": None,
                 "querystring_auth": False,
+                "addressing_style": "path",  # safest with R2/custom domains
+                **({"custom_domain": custom_domain} if custom_domain else {}),
             },
         },
-        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
+        },
     }
 
-    # Helpful in templates; storage handles ImageField.url either way.
-    MEDIA_URL = (R2_PUBLIC_BASE_URL.rstrip("/") + "/") if R2_PUBLIC_BASE_URL else "/"
+    # IMPORTANT: Never set MEDIA_URL="/" — that can break routing/templates.
+    if R2_PUBLIC_BASE_URL:
+        MEDIA_URL = R2_PUBLIC_BASE_URL.rstrip("/") + "/"
+    else:
+        MEDIA_URL = "/media/"
+
 else:
     # Local/dev fallback
     MEDIA_URL = "/media/"
     MEDIA_ROOT = BASE_DIR / "media"
 
-# Security (production)
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-SESSION_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_SECURE = not DEBUG
+    STORAGES = {
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
+        },
+    }
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Auth redirects
-LOGIN_URL = "login"
-LOGIN_REDIRECT_URL = "home"
-LOGOUT_REDIRECT_URL = "home"
+# -----------------------------
+# Logging (so you can see failures in Railway logs)
+# -----------------------------
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "root": {"handlers": ["console"], "level": "INFO"},
+    "loggers": {
+        "django.request": {"handlers": ["console"], "level": "ERROR", "propagate": True},
+        "board": {"handlers": ["console"], "level": "INFO", "propagate": True},
+    },
+}
