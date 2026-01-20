@@ -1,122 +1,50 @@
-# pt_jobs/settings.py
 from pathlib import Path
 import os
-from urllib.parse import urlparse
+from django.core.management.utils import get_random_secret_key
 
-import dj_database_url
-from django.contrib.messages import constants as messages
+# ============================================================
+# Base
+# ============================================================
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-insecure-please-change-this")
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", get_random_secret_key())
 
-# In Railway set DJANGO_DEBUG="0"
-DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
+DEBUG = os.environ.get("DJANGO_DEBUG", "0") == "1"
 
-# ------------------------------------------------------------
-# HELPERS
-# ------------------------------------------------------------
-def _split_csv(v: str) -> list[str]:
-    return [x.strip() for x in (v or "").split(",") if x.strip()]
-
-
-def _is_local_host(h: str) -> bool:
-    return h in ("127.0.0.1", "localhost") or h.startswith("127.") or h == ""
-
-
-# ------------------------------------------------------------
-# HOSTS / CSRF (Railway + custom domains)
-# ------------------------------------------------------------
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
-
-# Always allow Railway subdomains (prevents DisallowedHost when Railway URL changes)
-# Leading dot allows subdomains in Django ALLOWED_HOSTS.
-ALLOWED_HOSTS.append(".up.railway.app")
-
-# Railway public domain (sometimes present, sometimes not)
-railway_public_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN")
-if railway_public_domain:
-    ALLOWED_HOSTS.append(railway_public_domain)
-
-# IMPORTANT:
-# Support BOTH env names (you’ve used ALLOWED_HOSTS in Railway UI)
-extra_hosts = (
-    os.environ.get("DJANGO_ALLOWED_HOSTS", "").strip()
-    or os.environ.get("ALLOWED_HOSTS", "").strip()
-)
-if extra_hosts:
-    ALLOWED_HOSTS += [h.strip() for h in extra_hosts.split(",") if h.strip()]
-
-# CSRF trusted origins MUST include scheme (https://...)
-CSRF_TRUSTED_ORIGINS = [
-    "http://127.0.0.1:8000",
-    "http://localhost:8000",
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    ".railway.app",
+    "physiotherapyjobscanada.ca",
+    "www.physiotherapyjobscanada.ca",
 ]
 
-# Trust Railway subdomains for admin login CSRF
-CSRF_TRUSTED_ORIGINS.append("https://.up.railway.app")
+CSRF_TRUSTED_ORIGINS = [
+    "https://physiotherapyjobscanada.ca",
+    "https://www.physiotherapyjobscanada.ca",
+    "https://*.railway.app",
+]
 
-# Add Railway https domain to CSRF if present
-if railway_public_domain:
-    CSRF_TRUSTED_ORIGINS.append(f"https://{railway_public_domain}")
-
-# Auto-add https://<host> for every allowed host (except local / wildcards)
-# This prevents the “403 CSRF verification failed” problem on Railway/admin.
-for host in ALLOWED_HOSTS:
-    if _is_local_host(host):
-        continue
-    # ignore leading-dot cookie-style domains or wildcards
-    if host.startswith(".") or "*" in host:
-        continue
-    origin_https = f"https://{host}"
-    if origin_https not in CSRF_TRUSTED_ORIGINS:
-        CSRF_TRUSTED_ORIGINS.append(origin_https)
-
-# Optional: comma-separated extra CSRF trusted origins
-# We support BOTH env names for convenience.
-extra_csrf = (
-    os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").strip()
-    or os.environ.get("CSRF_TRUSTED_ORIGINS", "").strip()
-)
-if extra_csrf:
-    CSRF_TRUSTED_ORIGINS += [o.strip() for o in extra_csrf.split(",") if o.strip()]
-
-# ------------------------------------------------------------
-# Proxy/HTTPS settings (Railway/Cloudflare)
-# ------------------------------------------------------------
-# Railway/Cloudflare terminate HTTPS before your container. Django must trust
-# X-Forwarded-Proto or you get CSRF/session weirdness in production.
-ON_RAILWAY = bool(os.environ.get("RAILWAY_PUBLIC_DOMAIN")) or bool(os.environ.get("RAILWAY_ENVIRONMENT"))
-
-if (not DEBUG) or ON_RAILWAY:
-    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-    USE_X_FORWARDED_HOST = True
-
-    # Cookies secure in prod-like environments
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-
-    # Redirect http->https in prod if you want it (can disable via env if needed)
-    SECURE_SSL_REDIRECT = os.environ.get("DJANGO_SECURE_SSL_REDIRECT", "1") == "1"
+# ============================================================
+# Applications
+# ============================================================
 
 INSTALLED_APPS = [
-    # Django
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Third-party
-    "import_export",
-    "storages",  # django-storages for R2
-    # Local
-    "board.apps.BoardConfig",
+
+    "board",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # REQUIRED for Railway static/admin
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -138,10 +66,6 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                # allow {{ MEDIA_URL }} if templates ever use it
-                "django.template.context_processors.media",
-                # inject SiteSettings everywhere
-                "board.context_processors.site_settings",
             ],
         },
     },
@@ -149,26 +73,24 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "pt_jobs.wsgi.application"
 
-# ------------------------------------------------------------
-# DATABASES (Railway Postgres via DATABASE_URL, local fallback)
-# ------------------------------------------------------------
-DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
+# ============================================================
+# Database
+# ============================================================
 
-if DATABASE_URL:
-    DATABASES = {
-        "default": dj_database_url.parse(
-            DATABASE_URL,
-            conn_max_age=600,
-            ssl_require=False,
-        )
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ.get("PGDATABASE"),
+        "USER": os.environ.get("PGUSER"),
+        "PASSWORD": os.environ.get("PGPASSWORD"),
+        "HOST": os.environ.get("PGHOST"),
+        "PORT": os.environ.get("PGPORT", "5432"),
     }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
+}
+
+# ============================================================
+# Password validation
+# ============================================================
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -177,96 +99,78 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-LANGUAGE_CODE = "en-us"
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "home"
+LOGOUT_REDIRECT_URL = "home"
+
+# ============================================================
+# Internationalization
+# ============================================================
+
+LANGUAGE_CODE = "en-ca"
 TIME_ZONE = "America/Toronto"
 USE_I18N = True
 USE_TZ = True
 
-MESSAGE_TAGS = {
-    messages.DEBUG: "secondary",
-    messages.INFO: "info",
-    messages.SUCCESS: "success",
-    messages.WARNING: "warning",
-    messages.ERROR: "danger",
-}
-
-LOGIN_URL = "login"
-LOGOUT_REDIRECT_URL = "/"
+# ============================================================
+# Static / Media
+# ============================================================
 
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# WhiteNoise static file storage (hashed filenames + compression)
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# ------------------------------------------------------------
-# MEDIA: Cloudflare R2 (django-storages/boto3)
-# ------------------------------------------------------------
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-R2_ACCOUNT_ID = os.environ.get("R2_ACCOUNT_ID", "").strip()
-R2_BUCKET_NAME = os.environ.get("R2_BUCKET_NAME", "").strip()
-R2_ACCESS_KEY_ID = os.environ.get("R2_ACCESS_KEY_ID", "").strip()
-R2_SECRET_ACCESS_KEY = os.environ.get("R2_SECRET_ACCESS_KEY", "").strip()
-R2_PUBLIC_BASE_URL = os.environ.get("R2_PUBLIC_BASE_URL", "").strip()  # e.g. https://media.physiotherapyjobscanada.ca
+# ============================================================
+# Email — SendGrid Web API (FINAL)
+# ============================================================
 
-# Only enable R2 storage if configured
-USE_R2 = all([R2_ACCOUNT_ID, R2_BUCKET_NAME, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_PUBLIC_BASE_URL])
+EMAIL_SUBJECT_PREFIX = "[Physiotherapy Jobs Canada] "
 
-# Always define STORAGES (Django 5+)
-if USE_R2:
-    AWS_ACCESS_KEY_ID = R2_ACCESS_KEY_ID
-    AWS_SECRET_ACCESS_KEY = R2_SECRET_ACCESS_KEY
-    AWS_STORAGE_BUCKET_NAME = R2_BUCKET_NAME
-
-    AWS_S3_ENDPOINT_URL = f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
-    AWS_S3_REGION_NAME = "auto"
-
-    AWS_S3_SIGNATURE_VERSION = "s3v4"
-    AWS_DEFAULT_ACL = None
-    AWS_QUERYSTRING_AUTH = False  # IMPORTANT so URLs are public and don't require auth signatures
-
-    AWS_S3_OBJECT_PARAMETERS = {
-        "CacheControl": "max-age=31536000, public",
-    }
-
-    # ✅ CRITICAL FIX: make FileField.url use your public domain (media.physiotherapyjobscanada.ca)
-    # Without this, employer.logo.url often comes out as the raw R2 endpoint URL.
-    AWS_S3_CUSTOM_DOMAIN = urlparse(R2_PUBLIC_BASE_URL).netloc
-
-    STORAGES = {
-        "default": {"BACKEND": "storages.backends.s3boto3.S3Boto3Storage"},
-        "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
-    }
-
-    MEDIA_URL = R2_PUBLIC_BASE_URL.rstrip("/") + "/"
-else:
-    STORAGES = {
-        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-        "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
-    }
-
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-# ----------------
-# Email (IMPORTANT)
-# ----------------
-EMAIL_SUBJECT_PREFIX = "[PT Jobs] "
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "no-reply@physiotherapyjobscanada.ca")
-SERVER_EMAIL = DEFAULT_FROM_EMAIL
-
-# Local dev: print emails to console so password reset works without SMTP.
-# For live: set EMAIL_BACKEND and SMTP env vars in Railway.
-EMAIL_BACKEND = os.environ.get(
-    "EMAIL_BACKEND",
-    "django.core.mail.backends.console.EmailBackend",
+# MUST be verified in SendGrid
+DEFAULT_FROM_EMAIL = os.environ.get(
+    "DEFAULT_FROM_EMAIL",
+    "info@physiotherapyjobscanada.ca",
 )
 
-# Optional SMTP settings (only used if you switch EMAIL_BACKEND to SMTP)
-EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
-EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587")) if os.environ.get("EMAIL_PORT") else 587
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
-EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "1") == "1"
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+EMAIL_BACKEND = "board.email_backend_sendgrid.SendGridAPIEmailBackend"
+
+SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "").strip()
+
+if not SENDGRID_API_KEY:
+    print("⚠️ WARNING: SENDGRID_API_KEY is not set")
+
+# ============================================================
+# Admin / Site
+# ============================================================
+
+ADMINS = [
+    ("Admin", "info@physiotherapyjobscanada.ca"),
+]
+
+SITE_ADMIN_EMAIL = "info@physiotherapyjobscanada.ca"
+
+# ============================================================
+# Security (Production)
+# ============================================================
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+X_FRAME_OPTIONS = "SAMEORIGIN"
+
+# ============================================================
+# Default PK
+# ============================================================
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
