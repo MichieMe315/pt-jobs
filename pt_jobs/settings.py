@@ -1,121 +1,49 @@
-# pt_jobs/settings.py
-from pathlib import Path
 import os
-
-import dj_database_url
-from django.contrib.messages import constants as messages
+from pathlib import Path
+from urllib.parse import urlparse
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-insecure-please-change-this")
-
-# In Railway set DJANGO_DEBUG="0"
-DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
 
 # ------------------------------------------------------------
-# HELPERS
+# Core
 # ------------------------------------------------------------
-def _split_csv(v: str) -> list[str]:
-    return [x.strip() for x in (v or "").split(",") if x.strip()]
+SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
+DEBUG = os.environ.get("DEBUG", "0") == "1"
 
+DJANGO_ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "")
+if DJANGO_ALLOWED_HOSTS:
+    ALLOWED_HOSTS = [h.strip() for h in DJANGO_ALLOWED_HOSTS.split(",") if h.strip()]
+else:
+    ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
-def _is_local_host(h: str) -> bool:
-    return h in ("127.0.0.1", "localhost") or h.startswith("127.") or h == ""
+CSRF_TRUSTED_ORIGINS_ENV = os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "")
+if CSRF_TRUSTED_ORIGINS_ENV:
+    CSRF_TRUSTED_ORIGINS = [o.strip() for o in CSRF_TRUSTED_ORIGINS_ENV.split(",") if o.strip()]
+else:
+    CSRF_TRUSTED_ORIGINS = []
 
-
-# ------------------------------------------------------------
-# HOSTS / CSRF (Railway + custom domains)
-# ------------------------------------------------------------
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
-
-# Always allow Railway subdomains (prevents DisallowedHost when Railway URL changes)
-# Leading dot allows subdomains in Django ALLOWED_HOSTS.
-ALLOWED_HOSTS.append(".up.railway.app")
-
-# Railway public domain (sometimes present, sometimes not)
-railway_public_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN")
-if railway_public_domain:
-    ALLOWED_HOSTS.append(railway_public_domain)
-
-# IMPORTANT:
-# Support BOTH env names (you’ve used ALLOWED_HOSTS in Railway UI)
-extra_hosts = (
-    os.environ.get("DJANGO_ALLOWED_HOSTS", "").strip()
-    or os.environ.get("ALLOWED_HOSTS", "").strip()
-)
-if extra_hosts:
-    ALLOWED_HOSTS += [h.strip() for h in extra_hosts.split(",") if h.strip()]
-
-# CSRF trusted origins MUST include scheme (https://...)
-CSRF_TRUSTED_ORIGINS = [
-    "http://127.0.0.1:8000",
-    "http://localhost:8000",
-]
-
-# Trust Railway subdomains for admin login CSRF
-CSRF_TRUSTED_ORIGINS.append("https://.up.railway.app")
-
-# Add Railway https domain to CSRF if present
-if railway_public_domain:
-    CSRF_TRUSTED_ORIGINS.append(f"https://{railway_public_domain}")
-
-# Auto-add https://<host> for every allowed host (except local / wildcards)
-# This prevents the “403 CSRF verification failed” problem on Railway/admin.
-for host in ALLOWED_HOSTS:
-    if _is_local_host(host):
-        continue
-    # ignore leading-dot cookie-style domains or wildcards
-    if host.startswith(".") or "*" in host:
-        continue
-    origin_https = f"https://{host}"
-    if origin_https not in CSRF_TRUSTED_ORIGINS:
-        CSRF_TRUSTED_ORIGINS.append(origin_https)
-
-# Optional: comma-separated extra CSRF trusted origins
-# We support BOTH env names for convenience.
-extra_csrf = (
-    os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").strip()
-    or os.environ.get("CSRF_TRUSTED_ORIGINS", "").strip()
-)
-if extra_csrf:
-    CSRF_TRUSTED_ORIGINS += [o.strip() for o in extra_csrf.split(",") if o.strip()]
+# If you set secure-cookie vars in Railway, respect them
+CSRF_COOKIE_SECURE = os.environ.get("DJANGO_CSRF_COOKIE_SECURE", "0") == "1"
+SESSION_COOKIE_SECURE = os.environ.get("DJANGO_SESSION_COOKIE_SECURE", "0") == "1"
+SECURE_SSL_REDIRECT = os.environ.get("DJANGO_SECURE_SSL_REDIRECT", "0") == "1"
 
 # ------------------------------------------------------------
-# Proxy/HTTPS settings (Railway/Cloudflare)
+# Applications
 # ------------------------------------------------------------
-# Railway/Cloudflare terminate HTTPS before your container. Django must trust
-# X-Forwarded-Proto or you get CSRF/session weirdness in production.
-ON_RAILWAY = bool(os.environ.get("RAILWAY_PUBLIC_DOMAIN")) or bool(os.environ.get("RAILWAY_ENVIRONMENT"))
-
-if (not DEBUG) or ON_RAILWAY:
-    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-    USE_X_FORWARDED_HOST = True
-
-    # Cookies secure in prod-like environments
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-
-    # Redirect http->https in prod if you want it (can disable via env if needed)
-    SECURE_SSL_REDIRECT = os.environ.get("DJANGO_SECURE_SSL_REDIRECT", "1") == "1"
-
 INSTALLED_APPS = [
-    # Django
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Third-party
-    "import_export",
-    "storages",  # django-storages for R2
-    # Local
-    "board.apps.BoardConfig",
+    "board",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # REQUIRED for Railway static/admin
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -137,8 +65,6 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                # inject SiteSettings everywhere
-                "board.context_processors.site_settings",
             ],
         },
     },
@@ -146,18 +72,23 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "pt_jobs.wsgi.application"
 
-# ------------------------------------------------------------
-# DATABASES (Railway Postgres via DATABASE_URL, local fallback)
-# ------------------------------------------------------------
-DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 
+# ------------------------------------------------------------
+# Database (Railway DATABASE_URL)
+# ------------------------------------------------------------
+DATABASE_URL = os.environ.get("DATABASE_URL", "")
 if DATABASE_URL:
+    url = urlparse(DATABASE_URL)
     DATABASES = {
-        "default": dj_database_url.parse(
-            DATABASE_URL,
-            conn_max_age=600,
-            ssl_require=False,
-        )
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": url.path.lstrip("/"),
+            "USER": url.username,
+            "PASSWORD": url.password,
+            "HOST": url.hostname,
+            "PORT": url.port or 5432,
+            "CONN_MAX_AGE": int(os.environ.get("CONN_MAX_AGE", "60")),
+        }
     }
 else:
     DATABASES = {
@@ -167,6 +98,10 @@ else:
         }
     }
 
+
+# ------------------------------------------------------------
+# Auth
+# ------------------------------------------------------------
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -175,102 +110,54 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = "en-us"
-TIME_ZONE = "America/Toronto"
+TIME_ZONE = os.environ.get("TIME_ZONE", "America/Toronto")
 USE_I18N = True
 USE_TZ = True
 
-MESSAGE_TAGS = {
-    messages.DEBUG: "secondary",
-    messages.INFO: "info",
-    messages.SUCCESS: "success",
-    messages.WARNING: "warning",
-    messages.ERROR: "danger",
-}
-
-LOGIN_URL = "login"
+LOGIN_URL = "/login/"
+LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 
-STATIC_URL = "/static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]
-STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# WhiteNoise static file storage (hashed filenames + compression)
+# ------------------------------------------------------------
+# Static / Media
+# ------------------------------------------------------------
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# ------------------------------------------------------------
-# MEDIA: Cloudflare R2 (django-storages/boto3)
-# ------------------------------------------------------------
-MEDIA_URL = "/media/"
+MEDIA_URL = os.environ.get("MEDIA_URL", "/media/")
 MEDIA_ROOT = BASE_DIR / "media"
-
-R2_ACCOUNT_ID = os.environ.get("R2_ACCOUNT_ID", "").strip()
-R2_BUCKET_NAME = os.environ.get("R2_BUCKET_NAME", "").strip()
-R2_ACCESS_KEY_ID = os.environ.get("R2_ACCESS_KEY_ID", "").strip()
-R2_SECRET_ACCESS_KEY = os.environ.get("R2_SECRET_ACCESS_KEY", "").strip()
-R2_PUBLIC_BASE_URL = os.environ.get("R2_PUBLIC_BASE_URL", "").strip()  # e.g. https://media.physiotherapyjobscanada.ca
-
-# Only enable R2 storage if configured
-USE_R2 = all([R2_ACCOUNT_ID, R2_BUCKET_NAME, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_PUBLIC_BASE_URL])
-
-# Always define STORAGES (Django 5+)
-if USE_R2:
-    AWS_ACCESS_KEY_ID = R2_ACCESS_KEY_ID
-    AWS_SECRET_ACCESS_KEY = R2_SECRET_ACCESS_KEY
-    AWS_STORAGE_BUCKET_NAME = R2_BUCKET_NAME
-
-    AWS_S3_ENDPOINT_URL = f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
-    AWS_S3_REGION_NAME = "auto"
-
-    AWS_S3_SIGNATURE_VERSION = "s3v4"
-    AWS_DEFAULT_ACL = None
-    AWS_QUERYSTRING_AUTH = False  # IMPORTANT so URLs are public and don't require auth signatures
-
-    AWS_S3_OBJECT_PARAMETERS = {
-        "CacheControl": "max-age=31536000, public",
-    }
-
-    STORAGES = {
-        "default": {"BACKEND": "storages.backends.s3boto3.S3Boto3Storage"},
-        "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
-    }
-
-    # Your public custom domain for R2
-    MEDIA_URL = R2_PUBLIC_BASE_URL.rstrip("/") + "/"
-else:
-    STORAGES = {
-        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-        "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
-    }
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# ----------------
-# Email (IMPORTANT)
-# ----------------
-EMAIL_SUBJECT_PREFIX = "[PT Jobs] "
 
-# ✅ You said default must be info@ (NOT no-reply@)
+# ------------------------------------------------------------
+# Email (SendGrid Web API backend)
+# ------------------------------------------------------------
+# You told me you want info@ as the default sender (NOT no-reply@)
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "info@physiotherapyjobscanada.ca")
-SERVER_EMAIL = DEFAULT_FROM_EMAIL
+SERVER_EMAIL = os.environ.get("SERVER_EMAIL", DEFAULT_FROM_EMAIL)
 
-# Default: console for local dev unless overridden by EMAIL_BACKEND env var
-EMAIL_BACKEND = os.environ.get(
-    "EMAIL_BACKEND",
-    "django.core.mail.backends.console.EmailBackend",
+# In local dev (DEBUG=1) console backend is safest; in production default to SendGrid Web API.
+EMAIL_BACKEND = (
+    os.environ.get("EMAIL_BACKEND")
+    or ("django.core.mail.backends.console.EmailBackend" if DEBUG else "board.email_backend_sendgrid.SendGridAPIBackend")
 )
 
-# ✅ If Railway env var was set to the wrong class name earlier, normalize it
-# (prevents a hard crash while you correct Railway env vars)
-if EMAIL_BACKEND == "board.email_backend_sendgrid.SendGridAPIEmailBackend":
-    EMAIL_BACKEND = "board.email_backend_sendgrid.SendGridAPIBackend"
+# Used by board.email_backend_sendgrid.SendGridAPIBackend
+SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "")
 
-# Optional SMTP settings (only used if you switch EMAIL_BACKEND to SMTP)
+# Keep these for completeness (not used by the Web API backend, but may be present in Railway vars)
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
-EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587")) if os.environ.get("EMAIL_PORT") else 587
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587") or 587)
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "1") == "1"
 
-# ✅ Log-only warning if SendGrid is selected but key missing (shows in Railway logs)
-if ("board.email_backend_sendgrid" in (EMAIL_BACKEND or "")) and not os.environ.get("SENDGRID_API_KEY"):
-    print("WARNING: SENDGRID_API_KEY is not set, so SendGrid emails will NOT send.")
+
+# ------------------------------------------------------------
+# Security headers (basic)
+# ------------------------------------------------------------
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+X_FRAME_OPTIONS = "SAMEORIGIN"
