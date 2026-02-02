@@ -13,20 +13,20 @@
     <!-- Custom Global Styles -->
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 
-    <!-- Google Analytics (Admin-driven) -->
-    {% if sitesettings and sitesettings.google_analytics_id %}
-        <script async src="https://www.googletagmanager.com/gtag/js?id={{ sitesettings.google_analytics_id }}"></script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '{{ sitesettings.google_analytics_id }}');
-        </script>
-    {% endif %}
-
     <!-- Mapbox (only load if token exists) -->
     {% if MAPBOX_TOKEN %}
         <link href="https://api.mapbox.com/mapbox-gl-js/v2.12.0/mapbox-gl.css" rel="stylesheet">
+    {% endif %}
+
+    {# Google Analytics (Admin-driven: SiteSettings.google_analytics_id) #}
+    {% if sitesettings and sitesettings.google_analytics_id %}
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ sitesettings.google_analytics_id }}"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', '{{ sitesettings.google_analytics_id }}');
+        </script>
     {% endif %}
 
     {% block extra_head %}{% endblock %}
