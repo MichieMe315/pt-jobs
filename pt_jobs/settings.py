@@ -13,10 +13,6 @@ def env_bool(name: str, default: str = "0") -> bool:
 
 
 def require_any_env(*names: str) -> str:
-    """
-    Require at least one of the provided env vars to be set (non-empty).
-    This fixes Railway setups that use SECRET_KEY instead of DJANGO_SECRET_KEY.
-    """
     for n in names:
         v = os.environ.get(n)
         if v is not None and v.strip() != "":
@@ -27,11 +23,9 @@ def require_any_env(*names: str) -> str:
 # ------------------------------------------------------------
 # Core
 # ------------------------------------------------------------
-# Railway typically uses DEBUG and/or DJANGO_DEBUG. Support both.
 DEBUG = env_bool("DJANGO_DEBUG", os.environ.get("DEBUG", "0"))
 
-# Production: require SECRET_KEY (Railway has SECRET_KEY). Also accept DJANGO_SECRET_KEY if present.
-# Local dev: allow a fallback ONLY when DEBUG=1.
+# Production: require SECRET_KEY (Railway has SECRET_KEY). Also accept DJANGO_SECRET_KEY.
 if DEBUG:
     SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or os.environ.get("SECRET_KEY") or "dev-insecure-please-change-this"
 else:
@@ -82,6 +76,8 @@ INSTALLED_APPS = [
 # ------------------------------------------------------------
 # Media storage (local dev OK; production uses R2)
 # ------------------------------------------------------------
+# Production: R2 ON.
+# Local: filesystem media by default; can force R2 with USE_R2_MEDIA=1.
 USE_R2_MEDIA = (not DEBUG) or env_bool("USE_R2_MEDIA", "0")
 
 MEDIA_URL = "/media/"
@@ -91,17 +87,27 @@ if USE_R2_MEDIA:
     if "storages" not in INSTALLED_APPS:
         INSTALLED_APPS.append("storages")
 
-    R2_ACCESS_KEY_ID = require_any_env("R2_ACCESS_KEY_ID")
-    R2_SECRET_ACCESS_KEY = require_any_env("R2_SECRET_ACCESS_KEY")
-    R2_BUCKET_NAME = require_any_env("R2_BUCKET_NAME")
-    R2_ENDPOINT_URL = require_any_env("R2_ENDPOINT_URL")
-    R2_PUBLIC_BASE_URL = require_any_env("R2_PUBLIC_BASE_URL").rstrip("/")
+    # Accept both your older AWS-style env var names AND the newer R2_* names.
+    # STRICT: still fails if neither set.
+    ACCESS_KEY_ID = require_any_env("R2_ACCESS_KEY_ID", "AWS_ACCESS_KEY_ID")
+    SECRET_ACCESS_KEY = require_any_env("R2_SECRET_ACCESS_KEY", "AWS_SECRET_ACCESS_KEY")
+    BUCKET_NAME = require_any_env("R2_BUCKET_NAME", "AWS_STORAGE_BUCKET_NAME")
+    ENDPOINT_URL = require_any_env("R2_ENDPOINT_URL", "AWS_S3_ENDPOINT_URL", "AWS_ENDPOINT_URL")
 
-    AWS_ACCESS_KEY_ID = R2_ACCESS_KEY_ID
-    AWS_SECRET_ACCESS_KEY = R2_SECRET_ACCESS_KEY
-    AWS_STORAGE_BUCKET_NAME = R2_BUCKET_NAME
-    AWS_S3_ENDPOINT_URL = R2_ENDPOINT_URL
-    AWS_S3_REGION_NAME = "auto"
+    # Public media base URL (CDN/custom domain or r2.dev URL). Support common names.
+    PUBLIC_BASE_URL = require_any_env(
+        "R2_PUBLIC_BASE_URL",
+        "AWS_S3_CUSTOM_DOMAIN",
+        "MEDIA_CDN_BASE_URL",
+        "MEDIA_BASE_URL",
+    ).rstrip("/")
+
+    AWS_ACCESS_KEY_ID = ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY = SECRET_ACCESS_KEY
+    AWS_STORAGE_BUCKET_NAME = BUCKET_NAME
+    AWS_S3_ENDPOINT_URL = ENDPOINT_URL
+    AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", "auto")
+
     AWS_DEFAULT_ACL = None
     AWS_QUERYSTRING_AUTH = False
 
@@ -110,7 +116,7 @@ if USE_R2_MEDIA:
         "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
     }
 
-    MEDIA_URL = f"{R2_PUBLIC_BASE_URL}/"
+    MEDIA_URL = f"{PUBLIC_BASE_URL}/"
 
 
 # ------------------------------------------------------------
@@ -140,7 +146,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                # MUST match your existing board/context_processors.py (DO NOT TOUCH IT)
+                # Must match your existing board/context_processors.py
                 "board.context_processors.site_settings",
             ],
         },
@@ -154,7 +160,6 @@ WSGI_APPLICATION = "pt_jobs.wsgi.application"
 # Database
 # ------------------------------------------------------------
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
-
 if not DEBUG and not DATABASE_URL:
     raise ImproperlyConfigured("DATABASE_URL must be set in production (DEBUG=0).")
 
@@ -217,7 +222,7 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 
 # ------------------------------------------------------------
-# Security toggles (respect Railway vars if present)
+# Security (env overridable)
 # ------------------------------------------------------------
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = env_bool("DJANGO_SESSION_COOKIE_SECURE", "0" if DEBUG else "1")
