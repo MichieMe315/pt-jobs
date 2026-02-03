@@ -25,13 +25,13 @@ if not SECRET_KEY:
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split()
 if not ALLOWED_HOSTS:
-    ALLOWED_HOSTS = [
-        "127.0.0.1",
-        "localhost",
-        "physiotherapyjobscanada.ca",
-        "www.physiotherapyjobscanada.ca",
-        ".railway.app",
-    ]
+ALLOWED_HOSTS = [
+    "physiotherapyjobscanada.ca",
+    "www.physiotherapyjobscanada.ca",
+    ".railway.app",
+    "127.0.0.1",
+    "localhost",
+]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://physiotherapyjobscanada.ca",
