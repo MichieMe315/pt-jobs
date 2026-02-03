@@ -22,10 +22,9 @@ def require_env(name: str) -> str:
 # ------------------------------------------------------------
 # Core
 # ------------------------------------------------------------
-# Your project is using DJANGO_* envs already. Keep them.
 DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
 
-# Production: require secret key. Local dev: allow fallback.
+# Production: require secret key. Local: allow fallback.
 if DEBUG:
     SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-insecure-please-change-this")
 else:
@@ -48,6 +47,7 @@ if extra_hosts:
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://localhost:8000",
+    "https://*.railway.app",
 ]
 
 if railway_public_domain:
@@ -77,11 +77,11 @@ INSTALLED_APPS = [
 
 
 # ------------------------------------------------------------
-# Media storage (Local dev works; Production uses R2)
+# Media storage (LOCAL dev works; PROD uses R2 and is required)
 # ------------------------------------------------------------
-# Production = R2 ON and REQUIRED.
-# Local dev = R2 OFF by default (so it runs without env vars),
-#             but you can force it ON locally with USE_R2_MEDIA=1.
+# Production: R2 ON and REQUIRED.
+# Local dev: R2 OFF by default (so it runs without env vars).
+# You can force R2 locally with USE_R2_MEDIA=1 + vars.
 USE_R2_MEDIA = (not DEBUG) or env_bool("USE_R2_MEDIA", "0")
 
 MEDIA_URL = "/media/"
@@ -96,6 +96,7 @@ if USE_R2_MEDIA:
     R2_SECRET_ACCESS_KEY = require_env("R2_SECRET_ACCESS_KEY")
     R2_BUCKET_NAME = require_env("R2_BUCKET_NAME")
     R2_ENDPOINT_URL = require_env("R2_ENDPOINT_URL")
+    # Public base URL where media is served from (CDN/custom domain or r2.dev URL)
     R2_PUBLIC_BASE_URL = require_env("R2_PUBLIC_BASE_URL").rstrip("/")
 
     AWS_ACCESS_KEY_ID = R2_ACCESS_KEY_ID
@@ -141,7 +142,8 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                # DO NOT CHANGE: this matches your existing board/context_processors.py
+
+                # CRITICAL: must match your existing context_processors.py function name
                 "board.context_processors.site_settings",
             ],
         },
@@ -155,6 +157,9 @@ WSGI_APPLICATION = "pt_jobs.wsgi.application"
 # Database (Railway Postgres via DATABASE_URL, local fallback)
 # ------------------------------------------------------------
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
+
+if not DEBUG and not DATABASE_URL:
+    raise ImproperlyConfigured("DATABASE_URL must be set in production (DJANGO_DEBUG=0).")
 
 if DATABASE_URL:
     DATABASES = {
@@ -203,16 +208,27 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 # ------------------------------------------------------------
-# Static files (Collectstatic-safe)
+# Static files (DEPLOY-SAFE)
 # ------------------------------------------------------------
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# Only include STATICFILES_DIRS if the folder exists in the repo.
+# Only include STATICFILES_DIRS if the folder exists in the repo (prevents collectstatic failures)
 _static_dir = BASE_DIR / "static"
 STATICFILES_DIRS = [_static_dir] if _static_dir.exists() else []
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+# DEPLOY-SAFE: avoids "Missing staticfiles manifest entry" failures during collectstatic
+# (you can switch back to Manifest later once you're 100% sure all references exist)
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
+
+
+# ------------------------------------------------------------
+# Security
+# ------------------------------------------------------------
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_SSL_REDIRECT = not DEBUG
 
 
 # ------------------------------------------------------------
