@@ -12,38 +12,45 @@ def env_bool(name: str, default: str = "0") -> bool:
     return os.environ.get(name, default).strip().lower() in ("1", "true", "yes", "on")
 
 
-def require_env(name: str) -> str:
-    val = os.environ.get(name)
-    if val is None or val.strip() == "":
-        raise ImproperlyConfigured(f"Missing required environment variable: {name}")
-    return val.strip()
+def require_any_env(*names: str) -> str:
+    """
+    Strict: require at least one of the provided env var names.
+    (No silent fallback to unrelated defaults in production.)
+    """
+    for n in names:
+        v = os.environ.get(n)
+        if v is not None and v.strip() != "":
+            return v.strip()
+    raise ImproperlyConfigured(f"Missing required environment variable (any of): {', '.join(names)}")
 
 
 # ------------------------------------------------------------
 # Core
 # ------------------------------------------------------------
-DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
+# Railway commonly uses DEBUG=0/1; you also have DJANGO_DEBUG.
+# Treat either as authoritative.
+DEBUG = env_bool("DJANGO_DEBUG", os.environ.get("DEBUG", "0"))
 
-# Production: require secret key. Local: allow fallback.
+# Production: require secret key (Railway has SECRET_KEY per your screenshot).
+# Local dev: allow a fallback ONLY when DEBUG=1.
 if DEBUG:
-    SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-insecure-please-change-this")
+    SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or os.environ.get("SECRET_KEY") or "dev-insecure-please-change-this"
 else:
-    SECRET_KEY = require_env("DJANGO_SECRET_KEY")
+    SECRET_KEY = require_any_env("SECRET_KEY", "DJANGO_SECRET_KEY")
 
-
-# ------------------------------------------------------------
-# Hosts / CSRF
-# ------------------------------------------------------------
+# Hosts
 ALLOWED_HOSTS = ["127.0.0.1", "localhost", ".railway.app"]
 
 railway_public_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN")
 if railway_public_domain:
     ALLOWED_HOSTS.append(railway_public_domain)
 
+# Optional: comma-separated hosts
 extra_hosts = os.environ.get("DJANGO_ALLOWED_HOSTS", "")
 if extra_hosts:
     ALLOWED_HOSTS += [h.strip() for h in extra_hosts.split(",") if h.strip()]
 
+# CSRF
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://localhost:8000",
@@ -69,7 +76,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Third-party
+    # Third-party (keep as-is if it worked before)
     "import_export",
     # Local
     "board",
@@ -77,27 +84,25 @@ INSTALLED_APPS = [
 
 
 # ------------------------------------------------------------
-# Media storage (LOCAL dev works; PROD uses R2 and is required)
+# Media storage (local dev OK, prod uses R2)
 # ------------------------------------------------------------
-# Production: R2 ON and REQUIRED.
-# Local dev: R2 OFF by default (so it runs without env vars).
-# You can force R2 locally with USE_R2_MEDIA=1 + vars.
+# Production: require R2.
+# Local: filesystem media by default; can force R2 with USE_R2_MEDIA=1.
 USE_R2_MEDIA = (not DEBUG) or env_bool("USE_R2_MEDIA", "0")
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 if USE_R2_MEDIA:
-    # storages MUST be installed & enabled when using R2
     if "storages" not in INSTALLED_APPS:
         INSTALLED_APPS.append("storages")
 
-    R2_ACCESS_KEY_ID = require_env("R2_ACCESS_KEY_ID")
-    R2_SECRET_ACCESS_KEY = require_env("R2_SECRET_ACCESS_KEY")
-    R2_BUCKET_NAME = require_env("R2_BUCKET_NAME")
-    R2_ENDPOINT_URL = require_env("R2_ENDPOINT_URL")
-    # Public base URL where media is served from (CDN/custom domain or r2.dev URL)
-    R2_PUBLIC_BASE_URL = require_env("R2_PUBLIC_BASE_URL").rstrip("/")
+    # R2 env vars
+    R2_ACCESS_KEY_ID = require_any_env("R2_ACCESS_KEY_ID")
+    R2_SECRET_ACCESS_KEY = require_any_env("R2_SECRET_ACCESS_KEY")
+    R2_BUCKET_NAME = require_any_env("R2_BUCKET_NAME")
+    R2_ENDPOINT_URL = require_any_env("R2_ENDPOINT_URL")
+    R2_PUBLIC_BASE_URL = require_any_env("R2_PUBLIC_BASE_URL").rstrip("/")
 
     AWS_ACCESS_KEY_ID = R2_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY = R2_SECRET_ACCESS_KEY
@@ -143,7 +148,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
 
-                # CRITICAL: must match your existing context_processors.py function name
+                # MUST MATCH your existing board/context_processors.py
                 "board.context_processors.site_settings",
             ],
         },
@@ -154,12 +159,13 @@ WSGI_APPLICATION = "pt_jobs.wsgi.application"
 
 
 # ------------------------------------------------------------
-# Database (Railway Postgres via DATABASE_URL, local fallback)
+# Database
 # ------------------------------------------------------------
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 
+# Production should have DATABASE_URL; local can fall back.
 if not DEBUG and not DATABASE_URL:
-    raise ImproperlyConfigured("DATABASE_URL must be set in production (DJANGO_DEBUG=0).")
+    raise ImproperlyConfigured("DATABASE_URL must be set in production (DEBUG=0).")
 
 if DATABASE_URL:
     DATABASES = {
@@ -208,27 +214,28 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 # ------------------------------------------------------------
-# Static files (DEPLOY-SAFE)
+# Static files (deploy-safe)
 # ------------------------------------------------------------
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# Only include STATICFILES_DIRS if the folder exists in the repo (prevents collectstatic failures)
+# Only include STATICFILES_DIRS if the folder exists (prevents collectstatic blowups)
 _static_dir = BASE_DIR / "static"
 STATICFILES_DIRS = [_static_dir] if _static_dir.exists() else []
 
-# DEPLOY-SAFE: avoids "Missing staticfiles manifest entry" failures during collectstatic
-# (you can switch back to Manifest later once you're 100% sure all references exist)
+# Deploy-safe storage (avoids manifest-missing failures)
 STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 
 # ------------------------------------------------------------
-# Security
+# Security toggles (optional env overrides)
 # ------------------------------------------------------------
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-SESSION_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_SECURE = not DEBUG
-SECURE_SSL_REDIRECT = not DEBUG
+
+# Respect your Railway vars if you set them; otherwise default based on DEBUG.
+SESSION_COOKIE_SECURE = env_bool("DJANGO_SESSION_COOKIE_SECURE", "0" if DEBUG else "1")
+CSRF_COOKIE_SECURE = env_bool("DJANGO_CSRF_COOKIE_SECURE", "0" if DEBUG else "1")
+SECURE_SSL_REDIRECT = env_bool("DJANGO_SECURE_SSL_REDIRECT", "0" if DEBUG else "1")
 
 
 # ------------------------------------------------------------
