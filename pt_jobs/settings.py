@@ -1,6 +1,5 @@
 from pathlib import Path
 import os
-from urllib.parse import urlparse
 
 import dj_database_url
 from django.contrib.messages import constants as messages
@@ -23,10 +22,10 @@ def require_env(name: str) -> str:
 # ------------------------------------------------------------
 # Core
 # ------------------------------------------------------------
-# Railway often uses DEBUG and/or DJANGO_DEBUG. Respect either.
+# Railway commonly uses DEBUG and/or DJANGO_DEBUG. Respect either.
 DEBUG = env_bool("DJANGO_DEBUG", os.environ.get("DEBUG", "0"))
 
-# You confirmed Railway has SECRET_KEY. Support both names.
+# Railway uses SECRET_KEY (you confirmed). Support both names without adding new required vars.
 if DEBUG:
     SECRET_KEY = os.environ.get("SECRET_KEY") or os.environ.get("DJANGO_SECRET_KEY") or "dev-insecure-please-change-this"
 else:
@@ -44,7 +43,6 @@ railway_public_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN")
 if railway_public_domain:
     ALLOWED_HOSTS.append(railway_public_domain)
 
-# Optional: comma-separated additional hosts
 extra_hosts = os.environ.get("DJANGO_ALLOWED_HOSTS", "")
 if extra_hosts:
     ALLOWED_HOSTS += [h.strip() for h in extra_hosts.split(",") if h.strip()]
@@ -57,7 +55,6 @@ CSRF_TRUSTED_ORIGINS = [
 if railway_public_domain:
     CSRF_TRUSTED_ORIGINS.append(f"https://{railway_public_domain}")
 
-# Optional: comma-separated additional CSRF trusted origins
 extra_csrf = os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "")
 if extra_csrf:
     CSRF_TRUSTED_ORIGINS += [o.strip() for o in extra_csrf.split(",") if o.strip()]
@@ -82,26 +79,28 @@ INSTALLED_APPS = [
 # Media storage
 # ------------------------------------------------------------
 # PRODUCTION LOCK:
-# - Production uses R2 (required)
-# - Local uses filesystem media unless you explicitly set USE_R2_MEDIA=1
+# - Production uses R2 and requires the R2 vars.
+# - Local dev uses filesystem media by default.
+# - If you want local to use R2, set USE_R2_MEDIA=1 and provide the same R2 vars locally.
 USE_R2_MEDIA = (not DEBUG) or env_bool("USE_R2_MEDIA", "0")
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 if USE_R2_MEDIA:
-    # Use only the variables you listed:
+    # Use ONLY the vars you already have in Railway.
     R2_ACCESS_KEY_ID = require_env("R2_ACCESS_KEY_ID")
     R2_SECRET_ACCESS_KEY = require_env("R2_SECRET_ACCESS_KEY")
     R2_ACCOUNT_ID = require_env("R2_ACCOUNT_ID")
     R2_BUCKET_NAME = require_env("R2_BUCKET_NAME")
+    # Kept required because you already have it (even if we don't depend on it for URL generation).
     R2_PUBLIC_BASE_URL = require_env("R2_PUBLIC_BASE_URL").rstrip("/")
 
-    # Build the S3 API endpoint from R2_ACCOUNT_ID (no extra env var needed)
+    # Build Cloudflare R2 S3 API endpoint from account id (no extra env var needed)
     # https://<accountid>.r2.cloudflarestorage.com
     R2_ENDPOINT_URL = f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
 
-    # Ensure storages is installed only when needed
+    # Only add storages when using R2
     if "storages" not in INSTALLED_APPS:
         INSTALLED_APPS.append("storages")
 
@@ -112,29 +111,19 @@ if USE_R2_MEDIA:
     AWS_S3_ENDPOINT_URL = R2_ENDPOINT_URL
     AWS_S3_REGION_NAME = "auto"
 
-    # Important for R2 compatibility
+    # R2 compatibility
     AWS_S3_ADDRESSING_STYLE = "path"
     AWS_S3_SIGNATURE_VERSION = "s3v4"
+    AWS_DEFAULT_ACL = None
 
-    # Public URL generation for .url (THIS FIXES LOGO RENDERING)
-    # Your templates use {{ employer.logo.url }}. That URL must be PUBLIC.
-    parsed = urlparse(R2_PUBLIC_BASE_URL)
-    if not parsed.scheme or not parsed.netloc:
-        raise ImproperlyConfigured("R2_PUBLIC_BASE_URL must be a full URL like https://media.example.com")
+    # ✅ THE KEY FIX FOR "IMAGES NOT SHOWING":
+    # Signed URLs so logos render whether bucket/public settings are perfect or not.
+    AWS_QUERYSTRING_AUTH = True
 
-    AWS_S3_CUSTOM_DOMAIN = parsed.netloc
-    AWS_S3_URL_PROTOCOL = f"{parsed.scheme}:"
-    AWS_S3_USE_SSL = True
-    AWS_QUERYSTRING_AUTH = False  # public URLs (no signed querystrings)
-
-    # Storage routing
     STORAGES = {
         "default": {"BACKEND": "storages.backends.s3boto3.S3Boto3Storage"},
         "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
     }
-
-    # Make MEDIA_URL match your public base URL exactly
-    MEDIA_URL = f"{R2_PUBLIC_BASE_URL}/"
 
 
 # ------------------------------------------------------------
@@ -184,9 +173,7 @@ if not DEBUG and not DATABASE_URL:
     raise ImproperlyConfigured("DATABASE_URL must be set in production (DEBUG=0).")
 
 if DATABASE_URL:
-    DATABASES = {
-        "default": dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=False)
-    }
+    DATABASES = {"default": dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=False)}
 else:
     DATABASES = {
         "default": {
@@ -231,7 +218,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# Only include STATICFILES_DIRS if it exists in repo
 _static_dir = BASE_DIR / "static"
 STATICFILES_DIRS = [_static_dir] if _static_dir.exists() else []
 
