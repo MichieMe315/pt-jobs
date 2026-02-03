@@ -25,7 +25,6 @@ def require_any_env(*names: str) -> str:
 # ------------------------------------------------------------
 DEBUG = env_bool("DJANGO_DEBUG", os.environ.get("DEBUG", "0"))
 
-# Production: require SECRET_KEY (Railway has SECRET_KEY). Also accept DJANGO_SECRET_KEY.
 if DEBUG:
     SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or os.environ.get("SECRET_KEY") or "dev-insecure-please-change-this"
 else:
@@ -76,8 +75,6 @@ INSTALLED_APPS = [
 # ------------------------------------------------------------
 # Media storage (local dev OK; production uses R2)
 # ------------------------------------------------------------
-# Production: R2 ON.
-# Local: filesystem media by default; can force R2 with USE_R2_MEDIA=1.
 USE_R2_MEDIA = (not DEBUG) or env_bool("USE_R2_MEDIA", "0")
 
 MEDIA_URL = "/media/"
@@ -87,14 +84,18 @@ if USE_R2_MEDIA:
     if "storages" not in INSTALLED_APPS:
         INSTALLED_APPS.append("storages")
 
-    # Accept both your older AWS-style env var names AND the newer R2_* names.
-    # STRICT: still fails if neither set.
+    # Accept BOTH naming schemes:
+    # - R2_* (new)
+    # - AWS_* (what you already have in Railway)
     ACCESS_KEY_ID = require_any_env("R2_ACCESS_KEY_ID", "AWS_ACCESS_KEY_ID")
     SECRET_ACCESS_KEY = require_any_env("R2_SECRET_ACCESS_KEY", "AWS_SECRET_ACCESS_KEY")
     BUCKET_NAME = require_any_env("R2_BUCKET_NAME", "AWS_STORAGE_BUCKET_NAME")
+
+    # THIS IS THE IMPORTANT FIX:
+    # Do NOT require only R2_ENDPOINT_URL.
     ENDPOINT_URL = require_any_env("R2_ENDPOINT_URL", "AWS_S3_ENDPOINT_URL", "AWS_ENDPOINT_URL")
 
-    # Public media base URL (CDN/custom domain or r2.dev URL). Support common names.
+    # Public base URL for media (CDN/custom domain or r2.dev style URL)
     PUBLIC_BASE_URL = require_any_env(
         "R2_PUBLIC_BASE_URL",
         "AWS_S3_CUSTOM_DOMAIN",
@@ -146,7 +147,6 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                # Must match your existing board/context_processors.py
                 "board.context_processors.site_settings",
             ],
         },
