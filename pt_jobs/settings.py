@@ -22,21 +22,25 @@ def require_env(name: str) -> str:
 # ------------------------------------------------------------
 # Core
 # ------------------------------------------------------------
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-insecure-please-change-this")
-
-# In Railway set DJANGO_DEBUG="0"
+# Your project is using DJANGO_* envs already. Keep them.
 DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
 
-# Hosts
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+# Production: require secret key. Local dev: allow fallback.
+if DEBUG:
+    SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-insecure-please-change-this")
+else:
+    SECRET_KEY = require_env("DJANGO_SECRET_KEY")
 
-# Railway public domain (Railway sets this on the web service once you generate a domain)
+
+# ------------------------------------------------------------
+# Hosts / CSRF
+# ------------------------------------------------------------
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", ".railway.app"]
+
 railway_public_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN")
 if railway_public_domain:
     ALLOWED_HOSTS.append(railway_public_domain)
 
-# Optional: comma-separated extra hosts you want
-# e.g. DJANGO_ALLOWED_HOSTS="physiotherapyjobscanada.ca,www.physiotherapyjobscanada.ca"
 extra_hosts = os.environ.get("DJANGO_ALLOWED_HOSTS", "")
 if extra_hosts:
     ALLOWED_HOSTS += [h.strip() for h in extra_hosts.split(",") if h.strip()]
@@ -46,12 +50,9 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
 ]
 
-# Add Railway https domain to CSRF if present
 if railway_public_domain:
     CSRF_TRUSTED_ORIGINS.append(f"https://{railway_public_domain}")
 
-# Optional: comma-separated extra CSRF trusted origins
-# e.g. DJANGO_CSRF_TRUSTED_ORIGINS="https://physiotherapyjobscanada.ca,https://www.physiotherapyjobscanada.ca"
 extra_csrf = os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "")
 if extra_csrf:
     CSRF_TRUSTED_ORIGINS += [o.strip() for o in extra_csrf.split(",") if o.strip()]
@@ -76,26 +77,25 @@ INSTALLED_APPS = [
 
 
 # ------------------------------------------------------------
-# Media storage (LOCAL dev works; PROD locked to R2)
-#
-# Rules:
-# - If DJANGO_DEBUG=0 => require R2 vars + enable django-storages
-# - If DJANGO_DEBUG=1 => local filesystem media by default
-# - You can still enable R2 locally by setting USE_R2_MEDIA=1 + providing vars
+# Media storage (Local dev works; Production uses R2)
 # ------------------------------------------------------------
+# Production = R2 ON and REQUIRED.
+# Local dev = R2 OFF by default (so it runs without env vars),
+#             but you can force it ON locally with USE_R2_MEDIA=1.
 USE_R2_MEDIA = (not DEBUG) or env_bool("USE_R2_MEDIA", "0")
 
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
 if USE_R2_MEDIA:
-    # Require storages app only when using R2
+    # storages MUST be installed & enabled when using R2
     if "storages" not in INSTALLED_APPS:
         INSTALLED_APPS.append("storages")
 
-    # Required R2 env vars (locked in production; optional only if you toggle USE_R2_MEDIA locally)
     R2_ACCESS_KEY_ID = require_env("R2_ACCESS_KEY_ID")
     R2_SECRET_ACCESS_KEY = require_env("R2_SECRET_ACCESS_KEY")
     R2_BUCKET_NAME = require_env("R2_BUCKET_NAME")
     R2_ENDPOINT_URL = require_env("R2_ENDPOINT_URL")
-    # Public base URL where media is served from (CDN/custom domain or r2.dev URL)
     R2_PUBLIC_BASE_URL = require_env("R2_PUBLIC_BASE_URL").rstrip("/")
 
     AWS_ACCESS_KEY_ID = R2_ACCESS_KEY_ID
@@ -112,10 +112,6 @@ if USE_R2_MEDIA:
     }
 
     MEDIA_URL = f"{R2_PUBLIC_BASE_URL}/"
-    MEDIA_ROOT = BASE_DIR / "media"  # not used in R2 mode, but harmless
-else:
-    MEDIA_URL = "/media/"
-    MEDIA_ROOT = BASE_DIR / "media"
 
 
 # ------------------------------------------------------------
@@ -123,7 +119,7 @@ else:
 # ------------------------------------------------------------
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # REQUIRED for Railway static/admin
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -145,8 +141,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                # DO NOT CHANGE: must match your existing board/context_processors.py
-                # It defines def site_settings(...) and returns {"sitesettings": ...}
+                # DO NOT CHANGE: this matches your existing board/context_processors.py
                 "board.context_processors.site_settings",
             ],
         },
@@ -157,7 +152,7 @@ WSGI_APPLICATION = "pt_jobs.wsgi.application"
 
 
 # ------------------------------------------------------------
-# DATABASES (Railway Postgres via DATABASE_URL, local fallback)
+# Database (Railway Postgres via DATABASE_URL, local fallback)
 # ------------------------------------------------------------
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 
@@ -208,11 +203,14 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 # ------------------------------------------------------------
-# Static files
+# Static files (Collectstatic-safe)
 # ------------------------------------------------------------
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# Only include STATICFILES_DIRS if the folder exists in the repo.
+_static_dir = BASE_DIR / "static"
+STATICFILES_DIRS = [_static_dir] if _static_dir.exists() else []
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
