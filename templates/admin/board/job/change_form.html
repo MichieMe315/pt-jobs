@@ -1,0 +1,13 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls %}
+
+{% block object-tools-items %}
+  {% if change and original %}
+    <li>
+      <a class="button" href="{% url 'admin:board_job_duplicate' original.pk %}">
+        Duplicate (date = today)
+      </a>
+    </li>
+  {% endif %}
+  {{ block.super }}
+{% endblock %}
