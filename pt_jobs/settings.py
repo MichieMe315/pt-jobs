@@ -12,12 +12,11 @@ def env_bool(name: str, default: str = "0") -> bool:
     return os.environ.get(name, default).strip().lower() in ("1", "true", "yes", "on")
 
 
-def require_any_env(*names: str) -> str:
-    for n in names:
-        v = os.environ.get(n)
-        if v is not None and v.strip() != "":
-            return v.strip()
-    raise ImproperlyConfigured(f"Missing required environment variable (any of): {', '.join(names)}")
+def require_env(name: str) -> str:
+    v = os.environ.get(name)
+    if v is None or v.strip() == "":
+        raise ImproperlyConfigured(f"Missing required environment variable: {name}")
+    return v.strip()
 
 
 # ------------------------------------------------------------
@@ -25,10 +24,13 @@ def require_any_env(*names: str) -> str:
 # ------------------------------------------------------------
 DEBUG = env_bool("DJANGO_DEBUG", os.environ.get("DEBUG", "0"))
 
+# Railway has SECRET_KEY (per your earlier screenshot). Support both names.
 if DEBUG:
-    SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or os.environ.get("SECRET_KEY") or "dev-insecure-please-change-this"
+    SECRET_KEY = os.environ.get("SECRET_KEY") or os.environ.get("DJANGO_SECRET_KEY") or "dev-insecure-please-change-this"
 else:
-    SECRET_KEY = require_any_env("SECRET_KEY", "DJANGO_SECRET_KEY")
+    SECRET_KEY = os.environ.get("SECRET_KEY") or os.environ.get("DJANGO_SECRET_KEY")
+    if not SECRET_KEY:
+        raise ImproperlyConfigured("Missing required environment variable: SECRET_KEY (or DJANGO_SECRET_KEY)")
 
 
 # ------------------------------------------------------------
@@ -75,6 +77,8 @@ INSTALLED_APPS = [
 # ------------------------------------------------------------
 # Media storage (local dev OK; production uses R2)
 # ------------------------------------------------------------
+# Production: R2 ON (required).
+# Local dev: filesystem media by default; can force R2 with USE_R2_MEDIA=1.
 USE_R2_MEDIA = (not DEBUG) or env_bool("USE_R2_MEDIA", "0")
 
 MEDIA_URL = "/media/"
@@ -84,30 +88,23 @@ if USE_R2_MEDIA:
     if "storages" not in INSTALLED_APPS:
         INSTALLED_APPS.append("storages")
 
-    # Accept BOTH naming schemes:
-    # - R2_* (new)
-    # - AWS_* (what you already have in Railway)
-    ACCESS_KEY_ID = require_any_env("R2_ACCESS_KEY_ID", "AWS_ACCESS_KEY_ID")
-    SECRET_ACCESS_KEY = require_any_env("R2_SECRET_ACCESS_KEY", "AWS_SECRET_ACCESS_KEY")
-    BUCKET_NAME = require_any_env("R2_BUCKET_NAME", "AWS_STORAGE_BUCKET_NAME")
+    # Use ONLY the vars you actually have in Railway:
+    R2_ACCESS_KEY_ID = require_env("R2_ACCESS_KEY_ID")
+    R2_SECRET_ACCESS_KEY = require_env("R2_SECRET_ACCESS_KEY")
+    R2_ACCOUNT_ID = require_env("R2_ACCOUNT_ID")
+    R2_BUCKET_NAME = require_env("R2_BUCKET_NAME")
+    R2_PUBLIC_BASE_URL = require_env("R2_PUBLIC_BASE_URL").rstrip("/")
 
-    # THIS IS THE IMPORTANT FIX:
-    # Do NOT require only R2_ENDPOINT_URL.
-    ENDPOINT_URL = require_any_env("R2_ENDPOINT_URL", "AWS_S3_ENDPOINT_URL", "AWS_ENDPOINT_URL")
+    # Build the S3 endpoint from the account ID (NO extra env var needed)
+    # Cloudflare R2 S3 endpoint format:
+    # https://<accountid>.r2.cloudflarestorage.com
+    R2_ENDPOINT_URL = f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
 
-    # Public base URL for media (CDN/custom domain or r2.dev style URL)
-    PUBLIC_BASE_URL = require_any_env(
-        "R2_PUBLIC_BASE_URL",
-        "AWS_S3_CUSTOM_DOMAIN",
-        "MEDIA_CDN_BASE_URL",
-        "MEDIA_BASE_URL",
-    ).rstrip("/")
-
-    AWS_ACCESS_KEY_ID = ACCESS_KEY_ID
-    AWS_SECRET_ACCESS_KEY = SECRET_ACCESS_KEY
-    AWS_STORAGE_BUCKET_NAME = BUCKET_NAME
-    AWS_S3_ENDPOINT_URL = ENDPOINT_URL
-    AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", "auto")
+    AWS_ACCESS_KEY_ID = R2_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY = R2_SECRET_ACCESS_KEY
+    AWS_STORAGE_BUCKET_NAME = R2_BUCKET_NAME
+    AWS_S3_ENDPOINT_URL = R2_ENDPOINT_URL
+    AWS_S3_REGION_NAME = "auto"
 
     AWS_DEFAULT_ACL = None
     AWS_QUERYSTRING_AUTH = False
@@ -117,7 +114,8 @@ if USE_R2_MEDIA:
         "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
     }
 
-    MEDIA_URL = f"{PUBLIC_BASE_URL}/"
+    # Public URL where media is served (your CDN/custom domain or r2.dev public URL)
+    MEDIA_URL = f"{R2_PUBLIC_BASE_URL}/"
 
 
 # ------------------------------------------------------------
@@ -147,6 +145,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                # DO NOT TOUCH: must match your existing context processor function name
                 "board.context_processors.site_settings",
             ],
         },
@@ -164,13 +163,7 @@ if not DEBUG and not DATABASE_URL:
     raise ImproperlyConfigured("DATABASE_URL must be set in production (DEBUG=0).")
 
 if DATABASE_URL:
-    DATABASES = {
-        "default": dj_database_url.parse(
-            DATABASE_URL,
-            conn_max_age=600,
-            ssl_require=False,
-        )
-    }
+    DATABASES = {"default": dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=False)}
 else:
     DATABASES = {
         "default": {
@@ -210,7 +203,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 # ------------------------------------------------------------
-# Static files (deploy-safe)
+# Static files
 # ------------------------------------------------------------
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
@@ -222,7 +215,7 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 
 # ------------------------------------------------------------
-# Security (env overridable)
+# Security
 # ------------------------------------------------------------
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = env_bool("DJANGO_SESSION_COOKIE_SECURE", "0" if DEBUG else "1")
