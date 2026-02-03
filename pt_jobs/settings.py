@@ -2,66 +2,49 @@
 
 from pathlib import Path
 import os
-
 from django.core.exceptions import ImproperlyConfigured
 import dj_database_url
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# ------------------------------------------------------------------------------
+# --------------------------------------------------
 # Core
-# ------------------------------------------------------------------------------
+# --------------------------------------------------
 
-DEBUG = os.environ.get("DEBUG", "0") == "1"
+SECRET_KEY = os.getenv("SECRET_KEY", "dev-insecure-local-key")
 
-SECRET_KEY = os.environ.get("SECRET_KEY")
-if not SECRET_KEY:
-    if DEBUG:
-        SECRET_KEY = "dev-insecure-secret-key-change-me"
-    else:
-        raise ImproperlyConfigured("SECRET_KEY is missing in production.")
+DEBUG = os.getenv("DEBUG", "0") == "1"
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split()
-if not ALLOWED_HOSTS:
 ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
     "physiotherapyjobscanada.ca",
     "www.physiotherapyjobscanada.ca",
     ".railway.app",
-    "127.0.0.1",
-    "localhost",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://physiotherapyjobscanada.ca",
     "https://www.physiotherapyjobscanada.ca",
 ]
-extra_csrf = os.environ.get("CSRF_TRUSTED_ORIGINS", "").split()
-for origin in extra_csrf:
-    if origin and origin not in CSRF_TRUSTED_ORIGINS:
-        CSRF_TRUSTED_ORIGINS.append(origin)
 
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-
-
-# ------------------------------------------------------------------------------
+# --------------------------------------------------
 # Applications
-# ------------------------------------------------------------------------------
+# --------------------------------------------------
 
 INSTALLED_APPS = [
-    "board",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
+    "board",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -83,9 +66,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-
-                # IMPORTANT: your file defines site_settings (not "sitesettings")
-                "board.context_processors.site_settings",
+                "board.context_processors.sitesettings",
             ],
         },
     },
@@ -93,20 +74,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "pt_jobs.wsgi.application"
 
+# --------------------------------------------------
+# Database (Railway or local)
+# --------------------------------------------------
 
-# ------------------------------------------------------------------------------
-# Database
-# ------------------------------------------------------------------------------
-
-DATABASE_URL = os.environ.get("DATABASE_URL")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
     DATABASES = {
-        "default": dj_database_url.parse(
-            DATABASE_URL,
-            conn_max_age=600,
-            ssl_require=False,
-        )
+        "default": dj_database_url.parse(DATABASE_URL, conn_max_age=600)
     }
 else:
     DATABASES = {
@@ -116,10 +92,9 @@ else:
         }
     }
 
-
-# ------------------------------------------------------------------------------
+# --------------------------------------------------
 # Password validation
-# ------------------------------------------------------------------------------
+# --------------------------------------------------
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -128,121 +103,65 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-
-# ------------------------------------------------------------------------------
+# --------------------------------------------------
 # Internationalization
-# ------------------------------------------------------------------------------
+# --------------------------------------------------
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "en-ca"
 TIME_ZONE = "America/Toronto"
 USE_I18N = True
 USE_TZ = True
 
-
-# ------------------------------------------------------------------------------
-# Static + Media
-# ------------------------------------------------------------------------------
+# --------------------------------------------------
+# Static files
+# --------------------------------------------------
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+# --------------------------------------------------
+# Media (Cloudflare R2)
+# --------------------------------------------------
 
-# CRITICAL: Django expects BOTH 'default' and 'staticfiles' here.
-# 'default' is your upload/media storage.
+DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+
 STORAGES = {
     "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-        "OPTIONS": {
-            "location": str(MEDIA_ROOT),
-        },
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
 
-# ------------------------------------------------------------------------------
-# R2 (only if env vars exist)
-# ------------------------------------------------------------------------------
+AWS_ACCESS_KEY_ID = os.getenv("R2_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("R2_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = os.getenv("R2_BUCKET_NAME")
+AWS_S3_ENDPOINT_URL = os.getenv("R2_ENDPOINT_URL")
+AWS_S3_REGION_NAME = "auto"
+AWS_S3_CUSTOM_DOMAIN = os.getenv("R2_PUBLIC_BASE_URL")
+AWS_DEFAULT_ACL = None
+AWS_QUERYSTRING_AUTH = False
 
-R2_BUCKET_NAME = os.environ.get("R2_BUCKET_NAME", "").strip()
-R2_ACCESS_KEY_ID = os.environ.get("R2_ACCESS_KEY_ID", "").strip()
-R2_SECRET_ACCESS_KEY = os.environ.get("R2_SECRET_ACCESS_KEY", "").strip()
-R2_PUBLIC_BASE_URL = os.environ.get("R2_PUBLIC_BASE_URL", "").strip().rstrip("/")
-R2_ENDPOINT_URL = os.environ.get("R2_ENDPOINT_URL", "").strip()
-R2_ACCOUNT_ID = os.environ.get("R2_ACCOUNT_ID", "").strip()
+MEDIA_URL = f"{AWS_S3_CUSTOM_DOMAIN}/"
 
-USE_R2 = all([R2_BUCKET_NAME, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY]) and (
-    bool(R2_ENDPOINT_URL) or bool(R2_ACCOUNT_ID)
-)
+# --------------------------------------------------
+# Email (SendGrid)
+# --------------------------------------------------
 
-if USE_R2:
-    if not R2_ENDPOINT_URL and R2_ACCOUNT_ID:
-        R2_ENDPOINT_URL = f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+EMAIL_BACKEND = "board.email_backend_sendgrid.SendGridBackend"
+DEFAULT_FROM_EMAIL = "info@physiotherapyjobscanada.ca"
 
-    # In production, PUBLIC base URL must exist to render images in browser.
-    if not R2_PUBLIC_BASE_URL and not DEBUG:
-        raise ImproperlyConfigured(
-            "R2 is enabled but R2_PUBLIC_BASE_URL is missing. "
-            "Set R2_PUBLIC_BASE_URL to your public media base URL."
-        )
+# --------------------------------------------------
+# Security
+# --------------------------------------------------
 
-    STORAGES["default"] = {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-        "OPTIONS": {
-            "bucket_name": R2_BUCKET_NAME,
-            "access_key": R2_ACCESS_KEY_ID,
-            "secret_key": R2_SECRET_ACCESS_KEY,
-            "endpoint_url": R2_ENDPOINT_URL,
-            "region_name": "auto",
-            "signature_version": "s3v4",
-            "file_overwrite": False,
-            "default_acl": None,
-            "querystring_auth": False,
-        },
-    }
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
 
-    if R2_PUBLIC_BASE_URL:
-        MEDIA_URL = f"{R2_PUBLIC_BASE_URL}/"
-
-
-# ------------------------------------------------------------------------------
-# Default primary key
-# ------------------------------------------------------------------------------
+# --------------------------------------------------
+# Misc
+# --------------------------------------------------
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-
-# ------------------------------------------------------------------------------
-# Email (SendGrid)
-# ------------------------------------------------------------------------------
-
-DEFAULT_FROM_EMAIL = os.environ.get(
-    "DEFAULT_FROM_EMAIL",
-    "Physiotherapy Jobs Canada <info@physiotherapyjobscanada.ca>",
-)
-SERVER_EMAIL = os.environ.get(
-    "SERVER_EMAIL",
-    "Physiotherapy Jobs Canada <info@physiotherapyjobscanada.ca>",
-)
-
-EMAIL_BACKEND = "board.email_backend_sendgrid.SendGridEmailBackend"
-SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "")
-
-if not SENDGRID_API_KEY and not DEBUG:
-    raise ImproperlyConfigured("SENDGRID_API_KEY is missing in production.")
-
-
-# ------------------------------------------------------------------------------
-# Logging
-# ------------------------------------------------------------------------------
-
-LOG_LEVEL = os.environ.get("DJANGO_LOG_LEVEL", "INFO")
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {"console": {"class": "logging.StreamHandler"}},
-    "root": {"handlers": ["console"], "level": LOG_LEVEL},
-}
