@@ -1,61 +1,64 @@
+# pt_jobs/settings.py
+
 from pathlib import Path
 import os
+
+from django.core.exceptions import ImproperlyConfigured
 import dj_database_url
-from django.contrib.messages import constants as messages
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# ------------------------------------------------------------
-# CORE
-# ------------------------------------------------------------
-SECRET_KEY = os.environ.get(
-    "DJANGO_SECRET_KEY",
-    "dev-insecure-local-only"
-)
 
-DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
+# ------------------------------------------------------------------------------
+# Core
+# ------------------------------------------------------------------------------
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+DEBUG = os.environ.get("DEBUG", "0") == "1"
 
-railway_public_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN")
-if railway_public_domain:
-    ALLOWED_HOSTS.append(railway_public_domain)
+SECRET_KEY = os.environ.get("SECRET_KEY")
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = "dev-insecure-secret-key-change-me"
+    else:
+        raise ImproperlyConfigured("SECRET_KEY is missing in production.")
 
-extra_hosts = os.environ.get("DJANGO_ALLOWED_HOSTS", "")
-if extra_hosts:
-    ALLOWED_HOSTS += [h.strip() for h in extra_hosts.split(",") if h.strip()]
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split()
+if not ALLOWED_HOSTS:
+    ALLOWED_HOSTS = [
+        "127.0.0.1",
+        "localhost",
+        "physiotherapyjobscanada.ca",
+        "www.physiotherapyjobscanada.ca",
+        ".railway.app",
+    ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://127.0.0.1:8000",
-    "http://localhost:8000",
+    "https://physiotherapyjobscanada.ca",
+    "https://www.physiotherapyjobscanada.ca",
 ]
+extra_csrf = os.environ.get("CSRF_TRUSTED_ORIGINS", "").split()
+for origin in extra_csrf:
+    if origin and origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(origin)
 
-if railway_public_domain:
-    CSRF_TRUSTED_ORIGINS.append(f"https://{railway_public_domain}")
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-extra_csrf = os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "")
-if extra_csrf:
-    CSRF_TRUSTED_ORIGINS += [o.strip() for o in extra_csrf.split(",") if o.strip()]
 
-# ------------------------------------------------------------
-# APPS
-# ------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# Applications
+# ------------------------------------------------------------------------------
+
 INSTALLED_APPS = [
+    "board",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
-    "import_export",
-
-    "board",
 ]
 
-# ------------------------------------------------------------
-# MIDDLEWARE
-# ------------------------------------------------------------
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -69,9 +72,6 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "pt_jobs.urls"
 
-# ------------------------------------------------------------
-# TEMPLATES
-# ------------------------------------------------------------
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -83,7 +83,8 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                # MUST match function name exactly
+
+                # IMPORTANT: your file defines site_settings (not "sitesettings")
                 "board.context_processors.site_settings",
             ],
         },
@@ -92,10 +93,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "pt_jobs.wsgi.application"
 
-# ------------------------------------------------------------
-# DATABASE
-# ------------------------------------------------------------
-DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
+
+# ------------------------------------------------------------------------------
+# Database
+# ------------------------------------------------------------------------------
+
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if DATABASE_URL:
     DATABASES = {
@@ -113,9 +116,11 @@ else:
         }
     }
 
-# ------------------------------------------------------------
-# AUTH / I18N
-# ------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
+# Password validation
+# ------------------------------------------------------------------------------
+
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -123,45 +128,121 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+
+# ------------------------------------------------------------------------------
+# Internationalization
+# ------------------------------------------------------------------------------
+
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "America/Toronto"
 USE_I18N = True
 USE_TZ = True
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# ------------------------------------------------------------
-# STATIC / MEDIA
-# ------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# Static + Media
+# ------------------------------------------------------------------------------
+
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# ------------------------------------------------------------
-# MESSAGES
-# ------------------------------------------------------------
-MESSAGE_TAGS = {
-    messages.DEBUG: "secondary",
-    messages.INFO: "info",
-    messages.SUCCESS: "success",
-    messages.WARNING: "warning",
-    messages.ERROR: "danger",
+# CRITICAL: Django expects BOTH 'default' and 'staticfiles' here.
+# 'default' is your upload/media storage.
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "OPTIONS": {
+            "location": str(MEDIA_ROOT),
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
 }
 
-LOGIN_URL = "login"
-LOGOUT_REDIRECT_URL = "/"
+# ------------------------------------------------------------------------------
+# R2 (only if env vars exist)
+# ------------------------------------------------------------------------------
 
-# ------------------------------------------------------------
-# EMAIL
-# ------------------------------------------------------------
+R2_BUCKET_NAME = os.environ.get("R2_BUCKET_NAME", "").strip()
+R2_ACCESS_KEY_ID = os.environ.get("R2_ACCESS_KEY_ID", "").strip()
+R2_SECRET_ACCESS_KEY = os.environ.get("R2_SECRET_ACCESS_KEY", "").strip()
+R2_PUBLIC_BASE_URL = os.environ.get("R2_PUBLIC_BASE_URL", "").strip().rstrip("/")
+R2_ENDPOINT_URL = os.environ.get("R2_ENDPOINT_URL", "").strip()
+R2_ACCOUNT_ID = os.environ.get("R2_ACCOUNT_ID", "").strip()
+
+USE_R2 = all([R2_BUCKET_NAME, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY]) and (
+    bool(R2_ENDPOINT_URL) or bool(R2_ACCOUNT_ID)
+)
+
+if USE_R2:
+    if not R2_ENDPOINT_URL and R2_ACCOUNT_ID:
+        R2_ENDPOINT_URL = f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+
+    # In production, PUBLIC base URL must exist to render images in browser.
+    if not R2_PUBLIC_BASE_URL and not DEBUG:
+        raise ImproperlyConfigured(
+            "R2 is enabled but R2_PUBLIC_BASE_URL is missing. "
+            "Set R2_PUBLIC_BASE_URL to your public media base URL."
+        )
+
+    STORAGES["default"] = {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        "OPTIONS": {
+            "bucket_name": R2_BUCKET_NAME,
+            "access_key": R2_ACCESS_KEY_ID,
+            "secret_key": R2_SECRET_ACCESS_KEY,
+            "endpoint_url": R2_ENDPOINT_URL,
+            "region_name": "auto",
+            "signature_version": "s3v4",
+            "file_overwrite": False,
+            "default_acl": None,
+            "querystring_auth": False,
+        },
+    }
+
+    if R2_PUBLIC_BASE_URL:
+        MEDIA_URL = f"{R2_PUBLIC_BASE_URL}/"
+
+
+# ------------------------------------------------------------------------------
+# Default primary key
+# ------------------------------------------------------------------------------
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# ------------------------------------------------------------------------------
+# Email (SendGrid)
+# ------------------------------------------------------------------------------
+
 DEFAULT_FROM_EMAIL = os.environ.get(
     "DEFAULT_FROM_EMAIL",
-    "info@physiotherapyjobscanada.ca"
+    "Physiotherapy Jobs Canada <info@physiotherapyjobscanada.ca>",
 )
-SERVER_EMAIL = DEFAULT_FROM_EMAIL
-EMAIL_SUBJECT_PREFIX = "[Physiotherapy Jobs Canada] "
+SERVER_EMAIL = os.environ.get(
+    "SERVER_EMAIL",
+    "Physiotherapy Jobs Canada <info@physiotherapyjobscanada.ca>",
+)
+
+EMAIL_BACKEND = "board.email_backend_sendgrid.SendGridEmailBackend"
+SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "")
+
+if not SENDGRID_API_KEY and not DEBUG:
+    raise ImproperlyConfigured("SENDGRID_API_KEY is missing in production.")
+
+
+# ------------------------------------------------------------------------------
+# Logging
+# ------------------------------------------------------------------------------
+
+LOG_LEVEL = os.environ.get("DJANGO_LOG_LEVEL", "INFO")
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "root": {"handlers": ["console"], "level": LOG_LEVEL},
+}
