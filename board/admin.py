@@ -40,9 +40,9 @@ def _model_has_field(model, name: str) -> bool:
 
 def _set_duplicate_expiry(job, today):
     """
-    Admin-only: duplicated jobs should never have expiry in the past.
+    Duplicated job should never have expiry in the past.
     If a duration field exists, expiry = today + duration.
-    Else clamp expiry >= today (if expiry exists).
+    Otherwise clamp expiry >= today (if expiry_date exists).
     """
     duration = None
     for cand in ("posting_duration_days", "duration_days"):
@@ -59,7 +59,7 @@ def _set_duplicate_expiry(job, today):
 
 
 # -----------------------------
-# Employer: inline purchased packages + quick links buttons
+# Employer: inline purchased packages + buttons
 # -----------------------------
 
 class PurchasedPackageInline(admin.TabularInline):
@@ -88,7 +88,8 @@ class EmployerAdmin(admin.ModelAdmin):
     list_filter = ("is_approved", "login_active")
     ordering = ("-created_at",)
 
-    # --- buttons/links shown on the Employer change page ---
+    readonly_fields = ("view_employer_jobs", "view_employer_packages")
+
     def view_employer_jobs(self, obj):
         if not obj or not obj.pk:
             return "-"
@@ -113,10 +114,8 @@ class EmployerAdmin(admin.ModelAdmin):
 
     view_employer_packages.short_description = "Packages"
 
-    # Make sure the buttons actually appear on the page (admin only)
     def get_fieldsets(self, request, obj=None):
-        existing = []
-        # list likely fields, but only include if they exist (no guessing / no crashes)
+        # Show quick links + your normal employer fields (only if they exist)
         preferred = [
             "user",
             "email",
@@ -131,16 +130,11 @@ class EmployerAdmin(admin.ModelAdmin):
             "is_approved",
             "login_active",
         ]
-        for name in preferred:
-            if _model_has_field(self.model, name):
-                existing.append(name)
-
+        fields = [f for f in preferred if _model_has_field(self.model, f)]
         return (
             ("Quick links", {"fields": ("view_employer_jobs", "view_employer_packages")}),
-            ("Employer", {"fields": tuple(existing)}),
+            ("Employer", {"fields": tuple(fields)}),
         )
-
-    readonly_fields = ("view_employer_jobs", "view_employer_packages")
 
 
 # -----------------------------
@@ -168,7 +162,7 @@ class JobSeekerAdmin(admin.ModelAdmin):
 
 
 # -----------------------------
-# Jobs: duplicate + expiry clamp + title clickable
+# Jobs: duplicate + expiry clamp + title clickable + employer link in job
 # -----------------------------
 
 def duplicate_selected_jobs(modeladmin, request, queryset):
@@ -196,7 +190,10 @@ duplicate_selected_jobs.short_description = "Duplicate selected jobs"
 
 @admin.register(Job)
 class JobAdmin(admin.ModelAdmin):
+    # Template you already created:
+    # templates/admin/board/job/change_form.html
     change_form_template = "admin/board/job/change_form.html"
+
     actions = [duplicate_selected_jobs]
 
     list_display = (
@@ -210,14 +207,33 @@ class JobAdmin(admin.ModelAdmin):
         "source",
         "duplicate_button",
     )
-    # ✅ this is the fix: title clickable (and id too)
+    # ✅ title clickable (and id too)
     list_display_links = ("id", "title")
 
     search_fields = ("title", "employer__name", "employer__company_name", "location")
     list_filter = ("is_active", "job_type", "compensation_type", "source")
     ordering = ("-posting_date", "-id")
 
-    # Hide duplicate/legacy fields in admin only (only if they exist)
+    # ✅ button on Job change page to open employer profile
+    readonly_fields = ("employer_profile_link",)
+
+    def employer_link(self, obj):
+        if not obj.employer_id:
+            return "-"
+        url = reverse("admin:board_employer_change", args=[obj.employer_id])
+        return format_html('<a href="{}">{}</a>', url, str(obj.employer))
+
+    employer_link.short_description = "Employer"
+
+    def employer_profile_link(self, obj):
+        if not obj or not getattr(obj, "employer_id", None):
+            return "-"
+        url = reverse("admin:board_employer_change", args=[obj.employer_id])
+        return format_html('<a class="button" href="{}">Open Employer Profile</a>', url)
+
+    employer_profile_link.short_description = "Employer Profile"
+
+    # Hide duplicate/legacy fields in admin only (ONLY if they exist)
     def get_exclude(self, request, obj=None):
         exclude = set(super().get_exclude(request, obj) or [])
         hide_if_exists = [
@@ -232,13 +248,42 @@ class JobAdmin(admin.ModelAdmin):
                 exclude.add(name)
         return tuple(exclude)
 
-    def employer_link(self, obj):
-        if not obj.employer_id:
-            return "-"
-        url = reverse("admin:board_employer_change", args=[obj.employer_id])
-        return format_html('<a href="{}">{}</a>', url, str(obj.employer))
+    # Put the employer profile button at top of the form + keep fields sane
+    def get_fieldsets(self, request, obj=None):
+        excluded = set(self.get_exclude(request, obj) or [])
+        fields = ["employer_profile_link"]
 
-    employer_link.short_description = "Employer"
+        if _model_has_field(self.model, "employer") and "employer" not in excluded:
+            fields.append("employer")
+
+        preferred = [
+            "title",
+            "description",
+            "job_type",
+            "compensation_type",
+            "min_compensation",
+            "max_compensation",
+            "compensation_min",
+            "compensation_max",
+            "location",
+            "apply_via",
+            "apply_email",
+            "apply_url",
+            "relocation_assistance",
+            "expiry_date",
+            "posting_date",
+            "is_active",
+            "is_featured",
+            "source",
+            "views_count",
+        ]
+        for name in preferred:
+            if name in excluded:
+                continue
+            if _model_has_field(self.model, name) and name not in fields:
+                fields.append(name)
+
+        return (("Job", {"fields": tuple(fields)}),)
 
     # --- Duplicate button + URL ---
     def get_urls(self):
@@ -273,8 +318,7 @@ class JobAdmin(admin.ModelAdmin):
         _set_duplicate_expiry(job, today)
 
         job.save()
-
-        self.message_user(request, "Job duplicated (posting_date=today; expiry clamped).", level=messages.SUCCESS)
+        self.message_user(request, "Job duplicated (posting_date=today; expiry clamped; inactive).", level=messages.SUCCESS)
         return redirect(_admin_change_url(job))
 
 
