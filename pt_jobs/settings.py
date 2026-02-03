@@ -14,8 +14,8 @@ def env_bool(name: str, default: str = "0") -> bool:
 
 def require_any_env(*names: str) -> str:
     """
-    Strict: require at least one of the provided env var names.
-    (No silent fallback to unrelated defaults in production.)
+    Require at least one of the provided env vars to be set (non-empty).
+    This fixes Railway setups that use SECRET_KEY instead of DJANGO_SECRET_KEY.
     """
     for n in names:
         v = os.environ.get(n)
@@ -27,36 +27,35 @@ def require_any_env(*names: str) -> str:
 # ------------------------------------------------------------
 # Core
 # ------------------------------------------------------------
-# Railway commonly uses DEBUG=0/1; you also have DJANGO_DEBUG.
-# Treat either as authoritative.
+# Railway typically uses DEBUG and/or DJANGO_DEBUG. Support both.
 DEBUG = env_bool("DJANGO_DEBUG", os.environ.get("DEBUG", "0"))
 
-# Production: require secret key (Railway has SECRET_KEY per your screenshot).
+# Production: require SECRET_KEY (Railway has SECRET_KEY). Also accept DJANGO_SECRET_KEY if present.
 # Local dev: allow a fallback ONLY when DEBUG=1.
 if DEBUG:
     SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or os.environ.get("SECRET_KEY") or "dev-insecure-please-change-this"
 else:
     SECRET_KEY = require_any_env("SECRET_KEY", "DJANGO_SECRET_KEY")
 
-# Hosts
+
+# ------------------------------------------------------------
+# Hosts / CSRF
+# ------------------------------------------------------------
 ALLOWED_HOSTS = ["127.0.0.1", "localhost", ".railway.app"]
 
 railway_public_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN")
 if railway_public_domain:
     ALLOWED_HOSTS.append(railway_public_domain)
 
-# Optional: comma-separated hosts
 extra_hosts = os.environ.get("DJANGO_ALLOWED_HOSTS", "")
 if extra_hosts:
     ALLOWED_HOSTS += [h.strip() for h in extra_hosts.split(",") if h.strip()]
 
-# CSRF
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://localhost:8000",
     "https://*.railway.app",
 ]
-
 if railway_public_domain:
     CSRF_TRUSTED_ORIGINS.append(f"https://{railway_public_domain}")
 
@@ -69,25 +68,20 @@ if extra_csrf:
 # Apps
 # ------------------------------------------------------------
 INSTALLED_APPS = [
-    # Django
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Third-party (keep as-is if it worked before)
     "import_export",
-    # Local
     "board",
 ]
 
 
 # ------------------------------------------------------------
-# Media storage (local dev OK, prod uses R2)
+# Media storage (local dev OK; production uses R2)
 # ------------------------------------------------------------
-# Production: require R2.
-# Local: filesystem media by default; can force R2 with USE_R2_MEDIA=1.
 USE_R2_MEDIA = (not DEBUG) or env_bool("USE_R2_MEDIA", "0")
 
 MEDIA_URL = "/media/"
@@ -97,7 +91,6 @@ if USE_R2_MEDIA:
     if "storages" not in INSTALLED_APPS:
         INSTALLED_APPS.append("storages")
 
-    # R2 env vars
     R2_ACCESS_KEY_ID = require_any_env("R2_ACCESS_KEY_ID")
     R2_SECRET_ACCESS_KEY = require_any_env("R2_SECRET_ACCESS_KEY")
     R2_BUCKET_NAME = require_any_env("R2_BUCKET_NAME")
@@ -147,8 +140,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-
-                # MUST MATCH your existing board/context_processors.py
+                # MUST match your existing board/context_processors.py (DO NOT TOUCH IT)
                 "board.context_processors.site_settings",
             ],
         },
@@ -163,7 +155,6 @@ WSGI_APPLICATION = "pt_jobs.wsgi.application"
 # ------------------------------------------------------------
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 
-# Production should have DATABASE_URL; local can fall back.
 if not DEBUG and not DATABASE_URL:
     raise ImproperlyConfigured("DATABASE_URL must be set in production (DEBUG=0).")
 
@@ -219,20 +210,16 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# Only include STATICFILES_DIRS if the folder exists (prevents collectstatic blowups)
 _static_dir = BASE_DIR / "static"
 STATICFILES_DIRS = [_static_dir] if _static_dir.exists() else []
 
-# Deploy-safe storage (avoids manifest-missing failures)
 STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 
 # ------------------------------------------------------------
-# Security toggles (optional env overrides)
+# Security toggles (respect Railway vars if present)
 # ------------------------------------------------------------
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-
-# Respect your Railway vars if you set them; otherwise default based on DEBUG.
 SESSION_COOKIE_SECURE = env_bool("DJANGO_SESSION_COOKIE_SECURE", "0" if DEBUG else "1")
 CSRF_COOKIE_SECURE = env_bool("DJANGO_CSRF_COOKIE_SECURE", "0" if DEBUG else "1")
 SECURE_SSL_REDIRECT = env_bool("DJANGO_SECURE_SSL_REDIRECT", "0" if DEBUG else "1")
