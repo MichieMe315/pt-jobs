@@ -22,10 +22,8 @@ def require_env(name: str) -> str:
 # ------------------------------------------------------------
 # Core
 # ------------------------------------------------------------
-# Railway commonly uses DEBUG and/or DJANGO_DEBUG. Respect either.
 DEBUG = env_bool("DJANGO_DEBUG", os.environ.get("DEBUG", "0"))
 
-# Railway uses SECRET_KEY (you confirmed). Support both names without adding new required vars.
 if DEBUG:
     SECRET_KEY = os.environ.get("SECRET_KEY") or os.environ.get("DJANGO_SECRET_KEY") or "dev-insecure-please-change-this"
 else:
@@ -78,46 +76,32 @@ INSTALLED_APPS = [
 # ------------------------------------------------------------
 # Media storage
 # ------------------------------------------------------------
-# PRODUCTION LOCK:
-# - Production uses R2 and requires the R2 vars.
-# - Local dev uses filesystem media by default.
-# - If you want local to use R2, set USE_R2_MEDIA=1 and provide the same R2 vars locally.
 USE_R2_MEDIA = (not DEBUG) or env_bool("USE_R2_MEDIA", "0")
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 if USE_R2_MEDIA:
-    # Use ONLY the vars you already have in Railway.
     R2_ACCESS_KEY_ID = require_env("R2_ACCESS_KEY_ID")
     R2_SECRET_ACCESS_KEY = require_env("R2_SECRET_ACCESS_KEY")
     R2_ACCOUNT_ID = require_env("R2_ACCOUNT_ID")
     R2_BUCKET_NAME = require_env("R2_BUCKET_NAME")
-    # Kept required because you already have it (even if we don't depend on it for URL generation).
     R2_PUBLIC_BASE_URL = require_env("R2_PUBLIC_BASE_URL").rstrip("/")
 
-    # Build Cloudflare R2 S3 API endpoint from account id (no extra env var needed)
-    # https://<accountid>.r2.cloudflarestorage.com
     R2_ENDPOINT_URL = f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
 
-    # Only add storages when using R2
     if "storages" not in INSTALLED_APPS:
         INSTALLED_APPS.append("storages")
 
-    # django-storages / boto3 config for Cloudflare R2
     AWS_ACCESS_KEY_ID = R2_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY = R2_SECRET_ACCESS_KEY
     AWS_STORAGE_BUCKET_NAME = R2_BUCKET_NAME
     AWS_S3_ENDPOINT_URL = R2_ENDPOINT_URL
     AWS_S3_REGION_NAME = "auto"
 
-    # R2 compatibility
     AWS_S3_ADDRESSING_STYLE = "path"
     AWS_S3_SIGNATURE_VERSION = "s3v4"
     AWS_DEFAULT_ACL = None
-
-    # ✅ THE KEY FIX FOR "IMAGES NOT SHOWING":
-    # Signed URLs so logos render whether bucket/public settings are perfect or not.
     AWS_QUERYSTRING_AUTH = True
 
     STORAGES = {
@@ -153,7 +137,6 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                # DO NOT TOUCH: must match your existing board/context_processors.py
                 "board.context_processors.site_settings",
             ],
         },
@@ -168,7 +151,6 @@ WSGI_APPLICATION = "pt_jobs.wsgi.application"
 # ------------------------------------------------------------
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 
-# Production must have DATABASE_URL.
 if not DEBUG and not DATABASE_URL:
     raise ImproperlyConfigured("DATABASE_URL must be set in production (DEBUG=0).")
 
@@ -234,8 +216,24 @@ SECURE_SSL_REDIRECT = env_bool("DJANGO_SECURE_SSL_REDIRECT", "0" if DEBUG else "
 
 
 # ------------------------------------------------------------
-# Email
+# Email (SendGrid SMTP)  <-- THIS IS THE FIX
 # ------------------------------------------------------------
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "no-reply@physiotherapyjobscanada.ca")
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 EMAIL_SUBJECT_PREFIX = "[PT Jobs] "
+
+EMAIL_BACKEND = os.environ.get(
+    "EMAIL_BACKEND",
+    "django.core.mail.backends.smtp.EmailBackend",
+)
+
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.sendgrid.net")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "true").lower() in ("1", "true", "yes", "on")
+
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "apikey")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD") or os.environ.get("SENDGRID_API_KEY")
+
+if not EMAIL_HOST_PASSWORD and not DEBUG:
+    raise ImproperlyConfigured("Missing EMAIL_HOST_PASSWORD / SENDGRID_API_KEY for email")
+
