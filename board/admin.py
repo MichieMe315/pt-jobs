@@ -77,13 +77,27 @@ def _render_email_template(key: str, context: dict) -> tuple[str, str] | None:
     """
     Optional: if you have EmailTemplate records, we use them.
     If not found/disabled, return None and we fall back to a safe default.
+
+    IMPORTANT: EmailTemplate schema differs between versions.
+    We do NOT assume tmpl.body exists (it caused your 500).
+    We safely read the first available attribute from: body/content/message/text/html.
     """
     tmpl = EmailTemplate.objects.filter(key=key, is_enabled=True).first()
     if not tmpl:
         return None
 
-    subject = tmpl.subject or ""
-    body = tmpl.body or ""
+    subject = (getattr(tmpl, "subject", "") or "").strip()
+
+    body = ""
+    for attr in ("body", "content", "message", "text", "html"):
+        if hasattr(tmpl, attr):
+            body = getattr(tmpl, attr) or ""
+            break
+    body = (body or "").strip()
+
+    # If template is missing critical pieces, fall back
+    if not subject or not body:
+        return None
 
     # Minimal placeholder replacement (no field renames, no magic mapping)
     # Supported tokens: {{email}}, {{company_name}}, {{first_name}}, {{last_name}}
