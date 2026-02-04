@@ -106,37 +106,44 @@ class PurchasedPackageInline(admin.TabularInline):
 
 
 def approve_selected_employers(modeladmin, request, queryset):
+    """
+    Bulk approve (no model save hooks) + send approval emails.
+    This avoids 500s if Employer.save() has side-effects while a customer is live.
+    """
     updated = 0
     emailed = 0
 
     for employer in queryset:
         was_approved = bool(getattr(employer, "is_approved", False))
-        if not was_approved:
-            employer.is_approved = True
-            employer.save(update_fields=["is_approved"])
-            updated += 1
+        if was_approved:
+            continue
 
-            # Send approval email
-            email = getattr(employer, "email", None) or (employer.user.email if getattr(employer, "user_id", None) else None)
-            if email:
-                rendered = _render_email_template(
-                    "employer_approved",
-                    {
-                        "email": email,
-                        "company_name": getattr(employer, "company_name", ""),
-                    },
+        # IMPORTANT: use update() to avoid model save hooks/signals.
+        Employer.objects.filter(pk=employer.pk).update(is_approved=True)
+        updated += 1
+
+        email = getattr(employer, "email", None) or (
+            employer.user.email if getattr(employer, "user_id", None) else None
+        )
+        if email:
+            rendered = _render_email_template(
+                "employer_approved",
+                {
+                    "email": email,
+                    "company_name": getattr(employer, "company_name", ""),
+                },
+            )
+            if rendered:
+                subject, body = rendered
+            else:
+                subject = "Your employer account is approved"
+                body = (
+                    "Your employer account on Physiotherapy Jobs Canada has been approved.\n\n"
+                    "You can now log in and post jobs.\n\n"
+                    "— Physiotherapy Jobs Canada"
                 )
-                if rendered:
-                    subject, body = rendered
-                else:
-                    subject = "Your employer account is approved"
-                    body = (
-                        "Your employer account on Physiotherapy Jobs Canada has been approved.\n\n"
-                        "You can now log in and post jobs.\n\n"
-                        "— Physiotherapy Jobs Canada"
-                    )
-                _send_approval_email(email, subject, body)
-                emailed += 1
+            _send_approval_email(email, subject, body)
+            emailed += 1
 
     modeladmin.message_user(
         request,
@@ -218,19 +225,32 @@ class EmployerAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         """
         If admin flips is_approved from False -> True on save, email the employer.
+
+        IMPORTANT (live safety):
+        - If the ONLY field being changed is is_approved, we update via queryset.update()
+          to avoid any Employer.save() side-effects that can cause admin 500s.
         """
         was_approved = False
         if change and obj.pk:
             try:
-                was_approved = bool(Employer.objects.filter(pk=obj.pk).values_list("is_approved", flat=True).first())
+                was_approved = bool(
+                    Employer.objects.filter(pk=obj.pk).values_list("is_approved", flat=True).first()
+                )
             except Exception:
                 was_approved = False
 
-        super().save_model(request, obj, form, change)
+        only_approval_toggle = change and getattr(form, "changed_data", None) == ["is_approved"]
+
+        if only_approval_toggle:
+            Employer.objects.filter(pk=obj.pk).update(is_approved=bool(getattr(obj, "is_approved", False)))
+        else:
+            super().save_model(request, obj, form, change)
 
         now_approved = bool(getattr(obj, "is_approved", False))
         if change and (not was_approved) and now_approved:
-            email = getattr(obj, "email", None) or (obj.user.email if getattr(obj, "user_id", None) else None)
+            email = getattr(obj, "email", None) or (
+                obj.user.email if getattr(obj, "user_id", None) else None
+            )
             if email:
                 rendered = _render_email_template(
                     "employer_approved",
@@ -257,37 +277,41 @@ class EmployerAdmin(admin.ModelAdmin):
 # ------------------------------------------------------------
 
 def approve_selected_jobseekers(modeladmin, request, queryset):
+    """
+    Bulk approve (no model save hooks) + send approval emails.
+    """
     updated = 0
     emailed = 0
 
     for js in queryset:
         was_approved = bool(getattr(js, "is_approved", False))
-        if not was_approved:
-            js.is_approved = True
-            js.save(update_fields=["is_approved"])
-            updated += 1
+        if was_approved:
+            continue
 
-            email = getattr(js, "email", None) or (js.user.email if getattr(js, "user_id", None) else None)
-            if email:
-                rendered = _render_email_template(
-                    "jobseeker_approved",
-                    {
-                        "email": email,
-                        "first_name": getattr(js, "first_name", ""),
-                        "last_name": getattr(js, "last_name", ""),
-                    },
+        JobSeeker.objects.filter(pk=js.pk).update(is_approved=True)
+        updated += 1
+
+        email = getattr(js, "email", None) or (js.user.email if getattr(js, "user_id", None) else None)
+        if email:
+            rendered = _render_email_template(
+                "jobseeker_approved",
+                {
+                    "email": email,
+                    "first_name": getattr(js, "first_name", ""),
+                    "last_name": getattr(js, "last_name", ""),
+                },
+            )
+            if rendered:
+                subject, body = rendered
+            else:
+                subject = "Your job seeker account is approved"
+                body = (
+                    "Your job seeker account on Physiotherapy Jobs Canada has been approved.\n\n"
+                    "You can now log in and apply to jobs.\n\n"
+                    "— Physiotherapy Jobs Canada"
                 )
-                if rendered:
-                    subject, body = rendered
-                else:
-                    subject = "Your job seeker account is approved"
-                    body = (
-                        "Your job seeker account on Physiotherapy Jobs Canada has been approved.\n\n"
-                        "You can now log in and apply to jobs.\n\n"
-                        "— Physiotherapy Jobs Canada"
-                    )
-                _send_approval_email(email, subject, body)
-                emailed += 1
+            _send_approval_email(email, subject, body)
+            emailed += 1
 
     modeladmin.message_user(
         request,
@@ -324,11 +348,18 @@ class JobSeekerAdmin(admin.ModelAdmin):
         was_approved = False
         if change and obj.pk:
             try:
-                was_approved = bool(JobSeeker.objects.filter(pk=obj.pk).values_list("is_approved", flat=True).first())
+                was_approved = bool(
+                    JobSeeker.objects.filter(pk=obj.pk).values_list("is_approved", flat=True).first()
+                )
             except Exception:
                 was_approved = False
 
-        super().save_model(request, obj, form, change)
+        only_approval_toggle = change and getattr(form, "changed_data", None) == ["is_approved"]
+
+        if only_approval_toggle:
+            JobSeeker.objects.filter(pk=obj.pk).update(is_approved=bool(getattr(obj, "is_approved", False)))
+        else:
+            super().save_model(request, obj, form, change)
 
         now_approved = bool(getattr(obj, "is_approved", False))
         if change and (not was_approved) and now_approved:
@@ -425,6 +456,7 @@ class JobAdmin(admin.ModelAdmin):
 
     def get_exclude(self, request, obj=None):
         exclude = set(super().get_exclude(request, obj) or [])
+        # Remove duplicates/unwanted legacy fields if they exist on the model
         hide_if_exists = [
             "application_email",
             "external_apply_url",
@@ -472,6 +504,18 @@ class JobAdmin(admin.ModelAdmin):
                 fields.append(name)
 
         return (("Job", {"fields": tuple(fields)}),)
+
+    def save_model(self, request, obj, form, change):
+        """
+        Admin safety: prevent expiry_date from being saved in the past.
+        (This is separate from the contract max-date clamp which is enforced in the job form flow.)
+        """
+        if _model_has_field(self.model, "expiry_date") and getattr(obj, "expiry_date", None):
+            today = timezone.localdate()
+            if obj.expiry_date < today:
+                obj.expiry_date = today
+
+        super().save_model(request, obj, form, change)
 
     def get_urls(self):
         urls = super().get_urls()
