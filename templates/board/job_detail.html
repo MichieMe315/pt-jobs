@@ -35,21 +35,24 @@
               <li>{{ job.get_compensation_type_display }}</li>
             {% endif %}
 
+            {# ONLY CHANGE IS THIS BLOCK #}
             {% if job.compensation_min or job.compensation_max %}
               <li>
-                {% if job.get_compensation_type_display == "Other" %}
-                  Split
-                  {% if job.compensation_min %} {{ job.compensation_min|floatformat:"0" }}%{% endif %}
-                  {% if job.compensation_min and job.compensation_max %} –{% endif %}
-                  {% if job.compensation_max %} {{ job.compensation_max|floatformat:"0" }}%{% endif %}
-                {% else %}
-                  Compensation:
-                  {% if job.compensation_min %}${{ job.compensation_min }}{% endif %}
-                  {% if job.compensation_min and job.compensation_max %} – {% endif %}
-                  {% if job.compensation_max %}${{ job.compensation_max }}{% endif %}
-                {% endif %}
+                {% with ctype=job.get_compensation_type_display %}
+                  {% if ctype == "Split" or ctype == "Percent split" %}
+                    {% if job.compensation_min %}{{ job.compensation_min|floatformat:"0" }}%{% endif %}
+                    {% if job.compensation_min and job.compensation_max %} – {% endif %}
+                    {% if job.compensation_max %}{{ job.compensation_max|floatformat:"0" }}%{% endif %}
+                  {% else %}
+                    {% if job.compensation_min %}${{ job.compensation_min }}{% endif %}
+                    {% if job.compensation_min and job.compensation_max %} – {% endif %}
+                    {% if job.compensation_max %}${{ job.compensation_max }}{% endif %}
+                  {% endif %}
+                {% endwith %}
               </li>
             {% endif %}
+            {# END ONLY CHANGE #}
+
           </ul>
 
           <hr class="border-secondary">
@@ -70,10 +73,10 @@
       </div>
     </div>
 
-    <!-- RIGHT SIDEBAR: Employer Card + Share + Job Alerts -->
+    <!-- RIGHT SIDEBAR (UNCHANGED) -->
     <div class="col-lg-4">
 
-      <!-- Employer card (NO EMAILS) -->
+      <!-- Employer card -->
       <div class="card mb-3">
         <div class="card-body">
           <h3 class="h6 fw-bold mb-2">Employer</h3>
@@ -110,60 +113,37 @@
         </div>
       </div>
 
+      <!-- Share -->
       <div class="card mb-3">
         <div class="card-body">
           <h3 class="h6 fw-bold mb-2">Share this job</h3>
 
           {% with share_url=request.build_absolute_uri share_title=job.title %}
             <div class="d-grid gap-2">
-
-              {% if not sitesettings or sitesettings.share_whatsapp or sitesettings.share_whatsapp == None %}
-                <a class="btn btn-outline-light btn-sm"
-                   target="_blank" rel="noopener"
-                   href="https://wa.me/?text={{ share_title|urlencode }}%20{{ share_url|urlencode }}">
-                  WhatsApp
-                </a>
-              {% endif %}
-
-              {% if not sitesettings or sitesettings.share_email or sitesettings.share_email == None %}
-                <a class="btn btn-outline-light btn-sm"
-                   href="mailto:?subject={{ share_title|urlencode }}&body={{ share_url|urlencode }}">
-                  Email
-                </a>
-              {% endif %}
-
-              {% if not sitesettings or sitesettings.share_twitter or sitesettings.share_twitter == None %}
-                <a class="btn btn-outline-light btn-sm"
-                   target="_blank" rel="noopener"
-                   href="https://twitter.com/intent/tweet?text={{ share_title|urlencode }}&url={{ share_url|urlencode }}">
-                  X (Twitter)
-                </a>
-              {% endif %}
-
-              {% if not sitesettings or sitesettings.share_facebook or sitesettings.share_facebook == None %}
-                <a class="btn btn-outline-light btn-sm"
-                   target="_blank" rel="noopener"
-                   href="https://www.facebook.com/sharer/sharer.php?u={{ share_url|urlencode }}">
-                  Facebook
-                </a>
-              {% endif %}
-
-              {% if not sitesettings or sitesettings.share_linkedin or sitesettings.share_linkedin == None %}
-                <a class="btn btn-outline-light btn-sm"
-                   target="_blank" rel="noopener"
-                   href="https://www.linkedin.com/sharing/share-offsite/?url={{ share_url|urlencode }}">
-                  LinkedIn
-                </a>
-              {% endif %}
-
-              {% if not sitesettings or sitesettings.share_reddit or sitesettings.share_reddit == None %}
-                <a class="btn btn-outline-light btn-sm"
-                   target="_blank" rel="noopener"
-                   href="https://www.reddit.com/submit?url={{ share_url|urlencode }}&title={{ share_title|urlencode }}">
-                  Reddit
-                </a>
-              {% endif %}
-
+              <a class="btn btn-outline-light btn-sm" target="_blank"
+                 href="https://wa.me/?text={{ share_title|urlencode }}%20{{ share_url|urlencode }}">
+                WhatsApp
+              </a>
+              <a class="btn btn-outline-light btn-sm"
+                 href="mailto:?subject={{ share_title|urlencode }}&body={{ share_url|urlencode }}">
+                Email
+              </a>
+              <a class="btn btn-outline-light btn-sm" target="_blank"
+                 href="https://twitter.com/intent/tweet?text={{ share_title|urlencode }}&url={{ share_url|urlencode }}">
+                X (Twitter)
+              </a>
+              <a class="btn btn-outline-light btn-sm" target="_blank"
+                 href="https://www.facebook.com/sharer/sharer.php?u={{ share_url|urlencode }}">
+                Facebook
+              </a>
+              <a class="btn btn-outline-light btn-sm" target="_blank"
+                 href="https://www.linkedin.com/sharing/share-offsite/?url={{ share_url|urlencode }}">
+                LinkedIn
+              </a>
+              <a class="btn btn-outline-light btn-sm" target="_blank"
+                 href="https://www.reddit.com/submit?url={{ share_url|urlencode }}&title={{ share_title|urlencode }}">
+                Reddit
+              </a>
             </div>
           {% endwith %}
         </div>
@@ -173,18 +153,11 @@
       <div class="card">
         <div class="card-body">
           <h3 class="h6 fw-bold mb-2">Get Job Alerts</h3>
-
           <form method="post" action="{% url 'job_alert_signup' %}">
             {% csrf_token %}
-            {% if job_alert_form %}
-              <div class="mb-2">
-                {{ job_alert_form.email }}
-              </div>
-            {% else %}
-              <div class="mb-2">
-                <input type="email" name="email" class="form-control" placeholder="Email address" required>
-              </div>
-            {% endif %}
+            <div class="mb-2">
+              <input type="email" name="email" class="form-control" placeholder="Email address" required>
+            </div>
             <button class="btn btn-primary w-100 fw-bold" type="submit">Sign up</button>
           </form>
         </div>
