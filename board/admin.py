@@ -1,6 +1,8 @@
 from datetime import timedelta
 
+from django.conf import settings
 from django.contrib import admin, messages
+from django.core.mail import send_mail
 from django.urls import reverse, path
 from django.utils import timezone
 from django.utils.html import format_html
@@ -58,9 +60,43 @@ def _set_duplicate_expiry(job, today):
                 job.expiry_date = today
 
 
-# -----------------------------
-# Employer: inline purchased packages + buttons
-# -----------------------------
+# ------------------------------------------------------------
+# Approval email helpers (admin-driven)
+# ------------------------------------------------------------
+
+def _default_from_email() -> str:
+    return getattr(settings, "DEFAULT_FROM_EMAIL", None) or "info@physiotherapyjobscanada.ca"
+
+
+def _send_approval_email(to_email: str, subject: str, body: str) -> None:
+    # fail_silently=True to avoid admin crashing if SendGrid has a transient issue
+    send_mail(subject, body, _default_from_email(), [to_email], fail_silently=True)
+
+
+def _render_email_template(key: str, context: dict) -> tuple[str, str] | None:
+    """
+    Optional: if you have EmailTemplate records, we use them.
+    If not found/disabled, return None and we fall back to a safe default.
+    """
+    tmpl = EmailTemplate.objects.filter(key=key, is_enabled=True).first()
+    if not tmpl:
+        return None
+
+    subject = tmpl.subject or ""
+    body = tmpl.body or ""
+
+    # Minimal placeholder replacement (no field renames, no magic mapping)
+    # Supported tokens: {{email}}, {{company_name}}, {{first_name}}, {{last_name}}
+    for k, v in context.items():
+        subject = subject.replace(f"{{{{{k}}}}}", str(v))
+        body = body.replace(f"{{{{{k}}}}}", str(v))
+
+    return subject.strip(), body.strip()
+
+
+# ------------------------------------------------------------
+# Employer: inline purchased packages + buttons + approval actions
+# ------------------------------------------------------------
 
 class PurchasedPackageInline(admin.TabularInline):
     model = PurchasedPackage
@@ -69,9 +105,53 @@ class PurchasedPackageInline(admin.TabularInline):
     readonly_fields = ("purchased_at",)
 
 
+def approve_selected_employers(modeladmin, request, queryset):
+    updated = 0
+    emailed = 0
+
+    for employer in queryset:
+        was_approved = bool(getattr(employer, "is_approved", False))
+        if not was_approved:
+            employer.is_approved = True
+            employer.save(update_fields=["is_approved"])
+            updated += 1
+
+            # Send approval email
+            email = getattr(employer, "email", None) or (employer.user.email if getattr(employer, "user_id", None) else None)
+            if email:
+                rendered = _render_email_template(
+                    "employer_approved",
+                    {
+                        "email": email,
+                        "company_name": getattr(employer, "company_name", ""),
+                    },
+                )
+                if rendered:
+                    subject, body = rendered
+                else:
+                    subject = "Your employer account is approved"
+                    body = (
+                        "Your employer account on Physiotherapy Jobs Canada has been approved.\n\n"
+                        "You can now log in and post jobs.\n\n"
+                        "— Physiotherapy Jobs Canada"
+                    )
+                _send_approval_email(email, subject, body)
+                emailed += 1
+
+    modeladmin.message_user(
+        request,
+        f"Approved {updated} employer(s). Sent {emailed} approval email(s).",
+        level=messages.SUCCESS,
+    )
+
+
+approve_selected_employers.short_description = "Approve selected employers (and email them)"
+
+
 @admin.register(Employer)
 class EmployerAdmin(admin.ModelAdmin):
     inlines = [PurchasedPackageInline]
+    actions = [approve_selected_employers]
 
     list_display = (
         "id",
@@ -115,7 +195,6 @@ class EmployerAdmin(admin.ModelAdmin):
     view_employer_packages.short_description = "Packages"
 
     def get_fieldsets(self, request, obj=None):
-        # Show quick links + your normal employer fields (only if they exist)
         preferred = [
             "user",
             "email",
@@ -136,13 +215,94 @@ class EmployerAdmin(admin.ModelAdmin):
             ("Employer", {"fields": tuple(fields)}),
         )
 
+    def save_model(self, request, obj, form, change):
+        """
+        If admin flips is_approved from False -> True on save, email the employer.
+        """
+        was_approved = False
+        if change and obj.pk:
+            try:
+                was_approved = bool(Employer.objects.filter(pk=obj.pk).values_list("is_approved", flat=True).first())
+            except Exception:
+                was_approved = False
 
-# -----------------------------
-# JobSeeker
-# -----------------------------
+        super().save_model(request, obj, form, change)
+
+        now_approved = bool(getattr(obj, "is_approved", False))
+        if change and (not was_approved) and now_approved:
+            email = getattr(obj, "email", None) or (obj.user.email if getattr(obj, "user_id", None) else None)
+            if email:
+                rendered = _render_email_template(
+                    "employer_approved",
+                    {
+                        "email": email,
+                        "company_name": getattr(obj, "company_name", ""),
+                    },
+                )
+                if rendered:
+                    subject, body = rendered
+                else:
+                    subject = "Your employer account is approved"
+                    body = (
+                        "Your employer account on Physiotherapy Jobs Canada has been approved.\n\n"
+                        "You can now log in and post jobs.\n\n"
+                        "— Physiotherapy Jobs Canada"
+                    )
+                _send_approval_email(email, subject, body)
+                self.message_user(request, "Approval email sent to employer.", level=messages.SUCCESS)
+
+
+# ------------------------------------------------------------
+# JobSeeker + approval actions
+# ------------------------------------------------------------
+
+def approve_selected_jobseekers(modeladmin, request, queryset):
+    updated = 0
+    emailed = 0
+
+    for js in queryset:
+        was_approved = bool(getattr(js, "is_approved", False))
+        if not was_approved:
+            js.is_approved = True
+            js.save(update_fields=["is_approved"])
+            updated += 1
+
+            email = getattr(js, "email", None) or (js.user.email if getattr(js, "user_id", None) else None)
+            if email:
+                rendered = _render_email_template(
+                    "jobseeker_approved",
+                    {
+                        "email": email,
+                        "first_name": getattr(js, "first_name", ""),
+                        "last_name": getattr(js, "last_name", ""),
+                    },
+                )
+                if rendered:
+                    subject, body = rendered
+                else:
+                    subject = "Your job seeker account is approved"
+                    body = (
+                        "Your job seeker account on Physiotherapy Jobs Canada has been approved.\n\n"
+                        "You can now log in and apply to jobs.\n\n"
+                        "— Physiotherapy Jobs Canada"
+                    )
+                _send_approval_email(email, subject, body)
+                emailed += 1
+
+    modeladmin.message_user(
+        request,
+        f"Approved {updated} job seeker(s). Sent {emailed} approval email(s).",
+        level=messages.SUCCESS,
+    )
+
+
+approve_selected_jobseekers.short_description = "Approve selected job seekers (and email them)"
+
 
 @admin.register(JobSeeker)
 class JobSeekerAdmin(admin.ModelAdmin):
+    actions = [approve_selected_jobseekers]
+
     list_display = (
         "id",
         "email",
@@ -160,10 +320,44 @@ class JobSeekerAdmin(admin.ModelAdmin):
     list_filter = ("registered_in_canada", "require_sponsorship", "is_approved", "login_active")
     ordering = ("-created_at",)
 
+    def save_model(self, request, obj, form, change):
+        was_approved = False
+        if change and obj.pk:
+            try:
+                was_approved = bool(JobSeeker.objects.filter(pk=obj.pk).values_list("is_approved", flat=True).first())
+            except Exception:
+                was_approved = False
 
-# -----------------------------
+        super().save_model(request, obj, form, change)
+
+        now_approved = bool(getattr(obj, "is_approved", False))
+        if change and (not was_approved) and now_approved:
+            email = getattr(obj, "email", None) or (obj.user.email if getattr(obj, "user_id", None) else None)
+            if email:
+                rendered = _render_email_template(
+                    "jobseeker_approved",
+                    {
+                        "email": email,
+                        "first_name": getattr(obj, "first_name", ""),
+                        "last_name": getattr(obj, "last_name", ""),
+                    },
+                )
+                if rendered:
+                    subject, body = rendered
+                else:
+                    subject = "Your job seeker account is approved"
+                    body = (
+                        "Your job seeker account on Physiotherapy Jobs Canada has been approved.\n\n"
+                        "You can now log in and apply to jobs.\n\n"
+                        "— Physiotherapy Jobs Canada"
+                    )
+                _send_approval_email(email, subject, body)
+                self.message_user(request, "Approval email sent to job seeker.", level=messages.SUCCESS)
+
+
+# ------------------------------------------------------------
 # Jobs: duplicate + expiry clamp + title clickable + employer link in job
-# -----------------------------
+# ------------------------------------------------------------
 
 def duplicate_selected_jobs(modeladmin, request, queryset):
     today = timezone.localdate()
@@ -190,8 +384,6 @@ duplicate_selected_jobs.short_description = "Duplicate selected jobs"
 
 @admin.register(Job)
 class JobAdmin(admin.ModelAdmin):
-    # Template you already created:
-    # templates/admin/board/job/change_form.html
     change_form_template = "admin/board/job/change_form.html"
 
     actions = [duplicate_selected_jobs]
@@ -207,14 +399,12 @@ class JobAdmin(admin.ModelAdmin):
         "source",
         "duplicate_button",
     )
-    # ✅ title clickable (and id too)
     list_display_links = ("id", "title")
 
     search_fields = ("title", "employer__name", "employer__company_name", "location")
     list_filter = ("is_active", "job_type", "compensation_type", "source")
     ordering = ("-posting_date", "-id")
 
-    # ✅ button on Job change page to open employer profile
     readonly_fields = ("employer_profile_link",)
 
     def employer_link(self, obj):
@@ -233,7 +423,6 @@ class JobAdmin(admin.ModelAdmin):
 
     employer_profile_link.short_description = "Employer Profile"
 
-    # Hide duplicate/legacy fields in admin only (ONLY if they exist)
     def get_exclude(self, request, obj=None):
         exclude = set(super().get_exclude(request, obj) or [])
         hide_if_exists = [
@@ -248,7 +437,6 @@ class JobAdmin(admin.ModelAdmin):
                 exclude.add(name)
         return tuple(exclude)
 
-    # Put the employer profile button at top of the form + keep fields sane
     def get_fieldsets(self, request, obj=None):
         excluded = set(self.get_exclude(request, obj) or [])
         fields = ["employer_profile_link"]
@@ -285,7 +473,6 @@ class JobAdmin(admin.ModelAdmin):
 
         return (("Job", {"fields": tuple(fields)}),)
 
-    # --- Duplicate button + URL ---
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
@@ -322,9 +509,9 @@ class JobAdmin(admin.ModelAdmin):
         return redirect(_admin_change_url(job))
 
 
-# -----------------------------
-# The rest
-# -----------------------------
+# ------------------------------------------------------------
+# The rest (unchanged)
+# ------------------------------------------------------------
 
 @admin.register(Application)
 class ApplicationAdmin(admin.ModelAdmin):
