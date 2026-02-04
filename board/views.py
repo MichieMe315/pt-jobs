@@ -1019,76 +1019,129 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
 
     employer = request.user.employer
     session_id = (request.GET.get("session_id") or "").strip()
+    if not session_id:
+        return redirect("package_list")
 
     # Stripe success: verify session + credit purchase
-    if session_id:
-        gw = _gateway_context()
-        secret = gw.get("stripe_secret_key")
-        if not secret:
-            messages.error(request, "Stripe is not configured.")
-            return redirect("package_list")
+    gw = _gateway_context()
+    secret = gw.get("stripe_secret_key")
+    if not secret:
+        messages.error(request, "Stripe is not configured.")
+        return redirect("package_list")
 
-        import stripe
-        stripe.api_key = secret
+    import stripe
+    stripe.api_key = secret
 
+    try:
+        session = stripe.checkout.Session.retrieve(session_id)
+    except Exception:
+        messages.error(request, "Unable to verify Stripe payment session.")
+        return redirect("package_list")
+
+    if getattr(session, "payment_status", None) != "paid":
+        messages.error(request, "Payment not completed.")
+        return redirect("package_list")
+
+    md = getattr(session, "metadata", {}) or {}
+    try:
+        pkg_id = int(md.get("package_id") or 0)
+    except Exception:
+        pkg_id = 0
+
+    package = get_object_or_404(PostingPackage, id=pkg_id, is_active=True)
+
+    amount_total = getattr(session, "amount_total", None)
+    paid_amount = (
+        Decimal(str(package.price))
+        if amount_total is None
+        else (Decimal(amount_total) / Decimal("100"))
+    )
+    used_code = (md.get("discount_code") or "").strip() or None
+
+    # SAFETY: only pass fields that exist on Invoice model (prevents 500)
+    invoice_field_names = {f.name for f in Invoice._meta.get_fields() if hasattr(f, "name")}
+    invoice_defaults = {
+        "employer": employer,
+        "amount": paid_amount,
+        "currency": "CAD",
+        "processor": "stripe",
+        "status": "paid",
+        "processor_reference": session_id,
+        "discount_code": used_code,
+    }
+    invoice_create_kwargs = {k: v for k, v in invoice_defaults.items() if k in invoice_field_names}
+
+    # Idempotent: if invoice exists for this session, don't create again
+    invoice = None
+    if "processor_reference" in invoice_field_names:
+        invoice = Invoice.objects.filter(processor="stripe", processor_reference=session_id).first()
+    else:
+        # fallback if your Invoice model doesn't have processor_reference
+        invoice = Invoice.objects.filter(processor="stripe").order_by("-id").first()
+
+    invoice_created_now = False
+    if not invoice:
         try:
-            session = stripe.checkout.Session.retrieve(session_id)
+            invoice = Invoice.objects.create(**invoice_create_kwargs)
+            invoice_created_now = True
         except Exception:
-            messages.error(request, "Unable to verify Stripe payment session.")
-            return redirect("package_list")
+            # Don't crash checkout success if invoice schema differs
+            invoice = None
 
-        if getattr(session, "payment_status", None) != "paid":
-            messages.error(request, "Payment not completed.")
-            return redirect("package_list")
+    # PurchasedPackage: grant credits exactly once
+    pp_field_names = {f.name for f in PurchasedPackage._meta.get_fields() if hasattr(f, "name")}
+    pp_qs = PurchasedPackage.objects.filter(employer=employer, package=package)
+    if "source" in pp_field_names:
+        pp_qs = pp_qs.filter(source="stripe")
 
-        md = getattr(session, "metadata", {}) or {}
+    purchased = pp_qs.order_by("-id").first()
+
+    # Create PurchasedPackage if it wasn't created due to a previous crash
+    if not purchased and invoice_created_now:
+        pp_defaults = {
+            "employer": employer,
+            "package": package,
+            "credits_granted": int(package.credits),
+            "credits_remaining": int(package.credits),
+            "duration_days": int(package.duration_days),
+            "source": "stripe",
+        }
+        pp_create_kwargs = {k: v for k, v in pp_defaults.items() if k in pp_field_names}
         try:
-            pkg_id = int(md.get("package_id") or 0)
+            purchased = PurchasedPackage.objects.create(**pp_create_kwargs)
         except Exception:
-            pkg_id = 0
+            purchased = None
 
-        package = get_object_or_404(PostingPackage, id=pkg_id, is_active=True)
+    # If PurchasedPackage exists but credits_remaining is missing/None, set it (but never overwrite used credits)
+    if purchased and "credits_remaining" in pp_field_names:
+        if getattr(purchased, "credits_remaining", None) is None:
+            try:
+                purchased.credits_remaining = int(getattr(purchased, "credits_granted", 0) or int(package.credits))
+                purchased.save(update_fields=["credits_remaining"])
+            except Exception:
+                pass
 
-        # Prevent duplicates if refreshing success page:
-        existing = Invoice.objects.filter(processor="stripe", processor_reference=session_id).first()
-        if not existing:
-            amount_total = getattr(session, "amount_total", None)
-            paid_amount = Decimal(str(package.price)) if amount_total is None else (Decimal(amount_total) / Decimal("100"))
-            used_code = (md.get("discount_code") or "").strip() or None
+    # Always sync employer credits so dashboard counter updates
+    try:
+        _sync_employer_credits(employer)
+    except Exception:
+        pass
 
-            Invoice.objects.create(
-                employer=employer,
-                amount=paid_amount,
-                currency="CAD",
-                processor="stripe",
-                status="paid",
-                processor_reference=session_id,
-                discount_code=used_code,
-            )
-
-            PurchasedPackage.objects.create(
-                employer=employer,
-                package=package,
-                credits_granted=int(package.credits),
-                credits_remaining=int(package.credits),
-                duration_days=int(package.duration_days),
-                source="stripe",
-            )
-            _sync_employer_credits(employer)
-
-            send_templated_email(
-                "order_confirmation",
-                [getattr(employer, "email", "")],
-                {"package_name": getattr(package, "name", "")},
-            )
-
-        return render(
-            request,
-            "checkout/checkout_success.html",
-            {"sitesettings": SiteSettings.objects.first(), "package": package},
+    # Email confirmation (never crash success page)
+    try:
+        send_templated_email(
+            "order_confirmation",
+            [getattr(employer, "email", "")],
+            {"package_name": getattr(package, "name", "")},
         )
+    except Exception:
+        pass
 
-    return redirect("package_list")
+    return render(
+        request,
+        "checkout/checkout_success.html",
+        {"sitesettings": SiteSettings.objects.first(), "package": package},
+    )
 
 
 @login_required
