@@ -1022,7 +1022,6 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
     if not session_id:
         return redirect("package_list")
 
-    # Stripe success: verify session + credit purchase
     gw = _gateway_context()
     secret = gw.get("stripe_secret_key")
     if not secret:
@@ -1038,7 +1037,8 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
         messages.error(request, "Unable to verify Stripe payment session.")
         return redirect("package_list")
 
-    if getattr(session, "payment_status", None) != "paid":
+    payment_status = getattr(session, "payment_status", None)
+    if payment_status not in ("paid", "no_payment_required"):
         messages.error(request, "Payment not completed.")
         return redirect("package_list")
 
@@ -1051,53 +1051,79 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
     package = get_object_or_404(PostingPackage, id=pkg_id, is_active=True)
 
     amount_total = getattr(session, "amount_total", None)
-    paid_amount = (
-        Decimal(str(package.price))
-        if amount_total is None
-        else (Decimal(amount_total) / Decimal("100"))
-    )
-    used_code = (md.get("discount_code") or "").strip() or None
 
-    # SAFETY: only pass fields that exist on Invoice model (prevents 500)
+    # Invoice.amount is cents (int) in your models
+    if amount_total is not None:
+        paid_cents = int(amount_total or 0)  # Stripe already provides cents
+    else:
+        # fallback: package.price is dollars -> convert to cents
+        paid_cents = int(round(Decimal(str(package.price)) * Decimal("100")))
+
+    # discount_code is a CharField -> never store None
+    used_code = (md.get("discount_code") or "").strip()
+
+    now = timezone.now()
+
+    # ---------- Invoice (idempotent, even without processor_reference) ----------
     invoice_field_names = {f.name for f in Invoice._meta.get_fields() if hasattr(f, "name")}
-    invoice_defaults = {
-        "employer": employer,
-        "amount": paid_amount,
-        "currency": "CAD",
-        "processor": "stripe",
-        "status": "paid",
-        "processor_reference": session_id,
-        "discount_code": used_code,
-    }
-    invoice_create_kwargs = {k: v for k, v in invoice_defaults.items() if k in invoice_field_names}
 
-    # Idempotent: if invoice exists for this session, don't create again
     invoice = None
     if "processor_reference" in invoice_field_names:
         invoice = Invoice.objects.filter(processor="stripe", processor_reference=session_id).first()
     else:
-        # fallback if your Invoice model doesn't have processor_reference
-        invoice = Invoice.objects.filter(processor="stripe").order_by("-id").first()
+        # No processor_reference: use a safe "recent matching invoice" window
+        window_qs = Invoice.objects.filter(processor="stripe")
+        if "employer" in invoice_field_names:
+            window_qs = window_qs.filter(employer=employer)
+        if "amount" in invoice_field_names:
+            window_qs = window_qs.filter(amount=paid_cents)
+        if "status" in invoice_field_names:
+            window_qs = window_qs.filter(status="paid")
 
-    invoice_created_now = False
+        if "order_date" in invoice_field_names:
+            window_qs = window_qs.filter(order_date__gte=now - timedelta(minutes=30))
+        elif "created_at" in invoice_field_names:
+            window_qs = window_qs.filter(created_at__gte=now - timedelta(minutes=30))
+
+        invoice = window_qs.order_by("-id").first()
+
     if not invoice:
+        invoice_defaults = {
+            "employer": employer,
+            "amount": paid_cents,  # cents int
+            "currency": "CAD",
+            "processor": "stripe",
+            "status": "paid",
+            "processor_reference": session_id,
+            "discount_code": used_code,  # string
+            "order_date": now,
+        }
+        invoice_create_kwargs = {k: v for k, v in invoice_defaults.items() if k in invoice_field_names}
         try:
             invoice = Invoice.objects.create(**invoice_create_kwargs)
-            invoice_created_now = True
         except Exception:
-            # Don't crash checkout success if invoice schema differs
-            invoice = None
+            invoice = None  # never crash success page
 
-    # PurchasedPackage: grant credits exactly once
+    # ---------- PurchasedPackage (idempotent without relying on invoice_created_now) ----------
     pp_field_names = {f.name for f in PurchasedPackage._meta.get_fields() if hasattr(f, "name")}
     pp_qs = PurchasedPackage.objects.filter(employer=employer, package=package)
     if "source" in pp_field_names:
         pp_qs = pp_qs.filter(source="stripe")
 
-    purchased = pp_qs.order_by("-id").first()
+    purchased = None
+    if "processor_reference" in pp_field_names:
+        purchased = pp_qs.filter(processor_reference=session_id).order_by("-id").first()
+    elif "stripe_session_id" in pp_field_names:
+        purchased = pp_qs.filter(stripe_session_id=session_id).order_by("-id").first()
+    else:
+        recent = pp_qs
+        if "purchased_at" in pp_field_names:
+            recent = recent.filter(purchased_at__gte=now - timedelta(minutes=30))
+        elif "created_at" in pp_field_names:
+            recent = recent.filter(created_at__gte=now - timedelta(minutes=30))
+        purchased = recent.order_by("-id").first()
 
-    # Create PurchasedPackage if it wasn't created due to a previous crash
-    if not purchased and invoice_created_now:
+    if not purchased:
         pp_defaults = {
             "employer": employer,
             "package": package,
@@ -1105,6 +1131,8 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
             "credits_remaining": int(package.credits),
             "duration_days": int(package.duration_days),
             "source": "stripe",
+            "processor_reference": session_id,
+            "stripe_session_id": session_id,
         }
         pp_create_kwargs = {k: v for k, v in pp_defaults.items() if k in pp_field_names}
         try:
@@ -1112,7 +1140,6 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
         except Exception:
             purchased = None
 
-    # If PurchasedPackage exists but credits_remaining is missing/None, set it (but never overwrite used credits)
     if purchased and "credits_remaining" in pp_field_names:
         if getattr(purchased, "credits_remaining", None) is None:
             try:
@@ -1121,13 +1148,11 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
             except Exception:
                 pass
 
-    # Always sync employer credits so dashboard counter updates
     try:
         _sync_employer_credits(employer)
     except Exception:
         pass
 
-    # Email confirmation (never crash success page)
     try:
         send_templated_email(
             "order_confirmation",
@@ -1152,28 +1177,33 @@ def paypal_success(request: HttpRequest) -> HttpResponse:
     employer = request.user.employer
     package_id = request.GET.get("package_id")
     amount = request.GET.get("amount")
-    discount_code = (request.GET.get("discount_code") or "").strip() or None
+    discount_code = (request.GET.get("discount_code") or "").strip()  # string, not None
 
     if not package_id:
         return redirect("package_list")
 
     package = get_object_or_404(PostingPackage, id=int(package_id), is_active=True)
-    paid_amount = Decimal(str(amount)) if amount else Decimal(str(package.price))
+
+    # Invoice.amount is cents (int)
+    if amount:
+        paid_cents = int(round(Decimal(str(amount)) * Decimal("100")))
+    else:
+        paid_cents = int(round(Decimal(str(package.price)) * Decimal("100")))
 
     existing = (
-        Invoice.objects.filter(processor="paypal", employer=employer, amount=paid_amount, status="paid")
+        Invoice.objects.filter(processor="paypal", employer=employer, amount=paid_cents, status="paid")
         .order_by("-order_date")
         .first()
     )
     if not existing:
         Invoice.objects.create(
             employer=employer,
-            amount=paid_amount,
+            amount=paid_cents,  # cents int
             currency="CAD",
             processor="paypal",
             status="paid",
-            processor_reference=None,
-            discount_code=discount_code,
+            processor_reference="",  # CharField -> never None
+            discount_code=discount_code,  # string
         )
         PurchasedPackage.objects.create(
             employer=employer,
@@ -1185,11 +1215,14 @@ def paypal_success(request: HttpRequest) -> HttpResponse:
         )
         _sync_employer_credits(employer)
 
-        send_templated_email(
-            "order_confirmation",
-            [getattr(employer, "email", "")],
-            {"package_name": getattr(package, "name", "")},
-        )
+        try:
+            send_templated_email(
+                "order_confirmation",
+                [getattr(employer, "email", "")],
+                {"package_name": getattr(package, "name", "")},
+            )
+        except Exception:
+            pass
 
     return render(
         request,
