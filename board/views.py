@@ -1,6 +1,6 @@
+# board/views.py
 from __future__ import annotations
 
-import os
 from datetime import timedelta
 from decimal import Decimal
 from typing import Optional
@@ -44,99 +44,25 @@ from .models import (
     PaymentGatewayConfig,
 )
 
+
 # ============================================================
 # Email helpers
 # ============================================================
 
 def _send_email(subject: str, body: str, to_emails: list[str]) -> None:
-    """
-    Sends email using SendGrid Web API when SENDGRID_API_KEY is configured; otherwise falls back to Django send_mail.
-    Never raises.
-    """
-    from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or getattr(settings, "SERVER_EMAIL", None)
-    if not from_email or not to_emails:
-        return
-
-    # Prefer SendGrid Web API (avoids SMTP timeouts)
-    api_key = getattr(settings, "SENDGRID_API_KEY", None) or os.environ.get("SENDGRID_API_KEY")
-    if api_key:
-        try:
-            import json
-            import urllib.request
-
-            payload = {
-                "personalizations": [{"to": [{"email": e} for e in to_emails if e]}],
-                "from": {"email": from_email},
-                "subject": subject or "",
-                "content": [
-                    {"type": "text/plain", "value": body or ""},
-                    {"type": "text/html", "value": body or ""},
-                ],
-            }
-
-            req = urllib.request.Request(
-                "https://api.sendgrid.com/v3/mail/send",
-                method="POST",
-                headers={
-                    "Authorization": f"Bearer {api_key}",
-                    "Content-Type": "application/json",
-                },
-                data=json.dumps(payload).encode("utf-8"),
-            )
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                resp.read()
-            return
-        except Exception:
-            pass
-
-    # Fallback: Django email backend (still fail-silent)
     try:
         from django.core.mail import send_mail
-        send_mail(subject or "", body or "", from_email, [e for e in to_emails if e], fail_silently=True)
+        send_mail(subject, body, getattr(settings, "DEFAULT_FROM_EMAIL", None), to_emails, fail_silently=True)
     except Exception:
         return
 
 
 def _admin_emails() -> list[str]:
-    """
-    Admin recipient emails:
-    1) SiteSettings.contact_email (your admin inbox per your setup)
-    2) settings.ADMINS
-    3) settings.SITE_ADMIN_EMAIL
-    """
-    try:
-        s = SiteSettings.objects.first()
-        if s and getattr(s, "contact_email", None):
-            return [s.contact_email]
-    except Exception:
-        pass
-
     admins = getattr(settings, "ADMINS", None)
     if admins:
         return [email for _, email in admins]
-
     site_admin = getattr(settings, "SITE_ADMIN_EMAIL", None)
     return [site_admin] if site_admin else []
-
-
-def send_templated_email(key: str, to_emails: list[str], context: dict) -> bool:
-    """
-    Uses EmailTemplate(key).subject + .html with simple {{ token }} replacement.
-    Returns True if template exists+enabled AND email send was attempted.
-    """
-    tpl = EmailTemplate.objects.filter(key=key, is_enabled=True).first()
-    if not tpl:
-        return False
-
-    subject = tpl.subject or ""
-    body = getattr(tpl, "html", "") or ""
-
-    for k, v in context.items():
-        subject = subject.replace(f"{{{{ {k} }}}}", str(v))
-        body = body.replace(f"{{{{ {k} }}}}", str(v))
-
-    _send_email(subject, body, to_emails)
-    return True
 
 
 # ============================================================
@@ -145,24 +71,26 @@ def send_templated_email(key: str, to_emails: list[str], context: dict) -> bool:
 
 def _gateway_config() -> Optional[PaymentGatewayConfig]:
     try:
-        return PaymentGatewayConfig.active()
+        return PaymentGatewayConfig.get_active_gateway()
     except Exception:
-        return PaymentGatewayConfig.objects.filter(is_active=True).first()
+        return PaymentGatewayConfig.objects.filter(is_active=True).order_by("-updated_at", "-id").first()
 
 
 def _gateway_context() -> dict:
     cfg = _gateway_config()
     return {
-        "stripe_publishable_key": getattr(cfg, "stripe_publishable_key", None) if cfg else None,
-        "stripe_public_key": getattr(cfg, "stripe_publishable_key", None) if cfg else None,
-        "stripe_secret_key": getattr(cfg, "stripe_secret_key", None) if cfg else None,
-        "paypal_client_id": getattr(cfg, "paypal_client_id", None) if cfg else None,
-        "paypal_mode": "live" if (cfg and getattr(settings, "PAYPAL_LIVE", False)) else "sandbox",
+        # support both key names (your model has both)
+        "stripe_publishable_key": getattr(cfg, "stripe_publishable_key", "") if cfg else "",
+        "stripe_public_key": getattr(cfg, "stripe_public_key", "") if cfg else "",
+        "stripe_secret_key": getattr(cfg, "stripe_secret_key", "") if cfg else "",
+        "paypal_client_id": getattr(cfg, "paypal_client_id", "") if cfg else "",
+        "paypal_mode": getattr(cfg, "paypal_mode", "sandbox") if cfg else "sandbox",
         "currency": getattr(cfg, "currency", "CAD") if cfg else "CAD",
     }
 
 
 def _apply_discount(package: PostingPackage, code_raw: str) -> tuple[Optional[DiscountCode], Decimal, Optional[str]]:
+    # Keep stable behavior using price (Decimal)
     base = Decimal(str(package.price))
     code = (code_raw or "").strip()
     if not code:
@@ -172,9 +100,6 @@ def _apply_discount(package: PostingPackage, code_raw: str) -> tuple[Optional[Di
     dc = DiscountCode.objects.filter(code__iexact=code, is_active=True).first()
     if not dc:
         return None, base, "Invalid discount code."
-
-    if getattr(dc, "applicable_package_id", None) and dc.applicable_package_id != package.id:
-        return None, base, "This discount code is not valid for this package."
 
     if getattr(dc, "start_date", None) and today < dc.start_date:
         return None, base, "This discount code is not active yet."
@@ -186,7 +111,8 @@ def _apply_discount(package: PostingPackage, code_raw: str) -> tuple[Optional[Di
             pct = Decimal(str(dc.value))
             final = base * (Decimal("1.0") - (pct / Decimal("100.0")))
         else:
-            final = base - Decimal(str(dc.value))
+            # dc.value is int cents in your model; convert to dollars
+            final = base - (Decimal(int(dc.value or 0)) / Decimal("100"))
     except Exception:
         return None, base, "Invalid discount configuration."
 
@@ -196,12 +122,22 @@ def _apply_discount(package: PostingPackage, code_raw: str) -> tuple[Optional[Di
 
 
 # ============================================================
-# Credits / package helpers
+# Credits / package helpers (CONTRACT-SAFE)
 # ============================================================
 
 def _available_packages_qs(employer: Employer):
+    """
+    Contract: credit counter shows UNEXPIRED credits only.
+
+    IMPORTANT FIX:
+    - expires_at can be NULL (legacy/dirty data). Treat NULL as "not expired"
+      otherwise you get invoices + purchased packages but 0 credits.
+    """
     now = timezone.now()
-    return PurchasedPackage.objects.filter(employer=employer, expires_at__gte=now, credits_remaining__gt=0)
+    return (
+        PurchasedPackage.objects.filter(employer=employer, credits_remaining__gt=0)
+        .filter(Q(expires_at__isnull=True) | Q(expires_at__gte=now))
+    )
 
 
 def _available_credits(employer: Employer) -> int:
@@ -210,11 +146,45 @@ def _available_credits(employer: Employer) -> int:
 
 
 def _sync_employer_credits(employer: Employer) -> None:
+    """
+    Employer.credits mirrors the package-based unexpired credits.
+    """
     try:
         employer.credits = _available_credits(employer)
         employer.save(update_fields=["credits"])
     except Exception:
         return
+
+
+def _consume_employer_credit(employer: Employer) -> bool:
+    """
+    Consume exactly ONE credit for the employer.
+
+    Source of truth: PurchasedPackage.credits_remaining (unexpired only).
+    Contract-safe: never goes negative.
+
+    NOTE: If there are no PurchasedPackage rows but employer.credits > 0,
+    we decrement employer.credits as a last-resort so you don't hard-block
+    (explicit behavior; not silent).
+    """
+    pkg = (
+        _available_packages_qs(employer)
+        .order_by("expires_at", "id")
+        .first()
+    )
+    if pkg:
+        pkg.credits_remaining = max(0, int(pkg.credits_remaining or 0) - 1)
+        pkg.save(update_fields=["credits_remaining"])
+        _sync_employer_credits(employer)
+        return True
+
+    # Explicit last-resort path (ONLY if packages are missing)
+    if employer.credits and employer.credits > 0:
+        employer.credits = max(0, int(employer.credits) - 1)
+        employer.save(update_fields=["credits"])
+        return True
+
+    return False
 
 
 def _posting_duration_days_for_employer(_: Employer) -> int:
@@ -298,23 +268,18 @@ def login_view(request: HttpRequest) -> HttpResponse:
         if form.is_valid():
             user = form.get_user()
 
-            # ✅ FIX: NEVER block staff/superusers from logging in
-            if user.is_superuser or user.is_staff:
-                login(request, user)
-                nxt = request.GET.get("next")
-                return redirect(nxt) if nxt else redirect("admin:index")
-
+            # Contract: unapproved users cannot log in
             if hasattr(user, "employer") and not user.employer.is_approved:
                 messages.error(
                     request,
-                    "Your employer account is pending approval. You will receive an email when admin approves your account."
+                    "Your employer account is pending approval. You will receive an email when admin approves your account.",
                 )
                 return render(request, "board/login.html", {"sitesettings": sitesettings, "form": form})
 
             if hasattr(user, "jobseeker") and not user.jobseeker.is_approved:
                 messages.error(
                     request,
-                    "Your job seeker account is pending approval. You will receive an email when admin approves your account."
+                    "Your job seeker account is pending approval. You will receive an email when admin approves your account.",
                 )
                 return render(request, "board/login.html", {"sitesettings": sitesettings, "form": form})
 
@@ -343,13 +308,6 @@ def job_alert_signup(request: HttpRequest) -> HttpResponse:
     sitesettings = SiteSettings.objects.first()
     form = JobAlertForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
-        # Your JobAlert model was not included here; keep as-is if you have one.
-        # If this is a simple form-only signup, you can wire it to a model later.
-        # For now, mimic your earlier behavior: treat as success and redirect.
-        try:
-            form.save()  # if you wired this to a ModelForm elsewhere
-        except Exception:
-            pass
         messages.success(request, "Thanks! You’re signed up for job alerts.")
         return redirect("home")
     return render(request, "board/job_alert_signup.html", {"sitesettings": sitesettings, "form": form})
@@ -365,17 +323,13 @@ def employer_signup(request: HttpRequest) -> HttpResponse:
     if request.method == "POST" and form.is_valid():
         user = form.save()
 
-        # Contract: on signup -> email admin
         admin_emails = _admin_emails()
         if admin_emails:
-            send_templated_email("admin_new_employer", admin_emails, {"email": user.email})
-
-        # Contract: on signup -> user is pending approval
-        send_templated_email("employer_welcome", [user.email], {"email": user.email})
+            _send_email("New Employer Signup", f"A new employer signed up: {user.email}", admin_emails)
 
         messages.success(
             request,
-            "Your account has been created. You will be notified via email when admin approves your account."
+            "Your account has been created. You will be notified via email when admin approves your account.",
         )
         return redirect("login")
 
@@ -385,10 +339,8 @@ def employer_signup(request: HttpRequest) -> HttpResponse:
 def employer_list(request: HttpRequest) -> HttpResponse:
     sitesettings = SiteSettings.objects.first()
 
-    # FIX: Employer -> related_name is "jobs" (plural), not "job"
     employers = (
-        Employer.objects.filter(is_approved=True)
-        .annotate(active_jobs=Count("jobs", filter=Q(jobs__is_active=True)))
+        Employer.objects.annotate(active_jobs=Count("jobs", filter=Q(jobs__is_active=True)))
         .filter(active_jobs__gt=0)
         .order_by("company_name", "id")
     )
@@ -397,7 +349,7 @@ def employer_list(request: HttpRequest) -> HttpResponse:
 
 def employer_detail(request: HttpRequest, employer_id: int) -> HttpResponse:
     sitesettings = SiteSettings.objects.first()
-    employer = get_object_or_404(Employer, id=employer_id, is_approved=True)
+    employer = get_object_or_404(Employer, id=employer_id)
     jobs = Job.objects.filter(employer=employer, is_active=True).order_by("-posting_date", "-id")
     return render(
         request,
@@ -416,15 +368,11 @@ def jobseeker_signup(request: HttpRequest) -> HttpResponse:
     if request.method == "POST" and form.is_valid():
         user = form.save()
 
-        # Contract: on signup -> email admin
         admin_emails = _admin_emails()
         if admin_emails:
-            send_templated_email("admin_new_jobseeker", admin_emails, {"email": user.email})
+            _send_email("New Job Seeker Signup", f"A new job seeker signed up: {user.email}", admin_emails)
 
-        # Contract: on signup -> user is pending approval
-        send_templated_email("jobseeker_welcome", [user.email], {"email": user.email})
-
-        messages.success(request, "Account created. Your job seeker account has been created and is pending admin approval. You will receive an email when your account is approved.")
+        messages.success(request, "Account created. Your job seeker account requires admin approval before login.")
         return redirect("login")
 
     return render(request, "board/jobseeker_signup.html", {"sitesettings": sitesettings, "form": form})
@@ -451,7 +399,7 @@ def job_list(request: HttpRequest) -> HttpResponse:
 
 def job_detail(request: HttpRequest, job_id: int) -> HttpResponse:
     sitesettings = SiteSettings.objects.first()
-    job = get_object_or_404(Job.objects.select_related("employer"), id=job_id, is_active=True)
+    job = get_object_or_404(Job.objects.select_related("employer"), id=job_id)
     job_alert_form = JobAlertForm()
     return render(
         request,
@@ -486,32 +434,23 @@ def job_create(request: HttpRequest) -> HttpResponse:
         publish = action != "draft"
         job.is_active = bool(publish)
 
-        if publish and _available_credits(employer) <= 0:
-            messages.error(request, "You have no credits available. Please purchase a package.")
-            return redirect("package_list")
+        if publish:
+            # --- CREDIT CONSUMPTION (REQUIRED) ---
+            ok = _consume_employer_credit(employer)
+            if not ok:
+                # Contract-safe: do not lose work; save as draft, then send to packages
+                job.is_active = False
+                job.save()
+
+                request.session["pending_create_job_id"] = job.id
+                messages.error(
+                    request,
+                    "No credits available. Your job was saved as a draft. Purchase credits to publish.",
+                )
+                return redirect("package_list")
 
         job.save()
-
-        if publish:
-            pkg = (
-                PurchasedPackage.objects.filter(
-                    employer=employer,
-                    expires_at__gte=timezone.now(),
-                    credits_remaining__gt=0,
-                )
-                .order_by("expires_at", "id")
-                .first()
-            )
-            if pkg:
-                pkg.credits_remaining = max(0, int(pkg.credits_remaining) - 1)
-                pkg.save(update_fields=["credits_remaining"])
-            _sync_employer_credits(employer)
-
-            send_templated_email(
-                "job_posting_confirmation",
-                [getattr(employer, "email", "")],
-                {"job_title": getattr(job, "title", "")},
-            )
+        _sync_employer_credits(employer)
 
         messages.success(request, "Job created.")
         return redirect("employer_dashboard")
@@ -549,28 +488,25 @@ def job_edit(request: HttpRequest, job_id: int) -> HttpResponse:
         action = (request.POST.get("action") or "publish").strip().lower()
         publish = action != "draft"
 
-        if publish and not job.is_active and _available_credits(employer) <= 0:
-            messages.error(request, "You have no credits available. Please purchase a package.")
-            return redirect("package_list")
-
         was_inactive = not job.is_active
         updated.is_active = bool(publish)
-        updated.save()
 
         if publish and was_inactive:
-            pkg = (
-                PurchasedPackage.objects.filter(
-                    employer=employer,
-                    expires_at__gte=timezone.now(),
-                    credits_remaining__gt=0,
+            # --- CREDIT CONSUMPTION (REQUIRED) ---
+            ok = _consume_employer_credit(employer)
+            if not ok:
+                # Keep it a draft; do not publish
+                updated.is_active = False
+                updated.save()
+                request.session["pending_publish_job_id"] = updated.id
+                messages.error(
+                    request,
+                    "No credits available. This job remains a draft. Purchase credits to publish.",
                 )
-                .order_by("expires_at", "id")
-                .first()
-            )
-            if pkg:
-                pkg.credits_remaining = max(0, int(pkg.credits_remaining) - 1)
-                pkg.save(update_fields=["credits_remaining"])
-            _sync_employer_credits(employer)
+                return redirect("package_list")
+
+        updated.save()
+        _sync_employer_credits(employer)
 
         messages.success(request, "Job updated.")
         return redirect("employer_dashboard")
@@ -627,26 +563,23 @@ def job_duplicate(request: HttpRequest, job_id: int) -> HttpResponse:
         publish = action != "draft"
         job.is_active = bool(publish)
 
-        if publish and _available_credits(employer) <= 0:
-            messages.error(request, "You have no credits available. Please purchase a package.")
-            return redirect("package_list")
+        if publish:
+            # --- CREDIT CONSUMPTION (REQUIRED) ---
+            ok = _consume_employer_credit(employer)
+            if not ok:
+                # save draft, then send to packages (your required flow)
+                job.is_active = False
+                job.save()
+
+                request.session["pending_duplicate_job_id"] = job.id
+                messages.error(
+                    request,
+                    "No credits available. Your duplicated job was saved as a draft. Purchase credits to publish.",
+                )
+                return redirect("package_list")
 
         job.save()
-
-        if publish:
-            pkg = (
-                PurchasedPackage.objects.filter(
-                    employer=employer,
-                    expires_at__gte=timezone.now(),
-                    credits_remaining__gt=0,
-                )
-                .order_by("expires_at", "id")
-                .first()
-            )
-            if pkg:
-                pkg.credits_remaining = max(0, int(pkg.credits_remaining) - 1)
-                pkg.save(update_fields=["credits_remaining"])
-            _sync_employer_credits(employer)
+        _sync_employer_credits(employer)
 
         messages.success(request, "Job duplicated.")
         return redirect("employer_dashboard")
@@ -659,14 +592,14 @@ def job_duplicate(request: HttpRequest, job_id: int) -> HttpResponse:
             "mode": "duplicate",
             "active_package": active_package,
             "max_expiry_iso": max_expiry.isoformat(),
+            "original": original,
         },
     )
 
 
 def job_apply(request: HttpRequest, job_id: int) -> HttpResponse:
-    # ✅ URL name in urls.py is apply_to_job
     if not request.user.is_authenticated:
-        return redirect(f"{reverse('login')}?next={reverse('apply_to_job', args=[job_id])}")
+        return redirect(f"{reverse('login')}?next={reverse('job_apply', args=[job_id])}")
 
     if not hasattr(request.user, "jobseeker"):
         return redirect("home")
@@ -690,16 +623,8 @@ def job_apply(request: HttpRequest, job_id: int) -> HttpResponse:
             app = form.save(commit=False)
             app.job = job
             app.jobseeker = js
-            # ✅ Application model uses resume_selected (FK to Resume)
             app.resume_selected = resume_obj
             app.save()
-
-            send_templated_email(
-                "jobseeker_application_confirmation",
-                [getattr(js, "email", "")],
-                {"job_title": getattr(job, "title", "")},
-            )
-
             messages.success(request, "Application submitted.")
             return redirect("jobseeker_dashboard")
 
@@ -736,6 +661,7 @@ def employer_dashboard(request: HttpRequest) -> HttpResponse:
     )
     invoices = Invoice.objects.filter(employer=employer).order_by("-order_date", "-id")
 
+    # Both keys are passed to avoid breaking anything:
     packages = PurchasedPackage.objects.filter(employer=employer).order_by("-purchased_at", "-id")
     purchased_packages = packages
 
@@ -749,7 +675,8 @@ def employer_dashboard(request: HttpRequest) -> HttpResponse:
             "applications": applications,
             "invoices": invoices,
             "packages": packages,
-            "purchased_packages": purchased_packages,
+            "purchased_packages": purchased_packages,  # template expects this :contentReference[oaicite:2]{index=2}
+            "credits_available": _available_credits(employer),
             "available_credits": _available_credits(employer),
         },
     )
@@ -773,13 +700,6 @@ def jobseeker_dashboard(request: HttpRequest) -> HttpResponse:
         r = upload_form.save(commit=False)
         r.jobseeker = js
         r.save()
-
-        send_templated_email(
-            "resume_posting_confirmation",
-            [getattr(js, "email", "")],
-            {"email": getattr(js, "email", "")},
-        )
-
         messages.success(request, "Resume uploaded.")
         return redirect("jobseeker_dashboard")
 
@@ -797,7 +717,7 @@ def jobseeker_dashboard(request: HttpRequest) -> HttpResponse:
 
 
 # ============================================================
-# Profile edit forms + views (required by urls.py)
+# Profile edit forms + views
 # ============================================================
 
 YES_NO_CHOICES = (("yes", "Yes"), ("no", "No"))
@@ -859,8 +779,6 @@ def employer_profile_edit(request: HttpRequest) -> HttpResponse:
 
     if request.method == "POST" and form.is_valid():
         updated = form.save(commit=False)
-
-        # Contract: employer edits profile => becomes unapproved + email admin
         updated.is_approved = False
         updated.save()
 
@@ -895,7 +813,11 @@ def jobseeker_profile_edit(request: HttpRequest) -> HttpResponse:
         messages.success(request, "Profile updated.")
         return redirect("jobseeker_dashboard")
 
-    return render(request, "board/jobseeker_profile_edit.html", {"sitesettings": SiteSettings.objects.first(), "form": form, "jobseeker": js})
+    return render(
+        request,
+        "board/jobseeker_profile_edit.html",
+        {"sitesettings": SiteSettings.objects.first(), "form": form, "jobseeker": js},
+    )
 
 
 # ============================================================
@@ -921,12 +843,6 @@ def checkout_select(request: HttpRequest, package_id: int) -> HttpResponse:
     if not hasattr(request.user, "employer"):
         return redirect("package_list")
 
-    # ✅ CONTRACT: Posting packages can only be purchased by APPROVED employers
-    employer = request.user.employer
-    if not employer.is_approved:
-        messages.error(request, "Your employer account is pending approval.")
-        return redirect("employer_dashboard")
-
     package = get_object_or_404(PostingPackage, id=package_id, is_active=True)
     ctx = {"sitesettings": SiteSettings.objects.first(), "package": package}
     ctx.update(_gateway_context())
@@ -935,18 +851,11 @@ def checkout_select(request: HttpRequest, package_id: int) -> HttpResponse:
 
 @login_required
 def checkout_start(request: HttpRequest, package_id: int) -> HttpResponse:
-    # Continue to payment button POSTS here:
     if request.method != "POST":
         return redirect("checkout_select", package_id=package_id)
 
     if not hasattr(request.user, "employer"):
         return redirect("package_list")
-
-    # ✅ CONTRACT: Posting packages can only be purchased by APPROVED employers
-    employer = request.user.employer
-    if not employer.is_approved:
-        messages.error(request, "Your employer account is pending approval.")
-        return redirect("employer_dashboard")
 
     package = get_object_or_404(PostingPackage, id=package_id, is_active=True)
 
@@ -958,7 +867,6 @@ def checkout_start(request: HttpRequest, package_id: int) -> HttpResponse:
         messages.error(request, err)
         return redirect("checkout_select", package_id=package_id)
 
-    # ===== Stripe: server-side redirect to hosted Checkout =====
     if payment_method in ("card", "stripe"):
         gw = _gateway_context()
         secret = gw.get("stripe_secret_key")
@@ -997,10 +905,8 @@ def checkout_start(request: HttpRequest, package_id: int) -> HttpResponse:
             messages.error(request, "Unable to start Stripe checkout.")
             return redirect("checkout_select", package_id=package_id)
 
-        # Continue to payment launches Stripe:
         return redirect(session.url)
 
-    # ===== PayPal (or other non-stripe flow): show checkout.html =====
     ctx = {
         "sitesettings": SiteSettings.objects.first(),
         "package": package,
@@ -1019,154 +925,79 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
 
     employer = request.user.employer
     session_id = (request.GET.get("session_id") or "").strip()
-    if not session_id:
-        return redirect("package_list")
 
-    gw = _gateway_context()
-    secret = gw.get("stripe_secret_key")
-    if not secret:
-        messages.error(request, "Stripe is not configured.")
-        return redirect("package_list")
+    if session_id:
+        gw = _gateway_context()
+        secret = gw.get("stripe_secret_key")
+        if not secret:
+            messages.error(request, "Stripe is not configured.")
+            return redirect("package_list")
 
-    import stripe
-    stripe.api_key = secret
+        import stripe
+        stripe.api_key = secret
 
-    try:
-        session = stripe.checkout.Session.retrieve(session_id)
-    except Exception:
-        messages.error(request, "Unable to verify Stripe payment session.")
-        return redirect("package_list")
-
-    payment_status = getattr(session, "payment_status", None)
-    if payment_status not in ("paid", "no_payment_required"):
-        messages.error(request, "Payment not completed.")
-        return redirect("package_list")
-
-    md = getattr(session, "metadata", {}) or {}
-    try:
-        pkg_id = int(md.get("package_id") or 0)
-    except Exception:
-        pkg_id = 0
-
-    package = get_object_or_404(PostingPackage, id=pkg_id, is_active=True)
-
-    amount_total = getattr(session, "amount_total", None)
-
-    # Invoice.amount is cents (int) in your models
-    if amount_total is not None:
-        paid_cents = int(amount_total or 0)  # Stripe already provides cents
-    else:
-        # fallback: package.price is dollars -> convert to cents
-        paid_cents = int(round(Decimal(str(package.price)) * Decimal("100")))
-
-    # discount_code is a CharField -> never store None
-    used_code = (md.get("discount_code") or "").strip()
-
-    now = timezone.now()
-
-    # ---------- Invoice (idempotent, even without processor_reference) ----------
-    invoice_field_names = {f.name for f in Invoice._meta.get_fields() if hasattr(f, "name")}
-
-    invoice = None
-    if "processor_reference" in invoice_field_names:
-        invoice = Invoice.objects.filter(processor="stripe", processor_reference=session_id).first()
-    else:
-        # No processor_reference: use a safe "recent matching invoice" window
-        window_qs = Invoice.objects.filter(processor="stripe")
-        if "employer" in invoice_field_names:
-            window_qs = window_qs.filter(employer=employer)
-        if "amount" in invoice_field_names:
-            window_qs = window_qs.filter(amount=paid_cents)
-        if "status" in invoice_field_names:
-            window_qs = window_qs.filter(status="paid")
-
-        if "order_date" in invoice_field_names:
-            window_qs = window_qs.filter(order_date__gte=now - timedelta(minutes=30))
-        elif "created_at" in invoice_field_names:
-            window_qs = window_qs.filter(created_at__gte=now - timedelta(minutes=30))
-
-        invoice = window_qs.order_by("-id").first()
-
-    if not invoice:
-        invoice_defaults = {
-            "employer": employer,
-            "amount": paid_cents,  # cents int
-            "currency": "CAD",
-            "processor": "stripe",
-            "status": "paid",
-            "processor_reference": session_id,
-            "discount_code": used_code,  # string
-            "order_date": now,
-        }
-        invoice_create_kwargs = {k: v for k, v in invoice_defaults.items() if k in invoice_field_names}
         try:
-            invoice = Invoice.objects.create(**invoice_create_kwargs)
+            session = stripe.checkout.Session.retrieve(session_id)
         except Exception:
-            invoice = None  # never crash success page
+            messages.error(request, "Unable to verify Stripe payment session.")
+            return redirect("package_list")
 
-    # ---------- PurchasedPackage (idempotent without relying on invoice_created_now) ----------
-    pp_field_names = {f.name for f in PurchasedPackage._meta.get_fields() if hasattr(f, "name")}
-    pp_qs = PurchasedPackage.objects.filter(employer=employer, package=package)
-    if "source" in pp_field_names:
-        pp_qs = pp_qs.filter(source="stripe")
+        if getattr(session, "payment_status", None) != "paid":
+            messages.error(request, "Payment not completed.")
+            return redirect("package_list")
 
-    purchased = None
-    if "processor_reference" in pp_field_names:
-        purchased = pp_qs.filter(processor_reference=session_id).order_by("-id").first()
-    elif "stripe_session_id" in pp_field_names:
-        purchased = pp_qs.filter(stripe_session_id=session_id).order_by("-id").first()
-    else:
-        recent = pp_qs
-        if "purchased_at" in pp_field_names:
-            recent = recent.filter(purchased_at__gte=now - timedelta(minutes=30))
-        elif "created_at" in pp_field_names:
-            recent = recent.filter(created_at__gte=now - timedelta(minutes=30))
-        purchased = recent.order_by("-id").first()
-
-    if not purchased:
-        pp_defaults = {
-            "employer": employer,
-            "package": package,
-            "credits_granted": int(package.credits),
-            "credits_remaining": int(package.credits),
-            "duration_days": int(package.duration_days),
-            "source": "stripe",
-            "processor_reference": session_id,
-            "stripe_session_id": session_id,
-        }
-        pp_create_kwargs = {k: v for k, v in pp_defaults.items() if k in pp_field_names}
+        md = getattr(session, "metadata", {}) or {}
         try:
-            purchased = PurchasedPackage.objects.create(**pp_create_kwargs)
+            pkg_id = int(md.get("package_id") or 0)
         except Exception:
-            purchased = None
+            pkg_id = 0
 
-    if purchased and "credits_remaining" in pp_field_names:
-        if getattr(purchased, "credits_remaining", None) is None:
-            try:
-                purchased.credits_remaining = int(getattr(purchased, "credits_granted", 0) or int(package.credits))
-                purchased.save(update_fields=["credits_remaining"])
-            except Exception:
-                pass
+        package = get_object_or_404(PostingPackage, id=pkg_id, is_active=True)
 
-    try:
+        existing = Invoice.objects.filter(processor="stripe", processor_reference=session_id).first()
+        if not existing:
+            amount_cents = int(getattr(session, "amount_total", None) or (package.price_cents or 0))
+            used_code = (md.get("discount_code") or "").strip() or ""
+
+            Invoice.objects.create(
+                employer=employer,
+                amount=amount_cents,          # cents int
+                currency="CAD",
+                processor="stripe",
+                status="paid",
+                processor_reference=session_id,
+                discount_code=used_code,
+            )
+
+            PurchasedPackage.objects.create(
+                employer=employer,
+                package=package,
+                credits_granted=int(package.credits),
+                credits_remaining=int(package.credits),
+                duration_days=int(package.duration_days),
+                source="stripe",
+            )
+
+        # ALWAYS resync credits after purchase
         _sync_employer_credits(employer)
-    except Exception:
-        pass
 
-    try:
-        send_templated_email(
-            "order_confirmation",
-            [getattr(employer, "email", "")],
-            {"package_name": getattr(package, "name", "")},
+        # If they came here because of a pending draft/duplicate, send them back to edit it
+        pending_dup_id = request.session.pop("pending_duplicate_job_id", None)
+        pending_create_id = request.session.pop("pending_create_job_id", None)
+        pending_publish_id = request.session.pop("pending_publish_job_id", None)
+
+        target_id = pending_dup_id or pending_create_id or pending_publish_id
+        if target_id:
+            messages.success(request, "Credits added. You can now publish your saved draft.")
+            return redirect("job_edit", job_id=int(target_id))
+
+        return render(
+            request,
+            "checkout/checkout_success.html",
+            {"sitesettings": SiteSettings.objects.first(), "package": package},
         )
-    except Exception:
-        pass
 
-    return render(
-        request,
-        "checkout/checkout_success.html",
-        {"sitesettings": SiteSettings.objects.first(), "package": package},
-    )
+    return redirect("package_list")
 
 
 @login_required
@@ -1177,18 +1008,17 @@ def paypal_success(request: HttpRequest) -> HttpResponse:
     employer = request.user.employer
     package_id = request.GET.get("package_id")
     amount = request.GET.get("amount")
-    discount_code = (request.GET.get("discount_code") or "").strip()  # string, not None
+    discount_code = (request.GET.get("discount_code") or "").strip() or ""
 
     if not package_id:
         return redirect("package_list")
 
     package = get_object_or_404(PostingPackage, id=int(package_id), is_active=True)
 
-    # Invoice.amount is cents (int)
-    if amount:
-        paid_cents = int(round(Decimal(str(amount)) * Decimal("100")))
-    else:
-        paid_cents = int(round(Decimal(str(package.price)) * Decimal("100")))
+    try:
+        paid_cents = int((Decimal(str(amount)) * Decimal("100")).quantize(Decimal("1")))
+    except Exception:
+        paid_cents = int(package.price_cents or 0)
 
     existing = (
         Invoice.objects.filter(processor="paypal", employer=employer, amount=paid_cents, status="paid")
@@ -1198,12 +1028,12 @@ def paypal_success(request: HttpRequest) -> HttpResponse:
     if not existing:
         Invoice.objects.create(
             employer=employer,
-            amount=paid_cents,  # cents int
+            amount=paid_cents,
             currency="CAD",
             processor="paypal",
             status="paid",
-            processor_reference="",  # CharField -> never None
-            discount_code=discount_code,  # string
+            processor_reference="",
+            discount_code=discount_code,
         )
         PurchasedPackage.objects.create(
             employer=employer,
@@ -1213,17 +1043,10 @@ def paypal_success(request: HttpRequest) -> HttpResponse:
             duration_days=int(package.duration_days),
             source="paypal",
         )
-        _sync_employer_credits(employer)
 
-        try:
-            send_templated_email(
-                "order_confirmation",
-                [getattr(employer, "email", "")],
-                {"package_name": getattr(package, "name", "")},
-            )
-        except Exception:
-            pass
+    _sync_employer_credits(employer)
 
+    messages.success(request, "Purchase successful. Credits added.")
     return render(
         request,
         "checkout/checkout_success.html",
@@ -1234,9 +1057,6 @@ def paypal_success(request: HttpRequest) -> HttpResponse:
 @require_POST
 @login_required
 def stripe_create_session(request: HttpRequest, package_id: int) -> JsonResponse:
-    """
-    Supports checkout.html "Pay with card" button via fetch() -> JSON {id: session.id}
-    """
     if not hasattr(request.user, "employer"):
         return JsonResponse({"error": "Employer login required."}, status=403)
 

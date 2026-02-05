@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import uuid
 from datetime import date, timedelta
+from decimal import Decimal
 
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -276,8 +277,9 @@ class PostingPackage(models.Model):
         return f"{self.name} ({self.code})"
 
     def save(self, *args, **kwargs):
+        # Normalize price from cents (existing behavior, preserved)
         try:
-            self.price = (int(self.price_cents or 0) / 100)
+            self.price = (Decimal(int(self.price_cents or 0)) / Decimal("100"))
         except Exception:
             pass
         super().save(*args, **kwargs)
@@ -309,16 +311,29 @@ class PurchasedPackage(models.Model):
         return f"{self.employer} → {self.package} ({self.credits_remaining}/{self.credits_granted})"
 
     def save(self, *args, **kwargs):
+        """
+        SAFE CREDIT LOGIC (NO MIGRATION):
+        - credits_remaining == 0 is VALID (do NOT treat falsy as missing)
+        - only initialize on NEW objects
+        """
         is_new = self.pk is None
 
-        if (is_new or not self.credits_granted) and self.package_id:
-            self.credits_granted = int(self.package.credits or 0)
+        if is_new and self.package_id:
+            # Initialize granted/remaining on first create only
+            if not self.credits_granted:
+                self.credits_granted = int(getattr(self.package, "credits", 0) or 0)
 
-        if (is_new or not self.credits_remaining) and self.package_id:
-            self.credits_remaining = int(self.credits_granted or 0)
+            # For new objects, default=0 needs to be set to credits
+            if self.credits_remaining == 0:
+                self.credits_remaining = int(self.credits_granted or 0)
 
-        if (is_new or not self.expires_at) and self.package_id:
-            self.expires_at = timezone.now() + timedelta(days=int(self.package.package_expires_days or 0))
+            if not self.duration_days:
+                self.duration_days = int(getattr(self.package, "duration_days", 0) or 0)
+
+            if self.expires_at is None:
+                self.expires_at = timezone.now() + timedelta(
+                    days=int(getattr(self.package, "package_expires_days", 0) or 0)
+                )
 
         super().save(*args, **kwargs)
 

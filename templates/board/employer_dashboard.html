@@ -24,144 +24,121 @@
 
     <!-- CREDIT COUNTER BOX ONLY AROUND COUNTER -->
     <div style="min-width: 220px;">
-      <div class="card bg-dark text-light border-secondary mb-2">
-        <div class="card-body text-center p-3">
-          <div class="small text-uppercase text-muted">Posting Credits</div>
-          <div class="display-6 fw-bold my-2">
-            {{ employer.credits|default:0 }}
-          </div>
-        </div>
+      <div class="border rounded p-3 text-center" style="background: rgba(0,0,0,0.15);">
+        <div class="text-uppercase small text-muted mb-1">Posting Credits</div>
+        <div class="display-6 fw-bold mb-2">{{ credits_available|default:"0" }}</div>
       </div>
-
-      {% if employer.credits|default:0|add:0 > 0 %}
-        <a href="{% url 'job_create' %}" class="btn btn-primary w-100">Post a Job</a>
-      {% else %}
-        <a href="{% url 'package_list' %}" class="btn btn-warning w-100">Buy Posting Package</a>
-      {% endif %}
+      <div class="mt-2 text-center">
+        {% if credits_available|default:0|add:0 > 0 %}
+          <a href="{% url 'job_create' %}" class="btn btn-success w-100">Post a Job</a>
+        {% else %}
+          <a href="{% url 'package_list' %}" class="btn btn-warning w-100">Buy Posting Package</a>
+        {% endif %}
+      </div>
     </div>
   </div>
 
-  <!-- Tabs and tab content full width -->
-  <div class="row">
-    <div class="col-12">
+  <!-- Tabs -->
+  <ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+      <a class="nav-link active" data-bs-toggle="tab" href="#tab-jobs">Jobs</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-bs-toggle="tab" href="#tab-apps">Applications</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-bs-toggle="tab" href="#tab-billing">Billing</a>
+    </li>
+  </ul>
 
-      <!-- Tabs -->
-      <ul class="nav nav-tabs mb-3">
-        <li class="nav-item">
-          <a class="nav-link active" data-bs-toggle="tab" href="#tab-jobs">Jobs</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" data-bs-toggle="tab" href="#tab-applications">Applications</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" data-bs-toggle="tab" href="#tab-billing">Billing</a>
-        </li>
-      </ul>
+  <div class="tab-content">
+    <!-- JOBS TAB -->
+    <div class="tab-pane fade show active" id="tab-jobs">
+      <div class="card bg-dark text-light border-secondary">
+        <div class="card-body">
 
-      <div class="tab-content">
+          <h5 class="mb-3">Your Jobs</h5>
 
-        <!-- JOBS TAB -->
-        <div class="tab-pane fade show active" id="tab-jobs">
           <table class="table table-dark table-striped align-middle">
             <thead>
               <tr>
-                <th>Job</th>
+                <th>Title</th>
+                <th>Location</th>
                 <th>Posted</th>
                 <th>Expires</th>
-                <th>Applications</th>
-                <th style="width: 180px;">Actions</th>
+                <th>Status</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
               {% for job in jobs %}
               <tr>
-                <td>
-                  <a href="{% url 'job_detail' job.id %}" class="text-info fw-bold">
-                    {{ job.title }}
-                  </a>
-                  {% if job.location %}
-                    <div class="small text-muted mt-1">
-                      <strong>Location:</strong> {{ job.location }}
-                    </div>
-                  {% endif %}
-                </td>
-                <td>
-                  {% if job.posting_date %}
-                    {{ job.posting_date|date:"M j, Y" }}
-                  {% else %}—{% endif %}
-                </td>
+                <td>{{ job.title }}</td>
+                <td>{{ job.location }}</td>
+                <td>{{ job.posting_date|date:"M j, Y" }}</td>
                 <td>
                   {% if job.expiry_date %}
                     {{ job.expiry_date|date:"M j, Y" }}
                   {% else %}—{% endif %}
                 </td>
                 <td>
-                  {{ job.application_set.count }}
+                  {% if job.is_active %}Active{% else %}Inactive{% endif %}
                 </td>
-                <td>
-                  <a href="{% url 'job_edit' job.id %}" class="btn btn-sm btn-secondary mb-1">Edit</a>
-                  <a href="{% url 'job_duplicate' job.id %}" class="btn btn-sm btn-primary mb-1">Duplicate</a>
-                  {# no delete button #}
+                <td class="text-end">
+                  <a class="btn btn-sm btn-outline-light" href="{% url 'job_edit' job.id %}">Edit</a>
+                  <a class="btn btn-sm btn-outline-light" href="{% url 'job_duplicate' job.id %}">Duplicate</a>
                 </td>
               </tr>
               {% empty %}
-              <tr>
-                <td colspan="5" class="text-center py-4">No jobs yet.</td>
-              </tr>
+              <tr><td colspan="6" class="text-center py-4">No jobs yet.</td></tr>
               {% endfor %}
             </tbody>
           </table>
-        </div>
 
-        <!-- APPLICATIONS TAB -->
-        <div class="tab-pane fade" id="tab-applications">
+        </div>
+      </div>
+    </div>
+
+    <!-- APPLICATIONS TAB -->
+    <div class="tab-pane fade" id="tab-apps">
+      <div class="card bg-dark text-light border-secondary">
+        <div class="card-body">
+
+          <h5 class="mb-3">Applications</h5>
+
           <table class="table table-dark table-striped align-middle">
             <thead>
               <tr>
                 <th>Job</th>
-                <th>Applied</th>
                 <th>Applicant</th>
-                <th>Resume</th>
+                <th>Date</th>
               </tr>
             </thead>
             <tbody>
               {% for app in applications %}
               <tr>
-                <td>
-                  <a href="{% url 'job_detail' app.job.id %}" class="text-info fw-bold">
-                    {{ app.job.title }}
-                  </a>
-                </td>
-                <td>
-                  {{ app.created_at|date:"M j, Y H:i" }}
-                </td>
-                <td>
-                  {{ app.jobseeker.first_name }} {{ app.jobseeker.last_name }}
-                </td>
-                <td>
-                  {% if app.resume and app.resume.file %}
-                    <a href="{{ app.resume.file.url }}" class="text-info" target="_blank">
-                      Download
-                    </a>
-                  {% else %}
-                    No resume
-                  {% endif %}
-                </td>
+                <td>{{ app.job.title }}</td>
+                <td>{{ app.jobseeker.first_name }} {{ app.jobseeker.last_name }}</td>
+                <td>{{ app.created_at|date:"M j, Y H:i" }}</td>
               </tr>
               {% empty %}
-              <tr>
-                <td colspan="4" class="text-center py-4">No applications yet.</td>
-              </tr>
+              <tr><td colspan="3" class="text-center py-4">No applications.</td></tr>
               {% endfor %}
             </tbody>
           </table>
+
         </div>
+      </div>
+    </div>
 
-        <!-- BILLING TAB -->
-        <div class="tab-pane fade" id="tab-billing">
+    <!-- BILLING TAB -->
+    <div class="tab-pane fade" id="tab-billing">
+      <div class="card bg-dark text-light border-secondary">
+        <div class="card-body">
 
-          <h5 class="mt-2 mb-3">Purchased Packages</h5>
-          <table class="table table-dark table-striped align-middle mb-4">
+          <h5 class="mb-3">Purchased Packages</h5>
+
+          <table class="table table-dark table-striped align-middle">
             <thead>
               <tr>
                 <th>Package</th>
@@ -184,7 +161,7 @@
                     {{ pp.expires_at|date:"M j, Y" }}
                   {% else %}—{% endif %}
                 </td>
-                <td>{{ pp.get_source_display }}</td>
+                <td>{% if pp.get_source_display %}{{ pp.get_source_display }}{% elif pp.source %}{{ pp.source|title }}{% else %}—{% endif %}</td>
               </tr>
               {% empty %}
               <tr><td colspan="6" class="text-center py-4">No packages purchased.</td></tr>
@@ -209,11 +186,10 @@
               <tr>
                 <td>#{{ invoice.id }}</td>
                 <td>{{ invoice.order_date|date:"M j, Y H:i" }}</td>
-                <td>${{ invoice.amount }} {{ invoice.currency }}</td>
+                <td>{{ invoice.amount_display }} {{ invoice.currency }}</td>
                 <td>{{ invoice.get_processor_display }}</td>
                 <td>{{ invoice.status|title }}</td>
                 <td>
-                  {# FIX: open invoice HTML page instead of downloading a .txt #}
                   <a href="{% url 'invoice_detail' invoice.id %}" class="btn btn-sm btn-secondary">
                     View / Download
                   </a>
@@ -227,7 +203,6 @@
 
         </div>
       </div>
-
     </div>
   </div>
 
