@@ -35,15 +35,3 @@ int/
 
 # Collected static
 staticfiles/
-
-# accidental junk files from copy/paste / type hints
-None
-bool
-dict
-int
-str
-today
-HttpResponse
-list[str]
-tuple[str
-

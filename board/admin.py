@@ -8,8 +8,7 @@ from django.contrib import admin, messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.core.mail import send_mail
-from django.shortcuts import get_object_or_404, redirect
-from django.urls import path, reverse
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
 
@@ -86,7 +85,6 @@ def _set_duplicate_expiry(job: Job, today):
 
     if _model_has_field(Job, "expiry_date"):
         if duration_days:
-            # NOTE: matches your production admin behavior (today + duration)
             job.expiry_date = today + timedelta(days=duration_days)
         else:
             # at minimum, don't let expiry be in the past
@@ -269,7 +267,7 @@ class JobSeekerAdmin(admin.ModelAdmin):
 
 
 # ---------------------------
-# Jobs (duplicate action + admin button URL)
+# Jobs (duplicate action + filters)
 # ---------------------------
 
 def duplicate_selected_jobs(modeladmin, request, queryset):
@@ -277,6 +275,7 @@ def duplicate_selected_jobs(modeladmin, request, queryset):
     count = 0
 
     for job in queryset:
+        # critical: ensures NEW row, never overwrites existing
         job.pk = None
         job.posting_date = today
         job.is_active = False  # duplicate starts as draft/inactive
@@ -285,6 +284,7 @@ def duplicate_selected_jobs(modeladmin, request, queryset):
             job.views_count = 0
 
         _set_duplicate_expiry(job, today)
+
         job.save()
         count += 1
 
@@ -320,40 +320,6 @@ class JobAdmin(admin.ModelAdmin):
         return format_html('<a href="{}">{}</a>', url, str(obj.employer))
 
     employer_link.short_description = "Employer"
-
-    # ✅ THIS is the missing piece your production change_form.html expects:
-    # {% url 'admin:board_job_duplicate' original.pk %}
-    def get_urls(self):
-        urls = super().get_urls()
-        custom = [
-            path(
-                "<path:object_id>/duplicate/",
-                self.admin_site.admin_view(self.duplicate_job_view),
-                name="board_job_duplicate",
-            ),
-        ]
-        return custom + urls
-
-    def duplicate_job_view(self, request, object_id):
-        today = timezone.localdate()
-
-        original = get_object_or_404(Job, pk=object_id)
-
-        # Make a NEW row (do not overwrite original)
-        original.pk = None
-        original.posting_date = today
-        original.is_active = False  # admin duplicate starts as draft/inactive
-
-        if hasattr(original, "views_count"):
-            original.views_count = 0
-
-        _set_duplicate_expiry(original, today)
-        original.save()
-
-        self.message_user(request, "Job duplicated (new draft created).", level=messages.SUCCESS)
-
-        # Send admin to the *new* job change page
-        return redirect("admin:board_job_change", original.pk)
 
 
 # ---------------------------
