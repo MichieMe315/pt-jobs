@@ -1,6 +1,6 @@
 # board/urls.py
-from django.urls import path
 from django.contrib.auth import views as auth_views
+from django.urls import path
 
 from . import views as v
 
@@ -62,7 +62,7 @@ urlpatterns = [
     path("jobseeker/dashboard/", v.jobseeker_dashboard, name="jobseeker_dashboard"),
     path("jobseeker/profile/", v.jobseeker_profile_edit, name="jobseeker_profile_edit"),
 
-    # Jobs  ✅ THIS is what makes /jobs/ work
+    # Jobs
     path("jobs/", v.job_list, name="job_list"),
     path("jobs/new/", v.job_create, name="job_create"),
     path("jobs/<int:job_id>/", v.job_detail, name="job_detail"),
