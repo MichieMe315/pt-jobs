@@ -1,4 +1,4 @@
-release: python manage.py migrate && python manage.py collectstatic --noinput
+release: python manage.py migrate && python manage.py backfill_registration_dates --csv board/data/employers_pending.csv --csv board/data/employers_deactivated.csv --csv board/data/jobseekers_active.csv --csv board/data/jobseekers_pending.csv --csv board/data/jobseekers_inactive.csv && python manage.py collectstatic --noinput
 web: gunicorn pt_jobs.wsgi:application --bind 0.0.0.0:$PORT
 
 
