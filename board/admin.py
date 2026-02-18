@@ -10,7 +10,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect
-from django.urls import path, reverse
+from django.urls import path, reverse, NoReverseMatch
 from django.utils import timezone
 from django.utils.html import format_html
 
@@ -48,8 +48,7 @@ def _default_from_email() -> str:
 
 def _site_login_url() -> str:
     """
-    Keep this stable and contract-safe.
-    We do NOT depend on request here (admin actions + save_model).
+    Stable: do not require request object from admin actions/save_model.
     """
     base = (
         getattr(settings, "SITE_URL", None)
@@ -60,7 +59,7 @@ def _site_login_url() -> str:
 
 
 def _send_approval_email(to_email: str, subject: str, body: str) -> None:
-    # keep admin stable even if SendGrid hiccups
+    # Keep admin stable even if email sending fails
     send_mail(subject, body, _default_from_email(), [to_email], fail_silently=True)
 
 
@@ -78,7 +77,7 @@ def _render_email_template(key: str, context: dict) -> tuple[str, str] | None:
     if not subject or not body:
         return None
 
-    # simple {{ token }} replacement (NOT a Django template render)
+    # simple {{ token }} replacement (NOT Django template rendering)
     for k, v in context.items():
         subject = subject.replace(f"{{{{{k}}}}}", str(v))
         body = body.replace(f"{{{{{k}}}}}", str(v))
@@ -171,8 +170,15 @@ def _set_duplicate_expiry(job: Job, today):
 class PurchasedPackageInline(admin.TabularInline):
     model = PurchasedPackage
     extra = 0
-    fields = ("package", "credits_granted", "credits_remaining", "purchased_at", "expires_at", "source")
-    readonly_fields = ("purchased_at",)
+
+    def get_fields(self, request, obj=None):
+        # Prevent admin 500s if production schema differs from local.
+        wanted = ("package", "credits_granted", "credits_remaining", "purchased_at", "expires_at", "source")
+        return [f for f in wanted if _model_has_field(PurchasedPackage, f)]
+
+    def get_readonly_fields(self, request, obj=None):
+        wanted = ("purchased_at",)
+        return [f for f in wanted if _model_has_field(PurchasedPackage, f)]
 
 
 # ---------------------------
@@ -203,6 +209,7 @@ def approve_selected_employers(modeladmin, request, queryset):
         level=messages.SUCCESS,
     )
 
+
 approve_selected_employers.short_description = "Approve selected employers (and email them)"
 
 
@@ -229,6 +236,7 @@ def approve_selected_jobseekers(modeladmin, request, queryset):
         f"Approved {updated} job seeker(s). Sent {emailed} approval email(s).",
         level=messages.SUCCESS,
     )
+
 
 approve_selected_jobseekers.short_description = "Approve selected job seekers (and email them)"
 
@@ -274,7 +282,10 @@ class EmployerAdmin(admin.ModelAdmin):
     def view_employer_jobs(self, obj):
         if not obj or not obj.pk:
             return "-"
-        url = reverse("admin:board_job_changelist")
+        try:
+            url = reverse("admin:board_job_changelist")
+        except NoReverseMatch:
+            return "-"
         return format_html(
             '<a class="button" href="{}?employer__id__exact={}">View Employer Jobs</a>',
             url,
@@ -286,7 +297,10 @@ class EmployerAdmin(admin.ModelAdmin):
     def view_employer_packages(self, obj):
         if not obj or not obj.pk:
             return "-"
-        url = reverse("admin:board_purchasedpackage_changelist")
+        try:
+            url = reverse("admin:board_purchasedpackage_changelist")
+        except NoReverseMatch:
+            return "-"
         return format_html(
             '<a class="button" href="{}?employer__id__exact={}">View Employer Packages</a>',
             url,
@@ -395,13 +409,16 @@ def duplicate_selected_jobs(modeladmin, request, queryset):
         job.pk = None
         job.posting_date = today
         job.is_active = False  # duplicate starts as draft/inactive
+
         if hasattr(job, "views_count"):
             job.views_count = 0
+
         _set_duplicate_expiry(job, today)
         job.save()
         count += 1
 
     modeladmin.message_user(request, f"Duplicated {count} job(s).", level=messages.SUCCESS)
+
 
 duplicate_selected_jobs.short_description = "Duplicate selected jobs"
 
@@ -441,8 +458,6 @@ class JobAdmin(admin.ModelAdmin):
         exclude = list(super().get_exclude(request, obj) or [])
 
         # Duplicates you showed:
-        # - Relocation assistance vs relocation assistance provided
-        # - Is featured vs featured
         for field_name in ("relocation_assistance_provided", "featured"):
             if _model_has_field(Job, field_name) and field_name not in exclude:
                 exclude.append(field_name)
@@ -472,6 +487,7 @@ class JobAdmin(admin.ModelAdmin):
         original.pk = None
         original.posting_date = today
         original.is_active = False
+
         if hasattr(original, "views_count"):
             original.views_count = 0
 
