@@ -1153,84 +1153,90 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
     employer = request.user.employer
     session_id = (request.GET.get("session_id") or "").strip()
 
-    if session_id:
-        gw = _gateway_context()
-        secret = (gw.get("stripe_secret_key") or "").strip()
-        if not secret or not gw.get("use_stripe"):
-            messages.error(request, "Stripe is not configured.")
-            return redirect("package_list")
+    if not session_id:
+        return redirect("package_list")
 
-        import stripe
-        stripe.api_key = secret
+    gw = _gateway_context()
+    secret = (gw.get("stripe_secret_key") or "").strip()
+    if not secret or not gw.get("use_stripe"):
+        messages.error(request, "Stripe is not configured.")
+        return redirect("package_list")
 
-        try:
-            session = stripe.checkout.Session.retrieve(session_id)
-        except Exception:
-            messages.error(request, "Unable to verify Stripe payment session.")
-            return redirect("package_list")
+    import stripe
+    stripe.api_key = secret
 
-        if getattr(session, "payment_status", None) != "paid":
-            messages.error(request, "Payment not completed.")
-            return redirect("package_list")
+    try:
+        session = stripe.checkout.Session.retrieve(session_id)
+    except Exception:
+        messages.error(request, "Unable to verify Stripe payment session.")
+        return redirect("package_list")
 
-        md = getattr(session, "metadata", {}) or {}
-        try:
-            pkg_id = int(md.get("package_id") or 0)
-        except Exception:
-            pkg_id = 0
+    if getattr(session, "payment_status", None) != "paid":
+        messages.error(request, "Payment not completed.")
+        return redirect("package_list")
 
-        package = get_object_or_404(PostingPackage, id=pkg_id, is_active=True)
+    md = getattr(session, "metadata", {}) or {}
+    try:
+        pkg_id = int(md.get("package_id") or 0)
+    except Exception:
+        pkg_id = 0
 
-        existing = Invoice.objects.filter(processor="stripe", processor_reference=session_id).first()
-        if not existing:
-            amount_cents = int(getattr(session, "amount_total", None) or (package.price_cents or 0))
-            used_code = (md.get("discount_code") or "").strip() or ""
+    package = get_object_or_404(PostingPackage, id=pkg_id, is_active=True)
 
-            Invoice.objects.create(
-                employer=employer,
-                amount=amount_cents,  # cents int
-                currency="CAD",
-                processor="stripe",
-                status="paid",
-                processor_reference=session_id,
-                discount_code=used_code,
-            )
+    existing = Invoice.objects.filter(processor="stripe", processor_reference=session_id).first()
+    if not existing:
+        amount_cents = int(getattr(session, "amount_total", None) or (package.price_cents or 0))
+        used_code = (md.get("discount_code") or "").strip() or ""
 
-            PurchasedPackage.objects.create(
-                employer=employer,
-                package=package,
-                credits_granted=int(package.credits),
-                credits_remaining=int(package.credits),
-                duration_days=int(package.duration_days),
-                source="stripe",
-            )
-
-        _sync_employer_credits(employer)
-
-        # Admin-controlled order confirmation email
-        send_templated_email(
-            "order_confirmation",
-            [(employer.email or "").strip()],
-            {"email": employer.email, "package_name": package.name},
+        Invoice.objects.create(
+            employer=employer,
+            amount=amount_cents,  # cents int
+            currency="CAD",
+            processor="stripe",
+            status="paid",
+            processor_reference=session_id,
+            discount_code=used_code,
         )
 
-        # If they came here because of a pending draft/duplicate, send them back to edit it
-        pending_dup_id = request.session.pop("pending_duplicate_job_id", None)
-        pending_create_id = request.session.pop("pending_create_job_id", None)
-        pending_publish_id = request.session.pop("pending_publish_job_id", None)
-
-        target_id = pending_dup_id or pending_create_id or pending_publish_id
-        if target_id:
-            messages.success(request, "Credits added. You can now publish your saved draft.")
-            return redirect("job_edit", job_id=int(target_id))
-
-        return render(
-            request,
-            "checkout/checkout_success.html",
-            {"sitesettings": _sitesettings(), "package": package},
+        # --- CREATE PURCHASED PACKAGE SAFELY ---
+        pp_kwargs = dict(
+            employer=employer,
+            package=package,
+            credits_granted=int(package.credits),
+            credits_remaining=int(package.credits),
+            source="stripe",
         )
 
-    return redirect("package_list")
+        try:
+            if any(f.name == "duration_days" for f in PurchasedPackage._meta.get_fields()):
+                pp_kwargs["duration_days"] = int(getattr(package, "duration_days", 0) or 0)
+        except Exception:
+            pass
+
+        PurchasedPackage.objects.create(**pp_kwargs)
+
+    _sync_employer_credits(employer)
+
+    send_templated_email(
+        "order_confirmation",
+        [(employer.email or "").strip()],
+        {"email": employer.email, "package_name": package.name},
+    )
+
+    pending_dup_id = request.session.pop("pending_duplicate_job_id", None)
+    pending_create_id = request.session.pop("pending_create_job_id", None)
+    pending_publish_id = request.session.pop("pending_publish_job_id", None)
+
+    target_id = pending_dup_id or pending_create_id or pending_publish_id
+    if target_id:
+        messages.success(request, "Credits added. You can now publish your saved draft.")
+        return redirect("job_edit", job_id=int(target_id))
+
+    return render(
+        request,
+        "checkout/checkout_success.html",
+        {"sitesettings": _sitesettings(), "package": package},
+    )
 
 
 @login_required
