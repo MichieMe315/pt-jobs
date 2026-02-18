@@ -269,15 +269,11 @@ class EmployerAdmin(admin.ModelAdmin):
     readonly_fields = ("view_employer_jobs", "view_employer_packages")
 
     def get_fieldsets(self, request, obj=None):
-        """
-        CONTRACT-SAFE: show ALL fields as normal, and prepend Quick Actions buttons.
-        Nothing removed; we just inject the readonly button fields at the top.
-        """
-        base = super().get_fieldsets(request, obj)
+        base = list(super().get_fieldsets(request, obj))
         quick = ("Quick Actions", {"fields": ("view_employer_jobs", "view_employer_packages")})
         if base and base[0][0] == "Quick Actions":
-            return base
-        return (quick,) + base
+            return tuple(base)
+        return tuple([quick] + base)
 
     def view_employer_jobs(self, obj):
         if not obj or not obj.pk:
@@ -521,26 +517,42 @@ class ResumeAdmin(admin.ModelAdmin):
 
 @admin.register(PostingPackage)
 class PostingPackageAdmin(admin.ModelAdmin):
-    list_display = (
-        "id",
-        "code",
-        "name",
-        "credits",
-        "duration_days",
-        "price_cents",
-        "is_active",
-        "order",
-        "package_expires_days",
-    )
+
+    def get_list_display(self, request):
+        base = [
+            "id",
+            "code",
+            "name",
+            "credits",
+            "duration_days",
+            "price_cents",
+            "is_active",
+            "order",
+            "package_expires_days",
+        ]
+        return tuple([f for f in base if _model_has_field(PostingPackage, f)])
+
+    def get_list_filter(self, request):
+        base = ["is_active"]
+        if _model_has_field(PostingPackage, "allows_featured"):
+            base.append("allows_featured")
+        return tuple(base)
+
     list_display_links = ("id", "code", "name")
     search_fields = ("code", "name")
-    list_filter = ("is_active", "allows_featured")
     ordering = ("order", "name", "id")
 
 
 @admin.register(PurchasedPackage)
 class PurchasedPackageAdmin(admin.ModelAdmin):
-    list_display = ("id", "employer", "package", "credits_granted", "credits_remaining", "purchased_at", "expires_at", "source")
+    def get_list_display(self, request):
+        base = ["id", "employer", "package", "credits_granted", "credits_remaining", "purchased_at"]
+        if _model_has_field(PurchasedPackage, "expires_at"):
+            base.append("expires_at")
+        if _model_has_field(PurchasedPackage, "source"):
+            base.append("source")
+        return tuple(base)
+
     list_display_links = ("id", "employer", "package")
     search_fields = ("employer__company_name", "package__name")
     list_filter = ("package", "purchased_at")
@@ -582,7 +594,16 @@ class DiscountCodeAdmin(admin.ModelAdmin):
     list_display_links = ("id", "code")
     search_fields = ("code", "name")
     list_filter = ("is_active", "kind")
-    ordering = ("-created_at", "-id")
+
+    def get_list_display(self, request):
+        base = ["id", "code", "kind", "value", "is_active", "start_date", "end_date", "max_uses", "uses", "created_at"]
+        return tuple([f for f in base if _model_has_field(DiscountCode, f)])
+
+    def get_ordering(self, request):
+        # Prefer created_at if present; otherwise fall back safely
+        if _model_has_field(DiscountCode, "created_at"):
+            return ("-created_at", "-id")
+        return ("-id",)
 
 
 @admin.register(SiteSettings)
