@@ -17,7 +17,10 @@ User = get_user_model()
 # Validation helpers (Contract: no links/emails in certain text)
 # ============================================================
 
-_URL_RE = re.compile(r"(https?://|www\.)", re.IGNORECASE)
+_URL_RE = re.compile(
+    r"(?i)\b(?:https?://|www\.)\S+|\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+(?:[a-z]{2,})(?:/[^\s]*)?\b"
+)
+
 _EMAIL_RE = re.compile(r"[\w\.-]+@[\w\.-]+\.\w+", re.IGNORECASE)
 
 
