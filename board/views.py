@@ -148,11 +148,16 @@ def _default_from_email() -> str:
 
 
 def _admin_emails() -> list[str]:
-    admins = getattr(settings, "ADMINS", None)
-    if admins:
-        return [email for _, email in admins if email]
-    site_admin = getattr(settings, "SITE_ADMIN_EMAIL", None)
-    return [site_admin] if site_admin else []
+    """
+    CONTRACT: admin notification recipient comes from SiteSettings (admin-managed).
+    Field: SiteSettings.contact_email  (Admin label: "Contact email")
+    """
+    ss = _sitesettings()
+    if not ss:
+        return []
+
+    email = (getattr(ss, "contact_email", "") or "").strip()
+    return [email] if email else []
 
 
 def _render_tokens(text: str, context: dict) -> str:
