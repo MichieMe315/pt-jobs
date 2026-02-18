@@ -375,11 +375,11 @@ def terms(request: HttpRequest) -> HttpResponse:
 # ============================================================
 
 def logout_view(request: HttpRequest) -> HttpResponse:
+    # Logout must never crash. Do NOT touch employer/jobseeker objects here.
     try:
-        list(messages.get_messages(request))
+        logout(request)
     except Exception:
         pass
-    logout(request)
     return redirect("home")
 
 
