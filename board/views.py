@@ -173,7 +173,6 @@ def send_templated_email(key: str, to_emails: list[str], context: dict) -> bool:
     Contract-safe:
       - Only sends if EmailTemplate(key) exists AND is_enabled=True AND has subject+html
       - No silent fallback body content
-      - BUT: log failures so prod doesn't fail silently
     """
     to_emails = [e.strip() for e in (to_emails or []) if (e or "").strip()]
     if not to_emails:
@@ -199,19 +198,7 @@ def send_templated_email(key: str, to_emails: list[str], context: dict) -> bool:
         msg.attach_alternative(html_body, "text/html")
         msg.send(fail_silently=False)
         return True
-    except Exception as e:
-        # IMPORTANT: do not crash user flows; just log why the email failed
-        try:
-            import logging
-            logging.getLogger(__name__).exception(
-                "send_templated_email failed: key=%s to=%s error=%s context=%s",
-                key,
-                to_emails,
-                str(e),
-                context,
-            )
-        except Exception:
-            pass
+    except Exception:
         return False
 
 
@@ -1227,39 +1214,6 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
             {"email": employer.email, "package_name": package.name},
         )
 
-        # Admin notification: New order/purchase (recipient = SiteSettings.contact_email)
-        admin_emails = _admin_emails()
-        if admin_emails:
-            employer_admin_url = ""
-            invoice_admin_url = ""
-            try:
-                employer_admin_url = request.build_absolute_uri(
-                    reverse("admin:board_employer_change", args=[employer.id])
-                )
-            except Exception:
-                pass
-            try:
-                inv = Invoice.objects.filter(processor="stripe", processor_reference=session_id).first()
-                if inv:
-                    invoice_admin_url = request.build_absolute_uri(
-                        reverse("admin:board_invoice_change", args=[inv.id])
-                    )
-            except Exception:
-                pass
-
-            send_templated_email(
-                "admin_new_order",
-                admin_emails,
-                {
-                    "employer_email": (employer.email or request.user.email or "").strip(),
-                    "package_name": package.name,
-                    "amount": f"{Decimal(amount_cents) / Decimal('100'):.2f}",
-                    "employer_admin_url": employer_admin_url,
-                    "invoice_admin_url": invoice_admin_url,
-                },
-            )
-
-
         # If they came here because of a pending draft/duplicate, send them back to edit it
         pending_dup_id = request.session.pop("pending_duplicate_job_id", None)
         pending_create_id = request.session.pop("pending_create_job_id", None)
@@ -1286,57 +1240,6 @@ def paypal_success(request: HttpRequest) -> HttpResponse:
 
     if not _enforce_approval_or_logout(request):
         return redirect("login")
-
-    employer = request.user.employer
-
-    # We don't have PayPal capture verification in this view (integration may be elsewhere),
-    # but we can still notify + confirm using the selected package id if present.
-    pkg_id_raw = (request.GET.get("package_id") or "").strip()
-    package = None
-    try:
-        pkg_id = int(pkg_id_raw)
-        package = PostingPackage.objects.filter(id=pkg_id, is_active=True).first()
-    except Exception:
-        package = None
-
-    # Employer confirmation email (admin-controlled template)
-    if package:
-        send_templated_email(
-            "order_confirmation",
-            [(employer.email or request.user.email or "").strip()],
-            {"email": (employer.email or request.user.email or "").strip(), "package_name": package.name},
-        )
-
-        # Admin notification (recipient = SiteSettings.contact_email)
-        admin_emails = _admin_emails()
-        if admin_emails:
-            employer_admin_url = ""
-            try:
-                employer_admin_url = request.build_absolute_uri(
-                    reverse("admin:board_employer_change", args=[employer.id])
-                )
-            except Exception:
-                pass
-
-            send_templated_email(
-                "admin_new_order",
-                admin_emails,
-                {
-                    "employer_email": (employer.email or request.user.email or "").strip(),
-                    "package_name": package.name,
-                    "amount": str(getattr(package, "price", "") or ""),
-                    "employer_admin_url": employer_admin_url,
-                    "invoice_admin_url": "",
-                },
-            )
-
-    messages.success(request, "Purchase successful.")
-    return render(
-        request,
-        "checkout/checkout_success.html",
-        {"sitesettings": _sitesettings(), "package": package},
-    )
-
 
     # NOTE: PayPal success remains “soft” (your integration may confirm server-side elsewhere).
     messages.success(request, "Purchase successful. Credits will be applied if configured.")
