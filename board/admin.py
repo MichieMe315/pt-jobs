@@ -46,6 +46,19 @@ def _default_from_email() -> str:
     return getattr(settings, "DEFAULT_FROM_EMAIL", None) or "info@physiotherapyjobscanada.ca"
 
 
+def _site_login_url() -> str:
+    """
+    Keep this stable and contract-safe.
+    We do NOT depend on request here (admin actions + save_model).
+    """
+    base = (
+        getattr(settings, "SITE_URL", None)
+        or getattr(settings, "BASE_URL", None)
+        or "https://physiotherapyjobscanada.ca"
+    )
+    return f"{str(base).rstrip('/')}/login/"
+
+
 def _send_approval_email(to_email: str, subject: str, body: str) -> None:
     # keep admin stable even if SendGrid hiccups
     send_mail(subject, body, _default_from_email(), [to_email], fail_silently=True)
@@ -65,6 +78,7 @@ def _render_email_template(key: str, context: dict) -> tuple[str, str] | None:
     if not subject or not body:
         return None
 
+    # simple {{ token }} replacement (NOT a Django template render)
     for k, v in context.items():
         subject = subject.replace(f"{{{{{k}}}}}", str(v))
         body = body.replace(f"{{{{{k}}}}}", str(v))
@@ -73,13 +87,19 @@ def _render_email_template(key: str, context: dict) -> tuple[str, str] | None:
 
 
 def _send_employer_approved_email(employer: Employer) -> bool:
-    email = (getattr(employer, "email", "") or "") or (employer.user.email if getattr(employer, "user_id", None) else "")
+    email = (getattr(employer, "email", "") or "") or (
+        employer.user.email if getattr(employer, "user_id", None) else ""
+    )
     if not email:
         return False
 
     rendered = _render_email_template(
         "employer_approved",
-        {"email": email, "company_name": getattr(employer, "company_name", "")},
+        {
+            "email": email,
+            "company_name": getattr(employer, "company_name", ""),
+            "login_url": _site_login_url(),
+        },
     )
     if rendered:
         subject, body = rendered
@@ -87,7 +107,7 @@ def _send_employer_approved_email(employer: Employer) -> bool:
         subject = "Your employer account is approved"
         body = (
             "Your employer account on Physiotherapy Jobs Canada has been approved.\n\n"
-            "You can now log in and post jobs.\n\n"
+            f"Log in: {_site_login_url()}\n\n"
             "— Physiotherapy Jobs Canada"
         )
 
@@ -106,6 +126,7 @@ def _send_jobseeker_approved_email(js: JobSeeker) -> bool:
             "email": email,
             "first_name": getattr(js, "first_name", ""),
             "last_name": getattr(js, "last_name", ""),
+            "login_url": _site_login_url(),
         },
     )
     if rendered:
@@ -114,7 +135,7 @@ def _send_jobseeker_approved_email(js: JobSeeker) -> bool:
         subject = "Your job seeker account is approved"
         body = (
             "Your job seeker account on Physiotherapy Jobs Canada has been approved.\n\n"
-            "You can now log in and apply to jobs.\n\n"
+            f"Log in: {_site_login_url()}\n\n"
             "— Physiotherapy Jobs Canada"
         )
 
@@ -137,10 +158,8 @@ def _set_duplicate_expiry(job: Job, today):
 
     if _model_has_field(Job, "expiry_date"):
         if duration_days:
-            # NOTE: matches your production admin behavior (today + duration)
             job.expiry_date = today + timedelta(days=duration_days)
         else:
-            # at minimum, don't let expiry be in the past
             if getattr(job, "expiry_date", None) and job.expiry_date < today:
                 job.expiry_date = today
 
@@ -175,7 +194,6 @@ def approve_selected_employers(modeladmin, request, queryset):
         )
         updated += 1
 
-        # email the user
         if _send_employer_approved_email(employer):
             emailed += 1
 
@@ -184,7 +202,6 @@ def approve_selected_employers(modeladmin, request, queryset):
         f"Approved {updated} employer(s). Sent {emailed} approval email(s).",
         level=messages.SUCCESS,
     )
-
 
 approve_selected_employers.short_description = "Approve selected employers (and email them)"
 
@@ -213,7 +230,6 @@ def approve_selected_jobseekers(modeladmin, request, queryset):
         level=messages.SUCCESS,
     )
 
-
 approve_selected_jobseekers.short_description = "Approve selected job seekers (and email them)"
 
 
@@ -226,7 +242,6 @@ class EmployerAdmin(admin.ModelAdmin):
     inlines = [PurchasedPackageInline]
     actions = [approve_selected_employers]
 
-    # Removed "name" per your request (so list is cleaner / more usable)
     list_display = (
         "id",
         "company_name",
@@ -237,19 +252,34 @@ class EmployerAdmin(admin.ModelAdmin):
         "login_active",
         "created_at",
     )
-    # Make both ID and next column(s) clickable
     list_display_links = ("id", "company_name", "email")
     search_fields = ("company_name", "name", "email", "location")
     list_filter = ("is_approved", "login_active")
     ordering = ("-created_at", "-id")
 
+    # Buttons
     readonly_fields = ("view_employer_jobs", "view_employer_packages")
+
+    def get_fieldsets(self, request, obj=None):
+        """
+        CONTRACT-SAFE: show ALL fields as normal, and prepend Quick Actions buttons.
+        Nothing removed; we just inject the readonly button fields at the top.
+        """
+        base = super().get_fieldsets(request, obj)
+        quick = ("Quick Actions", {"fields": ("view_employer_jobs", "view_employer_packages")})
+        if base and base[0][0] == "Quick Actions":
+            return base
+        return (quick,) + base
 
     def view_employer_jobs(self, obj):
         if not obj or not obj.pk:
             return "-"
         url = reverse("admin:board_job_changelist")
-        return format_html('<a class="button" href="{}?employer__id__exact={}">View Employer Jobs</a>', url, obj.pk)
+        return format_html(
+            '<a class="button" href="{}?employer__id__exact={}">View Employer Jobs</a>',
+            url,
+            obj.pk,
+        )
 
     view_employer_jobs.short_description = "Jobs"
 
@@ -257,14 +287,18 @@ class EmployerAdmin(admin.ModelAdmin):
         if not obj or not obj.pk:
             return "-"
         url = reverse("admin:board_purchasedpackage_changelist")
-        return format_html('<a class="button" href="{}?employer__id__exact={}">View Employer Packages</a>', url, obj.pk)
+        return format_html(
+            '<a class="button" href="{}?employer__id__exact={}">View Employer Packages</a>',
+            url,
+            obj.pk,
+        )
 
     view_employer_packages.short_description = "Packages"
 
     def save_model(self, request, obj, form, change):
         """
         CONTRACT: When admin approves, email must be sent to the user.
-        This covers approving inside the employer profile (not just bulk action).
+        Covers approving inside the employer profile (not just bulk action).
         """
         was_approved = False
         if change and obj and obj.pk:
@@ -273,7 +307,6 @@ class EmployerAdmin(admin.ModelAdmin):
 
         super().save_model(request, obj, form, change)
 
-        # If approval flipped False -> True, ensure login_active + approved_at and send email
         now_approved = bool(getattr(obj, "is_approved", False))
         if change and (not was_approved) and now_approved:
             updates = {}
@@ -288,7 +321,11 @@ class EmployerAdmin(admin.ModelAdmin):
             if sent:
                 self.message_user(request, "Approval email sent to employer.", level=messages.SUCCESS)
             else:
-                self.message_user(request, "Employer approved, but no email address found to send approval email.", level=messages.WARNING)
+                self.message_user(
+                    request,
+                    "Employer approved, but no email address found to send approval email.",
+                    level=messages.WARNING,
+                )
 
 
 @admin.register(JobSeeker)
@@ -339,7 +376,11 @@ class JobSeekerAdmin(admin.ModelAdmin):
             if sent:
                 self.message_user(request, "Approval email sent to job seeker.", level=messages.SUCCESS)
             else:
-                self.message_user(request, "Job seeker approved, but no email address found to send approval email.", level=messages.WARNING)
+                self.message_user(
+                    request,
+                    "Job seeker approved, but no email address found to send approval email.",
+                    level=messages.WARNING,
+                )
 
 
 # ---------------------------
@@ -354,16 +395,13 @@ def duplicate_selected_jobs(modeladmin, request, queryset):
         job.pk = None
         job.posting_date = today
         job.is_active = False  # duplicate starts as draft/inactive
-
         if hasattr(job, "views_count"):
             job.views_count = 0
-
         _set_duplicate_expiry(job, today)
         job.save()
         count += 1
 
     modeladmin.message_user(request, f"Duplicated {count} job(s).", level=messages.SUCCESS)
-
 
 duplicate_selected_jobs.short_description = "Duplicate selected jobs"
 
@@ -397,18 +435,25 @@ class JobAdmin(admin.ModelAdmin):
 
     def get_exclude(self, request, obj=None):
         """
-        Remove duplicate fields in job posting admin:
-          - keep relocation_assistance (used everywhere else)
-          - keep is_featured (used elsewhere)
-          - exclude the duplicate alternatives if present
+        CONTRACT: keep only the canonical job fields.
+        Hide duplicate/legacy fields if they exist (admin-only UI change).
         """
         exclude = list(super().get_exclude(request, obj) or [])
+
+        # Duplicates you showed:
+        # - Relocation assistance vs relocation assistance provided
+        # - Is featured vs featured
         for field_name in ("relocation_assistance_provided", "featured"):
             if _model_has_field(Job, field_name) and field_name not in exclude:
                 exclude.append(field_name)
+
+        # Extra apply/application fields (legacy duplicates in some builds)
+        for field_name in ("application_email", "external_apply_url", "application_instructions"):
+            if _model_has_field(Job, field_name) and field_name not in exclude:
+                exclude.append(field_name)
+
         return exclude
 
-    # {% url 'admin:board_job_duplicate' original.pk %}
     def get_urls(self):
         urls = super().get_urls()
         custom = [
@@ -422,14 +467,11 @@ class JobAdmin(admin.ModelAdmin):
 
     def duplicate_job_view(self, request, object_id):
         today = timezone.localdate()
-
         original = get_object_or_404(Job, pk=object_id)
 
-        # Make a NEW row (do not overwrite original)
         original.pk = None
         original.posting_date = today
-        original.is_active = False  # admin duplicate starts as draft/inactive
-
+        original.is_active = False
         if hasattr(original, "views_count"):
             original.views_count = 0
 
@@ -437,8 +479,6 @@ class JobAdmin(admin.ModelAdmin):
         original.save()
 
         self.message_user(request, "Job duplicated (new draft created).", level=messages.SUCCESS)
-
-        # Send admin to the *new* job change page
         return redirect("admin:board_job_change", original.pk)
 
 
@@ -493,7 +533,6 @@ class PurchasedPackageAdmin(admin.ModelAdmin):
 
 @admin.register(Invoice)
 class InvoiceAdmin(admin.ModelAdmin):
-    # Make employer clickable + show dollars instead of cents
     list_display = ("id", "employer_link", "amount_display", "currency", "processor", "status", "order_date", "discount_code")
     list_display_links = ("id", "employer_link")
     search_fields = ("employer__company_name", "processor_reference", "discount_code")
@@ -504,15 +543,11 @@ class InvoiceAdmin(admin.ModelAdmin):
         if not getattr(obj, "employer_id", None):
             return "-"
         url = reverse("admin:board_employer_change", args=[obj.employer_id])
-        # Display employer string but link to employer profile
         return format_html('<a href="{}">{}</a>', url, str(obj.employer))
 
     employer_link.short_description = "Employer"
 
     def amount_display(self, obj):
-        """
-        Your invoices store amount in cents (e.g. 7500). Display as 75.00.
-        """
         amt = getattr(obj, "amount", None)
         if amt is None:
             return "-"
@@ -527,18 +562,7 @@ class InvoiceAdmin(admin.ModelAdmin):
 
 @admin.register(DiscountCode)
 class DiscountCodeAdmin(admin.ModelAdmin):
-    list_display = (
-        "id",
-        "code",
-        "kind",
-        "value",
-        "is_active",
-        "start_date",
-        "end_date",
-        "max_uses",
-        "uses",
-        "created_at",
-    )
+    list_display = ("id", "code", "kind", "value", "is_active", "start_date", "end_date", "max_uses", "uses", "created_at")
     list_display_links = ("id", "code")
     search_fields = ("code", "name")
     list_filter = ("is_active", "kind")
@@ -556,7 +580,6 @@ class SiteSettingsAdmin(admin.ModelAdmin):
 @admin.register(EmailTemplate)
 class EmailTemplateAdmin(admin.ModelAdmin):
     list_display = ("id", "key", "name", "subject", "is_enabled", "created_at")
-    # Make KEY clickable (not just tiny ID)
     list_display_links = ("id", "key", "name")
     search_fields = ("key", "name", "subject")
     list_filter = ("is_enabled",)
@@ -611,7 +634,6 @@ class WebhookConfigAdmin(admin.ModelAdmin):
 
 User = get_user_model()
 
-# FIX: Django already registers the User model. Unregister first to avoid AlreadyRegistered.
 try:
     admin.site.unregister(User)
 except admin.sites.NotRegistered:
