@@ -458,7 +458,8 @@ def employer_signup(request: HttpRequest) -> HttpResponse:
         # Admin notification + optional welcome (admin-controlled templates)
         admin_emails = _admin_emails()
         send_templated_email("admin_new_employer", admin_emails, {"email": user.email})
-        send_templated_email("employer_welcome", [user.email], {"email": user.email, "login_url": request.build_absolute_uri(reverse("login"))})
+        send_templated_email("employer_welcome", [user.email], {"email": user.email, "login_url": reverse("login")})
+
 
         messages.success(
             request,
@@ -507,7 +508,7 @@ def jobseeker_signup(request: HttpRequest) -> HttpResponse:
 
         admin_emails = _admin_emails()
         send_templated_email("admin_new_jobseeker", admin_emails, {"email": user.email})
-        send_templated_email("jobseeker_welcome", [user.email], {"email": user.email, "login_url": request.build_absolute_uri(reverse("login"))})
+        send_templated_email("jobseeker_welcome", [user.email], {"email": user.email, "login_url": reverse("login")})
 
         messages.success(request, "Account created. Your job seeker account requires admin approval before login.")
         return redirect("login")
