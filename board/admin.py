@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from decimal import Decimal
 
 from django.conf import settings
 from django.contrib import admin, messages
@@ -71,6 +72,56 @@ def _render_email_template(key: str, context: dict) -> tuple[str, str] | None:
     return subject.strip(), body.strip()
 
 
+def _send_employer_approved_email(employer: Employer) -> bool:
+    email = (getattr(employer, "email", "") or "") or (employer.user.email if getattr(employer, "user_id", None) else "")
+    if not email:
+        return False
+
+    rendered = _render_email_template(
+        "employer_approved",
+        {"email": email, "company_name": getattr(employer, "company_name", "")},
+    )
+    if rendered:
+        subject, body = rendered
+    else:
+        subject = "Your employer account is approved"
+        body = (
+            "Your employer account on Physiotherapy Jobs Canada has been approved.\n\n"
+            "You can now log in and post jobs.\n\n"
+            "— Physiotherapy Jobs Canada"
+        )
+
+    _send_approval_email(email, subject, body)
+    return True
+
+
+def _send_jobseeker_approved_email(js: JobSeeker) -> bool:
+    email = (getattr(js, "email", "") or "") or (js.user.email if getattr(js, "user_id", None) else "")
+    if not email:
+        return False
+
+    rendered = _render_email_template(
+        "jobseeker_approved",
+        {
+            "email": email,
+            "first_name": getattr(js, "first_name", ""),
+            "last_name": getattr(js, "last_name", ""),
+        },
+    )
+    if rendered:
+        subject, body = rendered
+    else:
+        subject = "Your job seeker account is approved"
+        body = (
+            "Your job seeker account on Physiotherapy Jobs Canada has been approved.\n\n"
+            "You can now log in and apply to jobs.\n\n"
+            "— Physiotherapy Jobs Canada"
+        )
+
+    _send_approval_email(email, subject, body)
+    return True
+
+
 def _set_duplicate_expiry(job: Job, today):
     """
     Duplicate job should have expiry recalculated safely.
@@ -106,7 +157,7 @@ class PurchasedPackageInline(admin.TabularInline):
 
 
 # ---------------------------
-# Approval actions
+# Approval actions (bulk)
 # ---------------------------
 
 def approve_selected_employers(modeladmin, request, queryset):
@@ -124,24 +175,8 @@ def approve_selected_employers(modeladmin, request, queryset):
         )
         updated += 1
 
-        email = (getattr(employer, "email", "") or "") or (
-            employer.user.email if getattr(employer, "user_id", None) else ""
-        )
-        if email:
-            rendered = _render_email_template(
-                "employer_approved",
-                {"email": email, "company_name": getattr(employer, "company_name", "")},
-            )
-            if rendered:
-                subject, body = rendered
-            else:
-                subject = "Your employer account is approved"
-                body = (
-                    "Your employer account on Physiotherapy Jobs Canada has been approved.\n\n"
-                    "You can now log in and post jobs.\n\n"
-                    "— Physiotherapy Jobs Canada"
-                )
-            _send_approval_email(email, subject, body)
+        # email the user
+        if _send_employer_approved_email(employer):
             emailed += 1
 
     modeladmin.message_user(
@@ -169,26 +204,7 @@ def approve_selected_jobseekers(modeladmin, request, queryset):
         )
         updated += 1
 
-        email = (getattr(js, "email", "") or "") or (js.user.email if getattr(js, "user_id", None) else "")
-        if email:
-            rendered = _render_email_template(
-                "jobseeker_approved",
-                {
-                    "email": email,
-                    "first_name": getattr(js, "first_name", ""),
-                    "last_name": getattr(js, "last_name", ""),
-                },
-            )
-            if rendered:
-                subject, body = rendered
-            else:
-                subject = "Your job seeker account is approved"
-                body = (
-                    "Your job seeker account on Physiotherapy Jobs Canada has been approved.\n\n"
-                    "You can now log in and apply to jobs.\n\n"
-                    "— Physiotherapy Jobs Canada"
-                )
-            _send_approval_email(email, subject, body)
+        if _send_jobseeker_approved_email(js):
             emailed += 1
 
     modeladmin.message_user(
@@ -210,10 +226,10 @@ class EmployerAdmin(admin.ModelAdmin):
     inlines = [PurchasedPackageInline]
     actions = [approve_selected_employers]
 
+    # Removed "name" per your request (so list is cleaner / more usable)
     list_display = (
         "id",
         "company_name",
-        "name",
         "email",
         "location",
         "credits",
@@ -221,7 +237,8 @@ class EmployerAdmin(admin.ModelAdmin):
         "login_active",
         "created_at",
     )
-    list_display_links = ("id", "company_name")
+    # Make both ID and next column(s) clickable
+    list_display_links = ("id", "company_name", "email")
     search_fields = ("company_name", "name", "email", "location")
     list_filter = ("is_approved", "login_active")
     ordering = ("-created_at", "-id")
@@ -244,6 +261,35 @@ class EmployerAdmin(admin.ModelAdmin):
 
     view_employer_packages.short_description = "Packages"
 
+    def save_model(self, request, obj, form, change):
+        """
+        CONTRACT: When admin approves, email must be sent to the user.
+        This covers approving inside the employer profile (not just bulk action).
+        """
+        was_approved = False
+        if change and obj and obj.pk:
+            prev = Employer.objects.filter(pk=obj.pk).only("is_approved").first()
+            was_approved = bool(getattr(prev, "is_approved", False)) if prev else False
+
+        super().save_model(request, obj, form, change)
+
+        # If approval flipped False -> True, ensure login_active + approved_at and send email
+        now_approved = bool(getattr(obj, "is_approved", False))
+        if change and (not was_approved) and now_approved:
+            updates = {}
+            if _model_has_field(Employer, "login_active"):
+                updates["login_active"] = True
+            if _model_has_field(Employer, "approved_at"):
+                updates["approved_at"] = timezone.now()
+            if updates:
+                Employer.objects.filter(pk=obj.pk).update(**updates)
+
+            sent = _send_employer_approved_email(obj)
+            if sent:
+                self.message_user(request, "Approval email sent to employer.", level=messages.SUCCESS)
+            else:
+                self.message_user(request, "Employer approved, but no email address found to send approval email.", level=messages.WARNING)
+
 
 @admin.register(JobSeeker)
 class JobSeekerAdmin(admin.ModelAdmin):
@@ -262,10 +308,38 @@ class JobSeekerAdmin(admin.ModelAdmin):
         "login_active",
         "created_at",
     )
-    list_display_links = ("id", "email")
+    list_display_links = ("id", "email", "first_name")
     search_fields = ("email", "first_name", "last_name", "position_desired", "current_location")
     list_filter = ("registered_in_canada", "require_sponsorship", "is_approved", "login_active")
     ordering = ("-created_at", "-id")
+
+    def save_model(self, request, obj, form, change):
+        """
+        CONTRACT: When admin approves, email must be sent to the user.
+        Covers approving inside the job seeker profile.
+        """
+        was_approved = False
+        if change and obj and obj.pk:
+            prev = JobSeeker.objects.filter(pk=obj.pk).only("is_approved").first()
+            was_approved = bool(getattr(prev, "is_approved", False)) if prev else False
+
+        super().save_model(request, obj, form, change)
+
+        now_approved = bool(getattr(obj, "is_approved", False))
+        if change and (not was_approved) and now_approved:
+            updates = {}
+            if _model_has_field(JobSeeker, "login_active"):
+                updates["login_active"] = True
+            if _model_has_field(JobSeeker, "approved_at"):
+                updates["approved_at"] = timezone.now()
+            if updates:
+                JobSeeker.objects.filter(pk=obj.pk).update(**updates)
+
+            sent = _send_jobseeker_approved_email(obj)
+            if sent:
+                self.message_user(request, "Approval email sent to job seeker.", level=messages.SUCCESS)
+            else:
+                self.message_user(request, "Job seeker approved, but no email address found to send approval email.", level=messages.WARNING)
 
 
 # ---------------------------
@@ -321,7 +395,19 @@ class JobAdmin(admin.ModelAdmin):
 
     employer_link.short_description = "Employer"
 
-    # ✅ THIS is the missing piece your production change_form.html expects:
+    def get_exclude(self, request, obj=None):
+        """
+        Remove duplicate fields in job posting admin:
+          - keep relocation_assistance (used everywhere else)
+          - keep is_featured (used elsewhere)
+          - exclude the duplicate alternatives if present
+        """
+        exclude = list(super().get_exclude(request, obj) or [])
+        for field_name in ("relocation_assistance_provided", "featured"):
+            if _model_has_field(Job, field_name) and field_name not in exclude:
+                exclude.append(field_name)
+        return exclude
+
     # {% url 'admin:board_job_duplicate' original.pk %}
     def get_urls(self):
         urls = super().get_urls()
@@ -363,6 +449,7 @@ class JobAdmin(admin.ModelAdmin):
 @admin.register(Application)
 class ApplicationAdmin(admin.ModelAdmin):
     list_display = ("id", "job", "jobseeker", "created_at")
+    list_display_links = ("id", "job")
     search_fields = ("job__title", "jobseeker__email", "jobseeker__first_name", "jobseeker__last_name")
     list_filter = ("created_at",)
     ordering = ("-created_at", "-id")
@@ -371,6 +458,7 @@ class ApplicationAdmin(admin.ModelAdmin):
 @admin.register(Resume)
 class ResumeAdmin(admin.ModelAdmin):
     list_display = ("id", "jobseeker", "title", "created_at")
+    list_display_links = ("id", "jobseeker", "title")
     search_fields = ("jobseeker__email", "title")
     ordering = ("-created_at", "-id")
 
@@ -388,6 +476,7 @@ class PostingPackageAdmin(admin.ModelAdmin):
         "order",
         "package_expires_days",
     )
+    list_display_links = ("id", "code", "name")
     search_fields = ("code", "name")
     list_filter = ("is_active", "allows_featured")
     ordering = ("order", "name", "id")
@@ -396,6 +485,7 @@ class PostingPackageAdmin(admin.ModelAdmin):
 @admin.register(PurchasedPackage)
 class PurchasedPackageAdmin(admin.ModelAdmin):
     list_display = ("id", "employer", "package", "credits_granted", "credits_remaining", "purchased_at", "expires_at", "source")
+    list_display_links = ("id", "employer", "package")
     search_fields = ("employer__company_name", "package__name")
     list_filter = ("package", "purchased_at")
     ordering = ("-purchased_at", "-id")
@@ -403,10 +493,36 @@ class PurchasedPackageAdmin(admin.ModelAdmin):
 
 @admin.register(Invoice)
 class InvoiceAdmin(admin.ModelAdmin):
-    list_display = ("id", "employer", "amount", "currency", "processor", "status", "order_date", "discount_code")
+    # Make employer clickable + show dollars instead of cents
+    list_display = ("id", "employer_link", "amount_display", "currency", "processor", "status", "order_date", "discount_code")
+    list_display_links = ("id", "employer_link")
     search_fields = ("employer__company_name", "processor_reference", "discount_code")
     list_filter = ("status", "processor", "currency")
     ordering = ("-order_date", "-id")
+
+    def employer_link(self, obj):
+        if not getattr(obj, "employer_id", None):
+            return "-"
+        url = reverse("admin:board_employer_change", args=[obj.employer_id])
+        # Display employer string but link to employer profile
+        return format_html('<a href="{}">{}</a>', url, str(obj.employer))
+
+    employer_link.short_description = "Employer"
+
+    def amount_display(self, obj):
+        """
+        Your invoices store amount in cents (e.g. 7500). Display as 75.00.
+        """
+        amt = getattr(obj, "amount", None)
+        if amt is None:
+            return "-"
+        try:
+            d = (Decimal(int(amt)) / Decimal("100")).quantize(Decimal("0.01"))
+            return f"{d}"
+        except Exception:
+            return str(amt)
+
+    amount_display.short_description = "Amount"
 
 
 @admin.register(DiscountCode)
@@ -423,6 +539,7 @@ class DiscountCodeAdmin(admin.ModelAdmin):
         "uses",
         "created_at",
     )
+    list_display_links = ("id", "code")
     search_fields = ("code", "name")
     list_filter = ("is_active", "kind")
     ordering = ("-created_at", "-id")
@@ -431,6 +548,7 @@ class DiscountCodeAdmin(admin.ModelAdmin):
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(admin.ModelAdmin):
     list_display = ("id", "site_name", "google_analytics_id", "posting_duration_days")
+    list_display_links = ("id", "site_name")
     search_fields = ("site_name", "google_analytics_id")
     ordering = ("-id",)
 
@@ -438,6 +556,8 @@ class SiteSettingsAdmin(admin.ModelAdmin):
 @admin.register(EmailTemplate)
 class EmailTemplateAdmin(admin.ModelAdmin):
     list_display = ("id", "key", "name", "subject", "is_enabled", "created_at")
+    # Make KEY clickable (not just tiny ID)
+    list_display_links = ("id", "key", "name")
     search_fields = ("key", "name", "subject")
     list_filter = ("is_enabled",)
     ordering = ("key", "id")
@@ -446,6 +566,7 @@ class EmailTemplateAdmin(admin.ModelAdmin):
 @admin.register(WidgetTemplate)
 class WidgetTemplateAdmin(admin.ModelAdmin):
     list_display = ("id", "name", "slug", "created_at")
+    list_display_links = ("id", "name", "slug")
     search_fields = ("name", "slug")
     ordering = ("slug", "id")
 
@@ -453,6 +574,7 @@ class WidgetTemplateAdmin(admin.ModelAdmin):
 @admin.register(JobAlert)
 class JobAlertAdmin(admin.ModelAdmin):
     list_display = ("id", "email", "q", "location", "active", "created_at")
+    list_display_links = ("id", "email")
     search_fields = ("email", "q", "location")
     list_filter = ("active",)
     ordering = ("-created_at", "-id")
@@ -461,6 +583,7 @@ class JobAlertAdmin(admin.ModelAdmin):
 @admin.register(PaymentGatewayConfig)
 class PaymentGatewayConfigAdmin(admin.ModelAdmin):
     list_display = ("id", "gateway_name", "currency", "is_active", "use_stripe", "use_paypal", "updated_at")
+    list_display_links = ("id", "gateway_name")
     list_filter = ("is_active", "use_stripe", "use_paypal")
     search_fields = ("gateway_name", "currency")
     ordering = ("-is_active", "-updated_at", "-id")
@@ -469,6 +592,7 @@ class PaymentGatewayConfigAdmin(admin.ModelAdmin):
 @admin.register(SocialPostingConfig)
 class SocialPostingConfigAdmin(admin.ModelAdmin):
     list_display = ("id", "enabled", "facebook_page_id", "instagram_business_id", "reddit_subreddit", "created_at")
+    list_display_links = ("id", "facebook_page_id", "instagram_business_id")
     list_filter = ("enabled",)
     ordering = ("-created_at", "-id")
 
@@ -476,6 +600,7 @@ class SocialPostingConfigAdmin(admin.ModelAdmin):
 @admin.register(WebhookConfig)
 class WebhookConfigAdmin(admin.ModelAdmin):
     list_display = ("id", "enabled", "url", "created_at")
+    list_display_links = ("id", "url")
     list_filter = ("enabled",)
     ordering = ("-created_at", "-id")
 
