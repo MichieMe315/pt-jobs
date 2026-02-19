@@ -1153,133 +1153,84 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
     employer = request.user.employer
     session_id = (request.GET.get("session_id") or "").strip()
 
-    if not session_id:
-        return redirect("package_list")
+    if session_id:
+        gw = _gateway_context()
+        secret = (gw.get("stripe_secret_key") or "").strip()
+        if not secret or not gw.get("use_stripe"):
+            messages.error(request, "Stripe is not configured.")
+            return redirect("package_list")
 
-    gw = _gateway_context()
-    secret = (gw.get("stripe_secret_key") or "").strip()
-    if not secret or not gw.get("use_stripe"):
-        messages.error(request, "Stripe is not configured.")
-        return redirect("package_list")
+        import stripe
+        stripe.api_key = secret
 
-    import stripe
-    stripe.api_key = secret
-
-    try:
-        session = stripe.checkout.Session.retrieve(session_id)
-    except Exception:
-        messages.error(request, "Unable to verify Stripe payment session.")
-        return redirect("package_list")
-
-    if getattr(session, "payment_status", None) != "paid":
-        messages.error(request, "Payment not completed.")
-        return redirect("package_list")
-
-    md = getattr(session, "metadata", {}) or {}
-    try:
-        pkg_id = int(md.get("package_id") or 0)
-    except Exception:
-        pkg_id = 0
-
-    package = get_object_or_404(PostingPackage, id=pkg_id, is_active=True)
-
-    # If we've already created the invoice for this session, don't double-create
-    existing = Invoice.objects.filter(processor="stripe", processor_reference=session_id).first()
-    if not existing:
-        amount_cents = int(getattr(session, "amount_total", None) or (package.price_cents or 0))
-        used_code = (md.get("discount_code") or "").strip() or ""
-
-        Invoice.objects.create(
-            employer=employer,
-            amount=amount_cents,  # cents int
-            currency="CAD",
-            processor="stripe",
-            status="paid",
-            processor_reference=session_id,
-            discount_code=used_code,
-        )
-
-        pp_kwargs = dict(
-            employer=employer,
-            package=package,
-            credits_granted=int(package.credits),
-            credits_remaining=int(package.credits),
-            source="stripe",
-        )
-
-        # Only include duration_days if the DB/model actually has it
         try:
-            if any(f.name == "duration_days" for f in PurchasedPackage._meta.get_fields()):
-                pp_kwargs["duration_days"] = int(package.duration_days)
+            session = stripe.checkout.Session.retrieve(session_id)
         except Exception:
-            pass
+            messages.error(request, "Unable to verify Stripe payment session.")
+            return redirect("package_list")
 
-        PurchasedPackage.objects.create(**pp_kwargs)
+        if getattr(session, "payment_status", None) != "paid":
+            messages.error(request, "Payment not completed.")
+            return redirect("package_list")
 
-    _sync_employer_credits(employer)
-
-    # Employer confirmation email (admin-controlled template)
-    send_templated_email(
-        "order_confirmation",
-        [(employer.email or request.user.email or "").strip()],
-        {"email": (employer.email or request.user.email or "").strip(), "package_name": package.name},
-    )
-
-    # Admin notification email (admin-controlled template)
-    admin_emails = _admin_emails()
-    if admin_emails:
-        employer_admin_url = ""
-        invoice_admin_url = ""
+        md = getattr(session, "metadata", {}) or {}
         try:
-            employer_admin_url = request.build_absolute_uri(
-                reverse("admin:board_employer_change", args=[employer.id])
+            pkg_id = int(md.get("package_id") or 0)
+        except Exception:
+            pkg_id = 0
+
+        package = get_object_or_404(PostingPackage, id=pkg_id, is_active=True)
+
+        existing = Invoice.objects.filter(processor="stripe", processor_reference=session_id).first()
+        if not existing:
+            amount_cents = int(getattr(session, "amount_total", None) or (package.price_cents or 0))
+            used_code = (md.get("discount_code") or "").strip() or ""
+
+            Invoice.objects.create(
+                employer=employer,
+                amount=amount_cents,  # cents int
+                currency="CAD",
+                processor="stripe",
+                status="paid",
+                processor_reference=session_id,
+                discount_code=used_code,
             )
-        except Exception:
-            pass
-        try:
-            inv = Invoice.objects.filter(processor="stripe", processor_reference=session_id).first()
-            if inv:
-                invoice_admin_url = request.build_absolute_uri(
-                    reverse("admin:board_invoice_change", args=[inv.id])
-                )
-        except Exception:
-            pass
 
-        # amount is in cents -> make it dollars
-        try:
-            from decimal import Decimal
-            amount_cents = int(getattr(session, "amount_total", None) or 0)
-            amount_str = f"{Decimal(amount_cents) / Decimal('100'):.2f}"
-        except Exception:
-            amount_str = ""
+            PurchasedPackage.objects.create(
+                employer=employer,
+                package=package,
+                credits_granted=int(package.credits),
+                credits_remaining=int(package.credits),
+                duration_days=int(package.duration_days),
+                source="stripe",
+            )
 
+        _sync_employer_credits(employer)
+
+        # Admin-controlled order confirmation email
         send_templated_email(
-            "admin_new_order",
-            admin_emails,
-            {
-                "employer_email": (employer.email or request.user.email or "").strip(),
-                "package_name": package.name,
-                "amount": amount_str,
-                "employer_admin_url": employer_admin_url,
-                "invoice_admin_url": invoice_admin_url,
-            },
+            "order_confirmation",
+            [(employer.email or "").strip()],
+            {"email": employer.email, "package_name": package.name},
         )
 
-    # If they came here because of a pending draft/duplicate, send them back to edit it
-    pending_dup_id = request.session.pop("pending_duplicate_job_id", None)
-    pending_create_id = request.session.pop("pending_create_job_id", None)
-    pending_publish_id = request.session.pop("pending_publish_job_id", None)
+        # If they came here because of a pending draft/duplicate, send them back to edit it
+        pending_dup_id = request.session.pop("pending_duplicate_job_id", None)
+        pending_create_id = request.session.pop("pending_create_job_id", None)
+        pending_publish_id = request.session.pop("pending_publish_job_id", None)
 
-    target_id = pending_dup_id or pending_create_id or pending_publish_id
-    if target_id:
-        messages.success(request, "Credits added. You can now publish your saved draft.")
-        return redirect("job_edit", job_id=int(target_id))
+        target_id = pending_dup_id or pending_create_id or pending_publish_id
+        if target_id:
+            messages.success(request, "Credits added. You can now publish your saved draft.")
+            return redirect("job_edit", job_id=int(target_id))
 
-    return render(
-        request,
-        "checkout/checkout_success.html",
-        {"sitesettings": _sitesettings(), "package": package},
-    )
+        return render(
+            request,
+            "checkout/checkout_success.html",
+            {"sitesettings": _sitesettings(), "package": package},
+        )
+
+    return redirect("package_list")
 
 
 @login_required
