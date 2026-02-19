@@ -1183,21 +1183,27 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
 
     package = get_object_or_404(PostingPackage, id=pkg_id, is_active=True)
 
-    # If we've already created the invoice for this session, don't double-create
     existing = Invoice.objects.filter(processor="stripe", processor_reference=session_id).first()
+
     if not existing:
+
         amount_cents = int(getattr(session, "amount_total", None) or (package.price_cents or 0))
         used_code = (md.get("discount_code") or "").strip() or ""
 
-        Invoice.objects.create(
-            employer=employer,
-            amount=amount_cents,  # cents int
-            currency="CAD",
-            processor="stripe",
-            status="paid",
-            processor_reference=session_id,
-            discount_code=used_code,
-        )
+        inv_fields = {f.name for f in Invoice._meta.get_fields()}
+        inv_kwargs = {
+            "employer": employer,
+            "amount": amount_cents,
+            "currency": "CAD",
+            "processor": "stripe",
+            "status": "paid",
+            "processor_reference": session_id,
+        }
+
+        if "discount_code" in inv_fields:
+            inv_kwargs["discount_code"] = used_code
+
+        Invoice.objects.create(**inv_kwargs)
 
         pp_kwargs = dict(
             employer=employer,
@@ -1207,7 +1213,6 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
             source="stripe",
         )
 
-        # Only include duration_days if the DB/model actually has it
         try:
             if any(f.name == "duration_days" for f in PurchasedPackage._meta.get_fields()):
                 pp_kwargs["duration_days"] = int(package.duration_days)
@@ -1218,53 +1223,12 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
 
     _sync_employer_credits(employer)
 
-    # Employer confirmation email (admin-controlled template)
     send_templated_email(
         "order_confirmation",
         [(employer.email or request.user.email or "").strip()],
         {"email": (employer.email or request.user.email or "").strip(), "package_name": package.name},
     )
 
-    # Admin notification email (admin-controlled template)
-    admin_emails = _admin_emails()
-    if admin_emails:
-        employer_admin_url = ""
-        invoice_admin_url = ""
-        try:
-            employer_admin_url = request.build_absolute_uri(
-                reverse("admin:board_employer_change", args=[employer.id])
-            )
-        except Exception:
-            pass
-        try:
-            inv = Invoice.objects.filter(processor="stripe", processor_reference=session_id).first()
-            if inv:
-                invoice_admin_url = request.build_absolute_uri(
-                    reverse("admin:board_invoice_change", args=[inv.id])
-                )
-        except Exception:
-            pass
-
-        # amount is in cents -> make it dollars
-        try:
-            amount_cents = int(getattr(session, "amount_total", None) or 0)
-            amount_str = f"{Decimal(amount_cents) / Decimal('100'):.2f}"
-        except Exception:
-            amount_str = ""
-
-        send_templated_email(
-            "admin_new_order",
-            admin_emails,
-            {
-                "employer_email": (employer.email or request.user.email or "").strip(),
-                "package_name": package.name,
-                "amount": amount_str,
-                "employer_admin_url": employer_admin_url,
-                "invoice_admin_url": invoice_admin_url,
-            },
-        )
-
-    # If they came here because of a pending draft/duplicate, send them back to edit it
     pending_dup_id = request.session.pop("pending_duplicate_job_id", None)
     pending_create_id = request.session.pop("pending_create_job_id", None)
     pending_publish_id = request.session.pop("pending_publish_job_id", None)
