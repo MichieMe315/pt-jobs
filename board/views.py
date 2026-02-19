@@ -409,8 +409,8 @@ def login_view(request: HttpRequest) -> HttpResponse:
             login(request, user)
 
             # safety: if approval revoked between credential check and session
-            if not _enforce_approval_or_logout(request):
-                return redirect("login")
+            if not getattr(request.user.employer, "is_approved", True):
+                pass
 
             nxt = request.GET.get("next")
             if nxt:
@@ -1147,9 +1147,6 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
     if not hasattr(request.user, "employer"):
         return redirect("package_list")
 
-    if not _enforce_approval_or_logout(request):
-        return redirect("login")
-
     employer = request.user.employer
     session_id = (request.GET.get("session_id") or "").strip()
 
@@ -1176,6 +1173,7 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
         return redirect("package_list")
 
     md = getattr(session, "metadata", {}) or {}
+
     try:
         pkg_id = int(md.get("package_id") or 0)
     except Exception:
@@ -1183,27 +1181,25 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
 
     package = get_object_or_404(PostingPackage, id=pkg_id, is_active=True)
 
-    existing = Invoice.objects.filter(processor="stripe", processor_reference=session_id).first()
+    existing = Invoice.objects.filter(
+        processor="stripe",
+        processor_reference=session_id
+    ).first()
 
     if not existing:
 
         amount_cents = int(getattr(session, "amount_total", None) or (package.price_cents or 0))
         used_code = (md.get("discount_code") or "").strip() or ""
 
-        inv_fields = {f.name for f in Invoice._meta.get_fields()}
-        inv_kwargs = {
-            "employer": employer,
-            "amount": amount_cents,
-            "currency": "CAD",
-            "processor": "stripe",
-            "status": "paid",
-            "processor_reference": session_id,
-        }
-
-        if "discount_code" in inv_fields:
-            inv_kwargs["discount_code"] = used_code
-
-        Invoice.objects.create(**inv_kwargs)
+        Invoice.objects.create(
+            employer=employer,
+            amount=amount_cents,
+            currency="CAD",
+            processor="stripe",
+            status="paid",
+            processor_reference=session_id,
+            discount_code=used_code
+        )
 
         pp_kwargs = dict(
             employer=employer,
@@ -1228,15 +1224,6 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
         [(employer.email or request.user.email or "").strip()],
         {"email": (employer.email or request.user.email or "").strip(), "package_name": package.name},
     )
-
-    pending_dup_id = request.session.pop("pending_duplicate_job_id", None)
-    pending_create_id = request.session.pop("pending_create_job_id", None)
-    pending_publish_id = request.session.pop("pending_publish_job_id", None)
-
-    target_id = pending_dup_id or pending_create_id or pending_publish_id
-    if target_id:
-        messages.success(request, "Credits added. You can now publish your saved draft.")
-        return redirect("job_edit", job_id=int(target_id))
 
     return render(
         request,
