@@ -1247,6 +1247,7 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
 
         # amount is in cents -> make it dollars
         try:
+            from decimal import Decimal
             amount_cents = int(getattr(session, "amount_total", None) or 0)
             amount_str = f"{Decimal(amount_cents) / Decimal('100'):.2f}"
         except Exception:
