@@ -1,0 +1,6 @@
+[33ma6c699a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Make checkout_success schema-safe to prevent prod 500
+[33mc38bb1e[m Fix checkout_success 500 and restore credits/invoice creation
+[33m380a8ef[m Fix checkout_success
+[33m7f29394[m Rollback board/views.py to 2af3945 to restore working checkout + signup
+[33m0737e93[m Fix checkout success: invoice cents + non-null discount/processor refs
+[33m5897f82[m Fix checkout success to prevent 500 and always grant credits
