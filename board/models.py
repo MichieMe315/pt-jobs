@@ -390,6 +390,8 @@ class Job(models.Model):
     posting_date = models.DateField(default=timezone.now)
     expiry_date = models.DateField(blank=True, null=True)
 
+    expiry_email_sent = models.BooleanField(default=False)
+
     is_active = models.BooleanField(default=True)
 
     is_featured = models.BooleanField(default=False)
@@ -630,3 +632,27 @@ class Invoice(models.Model):
     @property
     def amount_display(self) -> str:
         return f"${(self.amount or 0) / 100:.2f}"
+
+# ============================================================
+# Career Fit Lead
+# ============================================================
+
+class CareerFitLead(models.Model):
+    email = models.EmailField()
+    token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, db_index=True)
+    results_json = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    claimed_by = models.ForeignKey(
+        "JobSeeker",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="career_fit_leads",
+    )
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+
+    def __str__(self):
+        return f"CareerFitLead({self.email})"

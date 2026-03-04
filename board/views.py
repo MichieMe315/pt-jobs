@@ -11,6 +11,7 @@ from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.db import IntegrityError
 from django.db.models import Count, Q, Sum
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -42,6 +43,7 @@ from .models import (
     SiteSettings,
     EmailTemplate,
     PaymentGatewayConfig,
+    CareerFitLead,
 )
 
 # ============================================================
@@ -120,14 +122,29 @@ def _clamp_expiry(posting_date, expiry_date):
 def _deactivate_expired_jobs() -> int:
     """
     HARD REQUIREMENT: expired jobs must stop being active.
-    Safe DB update: flip is_active=False where expiry_date < today.
+    Sends employer expiration email ONCE per job (expiry_email_sent flag).
     """
     today = timezone.localdate()
-    return Job.objects.filter(
+
+    qs = Job.objects.filter(
         is_active=True,
         expiry_date__isnull=False,
         expiry_date__lt=today,
-    ).update(is_active=False)
+    ).select_related("employer")
+
+    # Send email only once per job
+    for job in qs.filter(expiry_email_sent=False):
+        employer_email = (getattr(job.employer, "email", "") or "").strip()
+        if employer_email:
+            send_templated_email(
+                "job_expiration_notice",
+                [employer_email],
+                {"job_title": getattr(job, "title", "")},
+            )
+        job.expiry_email_sent = True
+        job.save(update_fields=["expiry_email_sent"])
+
+    return qs.update(is_active=False)
 
 
 def _active_jobs_qs():
@@ -409,8 +426,15 @@ def login_view(request: HttpRequest) -> HttpResponse:
             login(request, user)
 
             # safety: if approval revoked between credential check and session
-            if not getattr(request.user.employer, "is_approved", True):
-                pass
+            if hasattr(request.user, "employer") and not getattr(request.user.employer, "is_approved", True):
+                logout(request)
+                messages.error(request, "Your employer account is pending approval.")
+                return render(request, "board/login.html", {"sitesettings": ss, "form": form})
+
+            if hasattr(request.user, "jobseeker") and not getattr(request.user.jobseeker, "is_approved", True):
+                logout(request)
+                messages.error(request, "Your job seeker account is pending approval.")
+                return render(request, "board/login.html", {"sitesettings": ss, "form": form})
 
             nxt = request.GET.get("next")
             if nxt:
@@ -452,14 +476,26 @@ def job_alert_signup(request: HttpRequest) -> HttpResponse:
 def employer_signup(request: HttpRequest) -> HttpResponse:
     ss = _sitesettings()
     form = EmployerSignUpForm(request.POST or None, request.FILES or None)
+
     if request.method == "POST" and form.is_valid():
-        user = form.save()
+        try:
+            user = form.save()
+        except IntegrityError:
+            # Prevent 500 on duplicate email (show error only on submit)
+            form.add_error(
+                "email",
+                "An account with this email already exists. Please log in or use a different email.",
+            )
+            return render(request, "board/employer_signup.html", {"sitesettings": ss, "form": form})
 
         # Admin notification + optional welcome (admin-controlled templates)
         admin_emails = _admin_emails()
         send_templated_email("admin_new_employer", admin_emails, {"email": user.email})
-        send_templated_email("employer_welcome", [user.email], {"email": user.email, "login_url": reverse("login")})
-
+        send_templated_email(
+            "employer_welcome",
+            [user.email],
+            {"email": user.email, "login_url": reverse("login")},
+        )
 
         messages.success(
             request,
@@ -503,12 +539,25 @@ def employer_detail(request: HttpRequest, employer_id: int) -> HttpResponse:
 def jobseeker_signup(request: HttpRequest) -> HttpResponse:
     ss = _sitesettings()
     form = JobSeekerSignUpForm(request.POST or None, request.FILES or None)
+
     if request.method == "POST" and form.is_valid():
-        user = form.save()
+        try:
+            user = form.save()
+        except IntegrityError:
+            # Prevent 500 on duplicate email (show error only on submit)
+            form.add_error(
+                "email",
+                "An account with this email already exists. Please log in or use a different email.",
+            )
+            return render(request, "board/jobseeker_signup.html", {"sitesettings": ss, "form": form})
 
         admin_emails = _admin_emails()
         send_templated_email("admin_new_jobseeker", admin_emails, {"email": user.email})
-        send_templated_email("jobseeker_welcome", [user.email], {"email": user.email, "login_url": reverse("login")})
+        send_templated_email(
+            "jobseeker_welcome",
+            [user.email],
+            {"email": user.email, "login_url": reverse("login")},
+        )
 
         messages.success(request, "Account created. Your job seeker account requires admin approval before login.")
         return redirect("login")
@@ -578,6 +627,7 @@ def job_create(request: HttpRequest) -> HttpResponse:
 
     if request.method == "POST" and form.is_valid():
         job = form.save(commit=False)
+        job.source = "employer"
         job.employer = employer
         job.posting_date = posting_date
 
@@ -594,18 +644,37 @@ def job_create(request: HttpRequest) -> HttpResponse:
                 job.is_active = False
                 job.save()
                 request.session["pending_create_job_id"] = job.id
-                messages.error(request, "No credits available. Your job was saved as a draft. Purchase credits to publish.")
+                messages.error(
+                    request,
+                    "No credits available. Your job was saved as a draft. Purchase credits to publish.",
+                )
                 return redirect("package_list")
 
         job.save()
         _sync_employer_credits(employer)
 
-        # Optional employer confirmation email (admin-controlled)
-        send_templated_email(
-            "job_posting_confirmation",
-            [(employer.email or "").strip()],
-            {"job_title": job.title, "email": employer.email, "dashboard_url": request.build_absolute_uri(reverse("employer_dashboard"))},
-        )
+        if publish:
+            # Employer confirmation
+            send_templated_email(
+                "job_posting_confirmation",
+                [(employer.email or "").strip()],
+                {
+                    "job_title": job.title,
+                    "email": employer.email,
+                    "dashboard_url": request.build_absolute_uri(reverse("employer_dashboard")),
+                },
+            )
+
+            # Admin notification
+            send_templated_email(
+                "admin_job_posted",
+                _admin_emails(),
+                {
+                    "job_title": job.title,
+                    "employer_email": employer.email,
+                    "job_id": job.id,
+                },
+            )
 
         messages.success(request, "Job created.")
         return redirect("employer_dashboard")
@@ -644,6 +713,9 @@ def job_edit(request: HttpRequest, job_id: int) -> HttpResponse:
     if request.method == "POST" and form.is_valid():
         updated = form.save(commit=False)
 
+        if not updated.source:
+            updated.source = "employer"
+
         # HARD expiry clamp server-side
         updated.posting_date = posting_date
         updated.expiry_date = _clamp_expiry(posting_date, getattr(updated, "expiry_date", None))
@@ -660,11 +732,26 @@ def job_edit(request: HttpRequest, job_id: int) -> HttpResponse:
                 updated.is_active = False
                 updated.save()
                 request.session["pending_publish_job_id"] = updated.id
-                messages.error(request, "No credits available. This job remains a draft. Purchase credits to publish.")
+                messages.error(
+                    request,
+                    "No credits available. This job remains a draft. Purchase credits to publish.",
+                )
                 return redirect("package_list")
 
         updated.save()
         _sync_employer_credits(employer)
+
+        # OPTIONAL: notify admin if a draft becomes published via edit
+        if publish and was_inactive:
+            send_templated_email(
+                "admin_job_posted",
+                _admin_emails(),
+                {
+                    "job_title": updated.title,
+                    "employer_email": employer.email,
+                    "job_id": updated.id,
+                },
+            )
 
         messages.success(request, "Job updated.")
         return redirect("employer_dashboard")
@@ -725,6 +812,7 @@ def job_duplicate(request: HttpRequest, job_id: int) -> HttpResponse:
 
     if request.method == "POST" and form.is_valid():
         job = form.save(commit=False)
+        job.source = "employer"
         job.employer = employer
         job.posting_date = posting_date
 
@@ -741,11 +829,38 @@ def job_duplicate(request: HttpRequest, job_id: int) -> HttpResponse:
                 job.is_active = False
                 job.save()
                 request.session["pending_duplicate_job_id"] = job.id
-                messages.error(request, "No credits available. Your duplicated job was saved as a draft. Purchase credits to publish.")
+                messages.error(
+                    request,
+                    "No credits available. Your duplicated job was saved as a draft. Purchase credits to publish.",
+                )
                 return redirect("package_list")
 
         job.save()
         _sync_employer_credits(employer)
+
+        if publish:
+            # Employer confirmation
+            send_templated_email(
+                "job_posting_confirmation",
+                [(employer.email or "").strip()],
+                {
+                    "job_title": job.title,
+                    "email": employer.email,
+                    "dashboard_url": request.build_absolute_uri(reverse("employer_dashboard")),
+                },
+            )
+
+            # Admin notification
+            send_templated_email(
+                "admin_job_posted",
+                _admin_emails(),
+                {
+                    "job_title": job.title,
+                    "employer_email": employer.email,
+                    "job_id": job.id,
+                },
+            )
+
 
         messages.success(request, "Job duplicated.")
         return redirect("employer_dashboard")
@@ -835,6 +950,266 @@ def job_apply(request: HttpRequest, job_id: int) -> HttpResponse:
         },
     )
 
+# ============================================================
+# Career Fit Check
+# ============================================================
+
+import json
+
+def career_fit(request: HttpRequest) -> HttpResponse:
+    ss = _sitesettings()
+
+    professions = [
+        ("PT", "Physiotherapist"),
+        ("OT", "Occupational Therapist"),
+        ("DC", "Chiropractor"),
+        ("RMT", "Registered Massage Therapist"),
+        ("Osteopath", "Osteopath"),
+        ("ND", "Naturopath"),
+        ("SLP", "Speech-Language Pathologist"),
+        ("Audiology", "Audiologist"),
+    ]
+
+    stage_choices = [
+        ("student", "Student / final placement"),
+        ("new_grad", "New grad (0–2 years)"),
+        ("early", "Early career (3–5 years)"),
+        ("established", "Established clinician (5+ years)"),
+    ]
+
+    priority_choices = [
+        ("income", "Income growth"),
+        ("flexibility", "Flexibility"),
+        ("specialization", "Specialization"),
+        ("balance", "Work sustainability"),
+        ("leadership", "Leadership / ownership"),
+        ("meaning", "Meaning / impact"),
+    ]
+
+    setting_choices = [
+        ("private", "Private clinic"),
+        ("multidisciplinary", "Multidisciplinary clinic"),
+        ("hospital", "Hospital / institution"),
+        ("community", "Community / home-based"),
+        ("hybrid", "Hybrid / mobile / virtual"),
+        ("academic", "Academic / teaching"),
+    ]
+
+    opportunity_type_choices = [
+        ("full_time", "Full-time"),
+        ("part_time", "Part-time"),
+        ("contractor", "Contractor"),
+        ("casual", "Casual"),
+        ("locum", "Locum"),
+        ("temporary", "Temporary"),
+    ]
+
+    compensation_type_choices = [
+        ("hourly", "Hourly"),
+        ("yearly", "Salary (yearly)"),
+        ("split", "Split / percentage / per-visit"),
+    ]
+
+    schedule_choices = [
+        ("daytime_only", "Daytime only"),
+        ("some_evenings", "Some evenings OK"),
+        ("some_weekends", "Some weekends OK"),
+        ("flexible", "Flexible"),
+    ]
+
+    relocation_choices = [
+        ("no", "No"),
+        ("maybe", "Maybe (for the right role)"),
+        ("yes", "Yes"),
+    ]
+
+    specialties = [
+        "Pelvic health",
+        "Neuro / concussion",
+        "Sports / performance",
+        "Chronic pain",
+        "Pediatrics",
+        "Seniors",
+        "General MSK",
+    ]
+
+    return render(
+        request,
+        "board/career_fit.html",
+        {
+            "sitesettings": ss,
+            "professions": professions,
+            "stage_choices": stage_choices,
+            "priority_choices": priority_choices,
+            "setting_choices": setting_choices,
+            "opportunity_type_choices": opportunity_type_choices,
+            "compensation_type_choices": compensation_type_choices,
+            "schedule_choices": schedule_choices,
+            "relocation_choices": relocation_choices,
+            "specialties": specialties,
+        },
+    )
+
+
+@require_POST
+def career_fit_results(request: HttpRequest) -> HttpResponse:
+    ss = _sitesettings()
+
+    answers = {
+        "profession": (request.POST.get("profession") or "").strip(),
+        "stage": (request.POST.get("stage") or "").strip(),
+        "priority": (request.POST.get("priority") or "").strip(),
+        "setting": (request.POST.get("setting") or "").strip(),
+        "opportunity_type": (request.POST.get("opportunity_type") or "").strip(),
+        "compensation_type": (request.POST.get("compensation_type") or "").strip(),
+        "schedule_pref": (request.POST.get("schedule_pref") or "").strip(),
+        "location": (request.POST.get("location") or "").strip(),
+        "relocation_open": (request.POST.get("relocation_open") or "").strip(),
+        "specialties": request.POST.getlist("specialties") or [],
+        "burnout_stuck": (request.POST.get("burnout_stuck") or "").strip(),
+        "burnout_undervalued": (request.POST.get("burnout_undervalued") or "").strip(),
+        "burnout_exhausted": (request.POST.get("burnout_exhausted") or "").strip(),
+        "new_grad_specialize": (request.POST.get("new_grad_specialize") or "").strip(),
+    }
+
+    burnout_score = sum([
+        1 if answers["burnout_stuck"] == "yes" else 0,
+        1 if answers["burnout_undervalued"] == "yes" else 0,
+        1 if answers["burnout_exhausted"] == "yes" else 0,
+    ])
+    if burnout_score >= 2:
+        burnout_risk = "high"
+    elif burnout_score == 1:
+        burnout_risk = "moderate"
+    else:
+        burnout_risk = "low"
+
+    # Archetype (professional naming)
+    if answers["stage"] in ("student", "new_grad"):
+        archetype = "New Grad Specialization Path" if answers["new_grad_specialize"] == "yes" else "New Grad Foundations Path"
+    elif answers["priority"] == "specialization":
+        archetype = "Specialist Path"
+    elif answers["priority"] == "income":
+        archetype = "Growth Path"
+    elif answers["priority"] in ("balance", "flexibility"):
+        archetype = "Sustainable Practice Path"
+    elif answers["priority"] == "meaning":
+        archetype = "Meaning-Focused Path"
+    else:
+        archetype = "Sustainable Practice Path"
+
+    roles = []
+    if answers["setting"] == "hospital":
+        roles.append("Hospital / institution role")
+    elif answers["setting"] == "community":
+        roles.append("Community / home-based role")
+    elif answers["setting"] == "multidisciplinary":
+        roles.append("Multidisciplinary clinic role")
+    elif answers["setting"] == "private":
+        roles.append("Private clinic role")
+    elif answers["setting"] == "hybrid":
+        roles.append("Hybrid / mobile / virtual role")
+    elif answers["setting"] == "academic":
+        roles.append("Academic / teaching role")
+
+    if answers["opportunity_type"] == "contractor":
+        roles.append("Contractor / split-based role")
+    elif answers["opportunity_type"] == "full_time":
+        roles.append("Full-time employee role")
+    elif answers["opportunity_type"] == "part_time":
+        roles.append("Part-time role")
+    elif answers["opportunity_type"] == "locum":
+        roles.append("Locum role")
+
+    course_topics = []
+    for s in answers["specialties"]:
+        if s and s not in course_topics:
+            course_topics.append(s)
+
+    computed = {
+        "archetype": archetype,
+        "burnout_risk": burnout_risk,
+        "roles_to_explore": roles[:6],
+        "course_topics": course_topics[:6],
+    }
+
+    results = {"answers": answers, "computed": computed}
+
+    return render(
+        request,
+        "board/career_fit_results.html",
+        {
+            "sitesettings": ss,
+            "results": results,
+            "results_json": json.dumps(results),
+        },
+    )
+
+
+@require_POST
+def career_fit_save(request: HttpRequest) -> HttpResponse:
+    email = (request.POST.get("email") or "").strip()
+    mode = (request.POST.get("mode") or "signup").strip().lower()
+    results_json_raw = (request.POST.get("results_json") or "").strip()
+
+    if not email:
+        messages.error(request, "Please enter an email.")
+        return redirect("career_fit")
+
+    try:
+        results_json = json.loads(results_json_raw) if results_json_raw else {}
+    except Exception:
+        results_json = {}
+
+    lead = CareerFitLead.objects.create(email=email, results_json=results_json)
+
+    snapshot_url = request.build_absolute_uri(reverse("career_fit_snapshot", args=[lead.token]))
+    signup_url = request.build_absolute_uri(
+        f"{reverse('jobseeker_signup')}?next={reverse('career_fit_claim', args=[lead.token])}"
+    )
+    international_url = request.build_absolute_uri(reverse("career_fit_international"))
+
+    # Optional admin-controlled template key: career_fit_snapshot
+    send_templated_email(
+        "career_fit_snapshot",
+        [email],
+        {
+            "email": email,
+            "snapshot_url": snapshot_url,
+            "signup_url": signup_url,
+            "international_url": international_url,
+        },
+    )
+
+    if mode == "international":
+        return redirect("career_fit_international")
+
+    return redirect(f"{reverse('jobseeker_signup')}?next={reverse('career_fit_claim', args=[lead.token])}")
+
+
+@login_required
+def career_fit_claim(request: HttpRequest, token) -> HttpResponse:
+    if not hasattr(request.user, "jobseeker"):
+        messages.error(request, "Job Seeker account required.")
+        return redirect("home")
+
+    lead = get_object_or_404(CareerFitLead, token=token)
+    lead.claimed_by = request.user.jobseeker
+    lead.save(update_fields=["claimed_by"])
+
+    messages.success(request, "Career snapshot saved to your dashboard.")
+    return redirect("jobseeker_dashboard")
+
+
+def career_fit_snapshot(request: HttpRequest, token) -> HttpResponse:
+    ss = _sitesettings()
+    lead = get_object_or_404(CareerFitLead, token=token)
+    return render(request, "board/career_fit_snapshot.html", {"sitesettings": ss, "lead": lead})
+
+
+def career_fit_international(request: HttpRequest) -> HttpResponse:
+    ss = _sitesettings()
+    return render(request, "board/career_fit_international.html", {"sitesettings": ss})
 
 # ============================================================
 # Dashboards
@@ -899,6 +1274,13 @@ def jobseeker_dashboard(request: HttpRequest) -> HttpResponse:
         .order_by("-created_at", "-id")
     )
 
+    career_snapshot = (
+        CareerFitLead.objects
+        .filter(claimed_by=js)
+        .order_by("-created_at", "-id")
+        .first()
+    )
+
     upload_form = ResumeUploadForm(request.POST or None, request.FILES or None)
     if request.method == "POST" and upload_form.is_valid():
         r = upload_form.save(commit=False)
@@ -916,6 +1298,7 @@ def jobseeker_dashboard(request: HttpRequest) -> HttpResponse:
             "resumes": resumes,
             "applications": applications,
             "upload_form": upload_form,
+            "career_snapshot": career_snapshot,
         },
     )
 
@@ -1187,11 +1570,10 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
     ).first()
 
     if not existing:
-
         amount_cents = int(getattr(session, "amount_total", None) or (package.price_cents or 0))
         used_code = (md.get("discount_code") or "").strip() or ""
 
-        Invoice.objects.create(
+        invoice = Invoice.objects.create(
             employer=employer,
             amount=amount_cents,
             currency="CAD",
@@ -1217,12 +1599,28 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
 
         PurchasedPackage.objects.create(**pp_kwargs)
 
+        # Admin notification (fires once per new invoice/session)
+        send_templated_email(
+            "admin_new_order",
+            _admin_emails(),
+            {
+                "package_name": package.name,
+                "employer_email": employer.email,
+                "invoice_id": invoice.id,
+            },
+        )
+    else:
+        invoice = existing
+
     _sync_employer_credits(employer)
 
     send_templated_email(
         "order_confirmation",
         [(employer.email or request.user.email or "").strip()],
-        {"email": (employer.email or request.user.email or "").strip(), "package_name": package.name},
+        {
+            "email": (employer.email or request.user.email or "").strip(),
+            "package_name": package.name,
+        },
     )
 
     return render(
