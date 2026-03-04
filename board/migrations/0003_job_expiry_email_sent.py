@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('board', '0002_careerfitlead'),
+        ("board", "0001_initial"),
     ]
 
     operations = [
