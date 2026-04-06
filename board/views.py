@@ -616,9 +616,50 @@ def job_list(request: HttpRequest) -> HttpResponse:
     qs = _active_jobs_qs().select_related("employer")
 
     if q:
-        qs = qs.filter(Q(title__icontains=q) | Q(description__icontains=q) | Q(employer__company_name__icontains=q))
+        qs = qs.filter(
+            Q(title__icontains=q) |
+            Q(description__icontains=q) |
+            Q(employer__company_name__icontains=q)
+        )
+
     if loc:
-        qs = qs.filter(location__icontains=loc)
+        raw_loc = loc.strip()
+
+        # Normalize Mapbox/full-place input like:
+        # "Toronto, Ontario, Canada" -> "Toronto"
+        first_part = raw_loc.split(",")[0].strip()
+
+        # Safe alias expansion for Toronto-area boroughs / common subregions
+        alias_map = {
+            "north york": ["north york", "toronto"],
+            "scarborough": ["scarborough", "toronto"],
+            "etobicoke": ["etobicoke", "toronto"],
+            "east york": ["east york", "toronto"],
+            "york": ["york", "toronto"],
+            "downtown toronto": ["downtown toronto", "toronto"],
+            "midtown toronto": ["midtown toronto", "toronto"],
+            "toronto": ["toronto", "north york", "scarborough", "etobicoke", "east york", "york"],
+        }
+
+        normalized_key = first_part.lower()
+
+        search_terms = []
+        for candidate in [raw_loc, first_part]:
+            candidate = candidate.strip()
+            if candidate and candidate.lower() not in [t.lower() for t in search_terms]:
+                search_terms.append(candidate)
+
+        if normalized_key in alias_map:
+            for term in alias_map[normalized_key]:
+                if term.lower() not in [t.lower() for t in search_terms]:
+                    search_terms.append(term)
+
+        location_query = Q()
+        for term in search_terms:
+            location_query |= Q(location__icontains=term)
+
+        qs = qs.filter(location_query)
+
     if job_type:
         qs = qs.filter(job_type=job_type)
 
@@ -626,7 +667,13 @@ def job_list(request: HttpRequest) -> HttpResponse:
     return render(
         request,
         "board/job_list.html",
-        {"sitesettings": ss, "jobs": jobs, "q": q, "location": loc, "job_type": job_type},
+        {
+            "sitesettings": ss,
+            "jobs": jobs,
+            "q": q,
+            "location": loc,
+            "job_type": job_type,
+        },
     )
 
 
