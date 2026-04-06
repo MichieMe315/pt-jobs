@@ -3,113 +3,120 @@
 
 {% block content %}
 <div class="container my-5">
-  <div class="row justify-content-center">
-    <div class="col-md-8 col-lg-7">
-      <div class="card bg-dark text-light border-secondary">
-        <div class="card-body">
-          <h1 class="h4 mb-3 text-center">Job Seeker Sign Up</h1>
+ <div class="row justify-content-center">
+ <div class="col-md-8 col-lg-7">
+ <div class="card bg-dark text-light border-secondary">
+ <div class="card-body">
+ <h1 class="h4 mb-3 text-center">Job Seeker Sign Up</h1>
 
-          {% if form.non_field_errors %}
-            <div class="alert alert-danger">
-              {{ form.non_field_errors }}
-            </div>
-          {% endif %}
+ {% if form.non_field_errors %}
+ <div class="alert alert-danger">
+ {{ form.non_field_errors }}
+ </div>
+ {% endif %}
 
-          <form method="post" enctype="multipart/form-data" novalidate>
-            {% csrf_token %}
+ <form method="post" enctype="multipart/form-data" novalidate>
+ {% csrf_token %}
 
-            <div class="mb-3">
-              <label class="form-label" for="{{ form.first_name.id_for_label }}">First Name *</label>
-              {{ form.first_name }}{{ form.first_name.errors }}
-            </div>
+ <div class="mb-3">
+ <label class="form-label" for="{{ form.first_name.id_for_label }}">First Name *</label>
+ {{ form.first_name }}{{ form.first_name.errors }}
+ </div>
 
-            <div class="mb-3">
-              <label class="form-label" for="{{ form.last_name.id_for_label }}">Last Name *</label>
-              {{ form.last_name }}{{ form.last_name.errors }}
-            </div>
+ <div class="mb-3">
+ <label class="form-label" for="{{ form.last_name.id_for_label }}">Last Name *</label>
+ {{ form.last_name }}{{ form.last_name.errors }}
+ </div>
 
-            <div class="mb-3">
-              <label class="form-label" for="{{ form.email.id_for_label }}">Email *</label>
-              {{ form.email }}{{ form.email.errors }}
-            </div>
+ <div class="mb-3">
+ <label class="form-label" for="{{ form.email.id_for_label }}">Email *</label>
+ {{ form.email }}{{ form.email.errors }}
+ </div>
 
-            <div class="mb-3">
-              <label class="form-label" for="{{ form.password1.id_for_label }}">Password *</label>
-              {{ form.password1 }}{{ form.password1.errors }}
-            </div>
+ <div class="mb-3">
+ <label class="form-label" for="{{ form.password1.id_for_label }}">Password *</label>
+ {{ form.password1 }}{{ form.password1.errors }}
+ </div>
 
-            <div class="mb-3">
-              <label class="form-label" for="{{ form.password2.id_for_label }}">Confirm Password *</label>
-              {{ form.password2 }}{{ form.password2.errors }}
-            </div>
+ <div class="mb-3">
+ <label class="form-label" for="{{ form.password2.id_for_label }}">Confirm Password *</label>
+ {{ form.password2 }}{{ form.password2.errors }}
+ </div>
 
-            <div class="mb-3">
-              <label class="form-label" for="{{ form.position_desired.id_for_label }}">Position Desired *</label>
-              {{ form.position_desired }}{{ form.position_desired.errors }}
-            </div>
+ <div class="mb-3">
+ <label class="form-label" for="{{ form.position_desired.id_for_label }}">Position Desired *</label>
+ {{ form.position_desired }}{{ form.position_desired.errors }}
+ </div>
 
-            <div class="mb-3">
-              <label class="form-label" for="{{ form.is_registered_canada.id_for_label }}">
-                Are you a Registered Professional in Canada? *
-              </label>
-              {{ form.is_registered_canada }}{{ form.is_registered_canada.errors }}
-            </div>
+ <div class="mb-3">
+ <label class="form-label" for="{{ form.is_registered_canada.id_for_label }}">
+ Are you a Registered Professional in Canada? *
+ </label>
+ {{ form.is_registered_canada }}{{ form.is_registered_canada.errors }}
+ </div>
 
-            <div class="mb-3">
-              <label class="form-label" for="{{ form.opportunity_type.id_for_label }}">
-                What type of opportunity are you interested in? *
-              </label>
-              {{ form.opportunity_type }}{{ form.opportunity_type.errors }}
-            </div>
+ <div class="mb-3">
+ <label class="form-label" for="{{ form.opportunity_type.id_for_label }}">
+ What type of opportunity are you interested in? *
+ </label>
+ {{ form.opportunity_type }}{{ form.opportunity_type.errors }}
+ </div>
 
-            <div class="mb-3">
-              <label class="form-label" for="{{ form.current_location.id_for_label }}">
-                Where are you currently located? *
-              </label>
-              {{ form.current_location }}{{ form.current_location.errors }}
-            </div>
+ <div class="mb-3">
+ <label class="form-label" for="{{ form.current_location.id_for_label }}">
+ Where are you currently located? *
+ </label>
+ {{ form.current_location }}
+ {{ form.current_location.errors }}
+ </div>
+<script>
+ document.addEventListener("DOMContentLoaded", function() {
+ const el = document.querySelector("input[name='current_location']");
+ if (el) el.setAttribute("data-autocomplete", "location");
+});
+</script>
 
-            <div class="mb-3">
-              <label class="form-label" for="{{ form.open_to_relocate.id_for_label }}">
-                Are you open to relocating? *
-              </label>
-              {{ form.open_to_relocate }}{{ form.open_to_relocate.errors }}
-            </div>
+ <div class="mb-3">
+ <label class="form-label" for="{{ form.open_to_relocate.id_for_label }}">
+ Are you open to relocating? *
+ </label>
+ {{ form.open_to_relocate }}{{ form.open_to_relocate.errors }}
+ </div>
 
-            <div class="mb-3">
-              <label class="form-label" for="{{ form.relocate_where.id_for_label }}">
-                If yes, where?
-              </label>
-              {{ form.relocate_where }}{{ form.relocate_where.errors }}
-            </div>
+ <div class="mb-3">
+ <label class="form-label" for="{{ form.relocate_where.id_for_label }}">
+ If yes, where?
+ </label>
+ {{ form.relocate_where }}{{ form.relocate_where.errors }}
+ </div>
 
-            <div class="mb-3">
-              <label class="form-label" for="{{ form.requires_sponsorship.id_for_label }}">
-                Do you require sponsorship to work in Canada? *
-              </label>
-              {{ form.requires_sponsorship }}{{ form.requires_sponsorship.errors }}
-            </div>
+ <div class="mb-3">
+ <label class="form-label" for="{{ form.requires_sponsorship.id_for_label }}">
+ Do you require sponsorship to work in Canada? *
+ </label>
+ {{ form.requires_sponsorship }}{{ form.requires_sponsorship.errors }}
+ </div>
 
-            <div class="mb-3">
-              <label class="form-label" for="{{ form.seeking_immigration.id_for_label }}">
-                Are you seeking immigration to Canada? *
-              </label>
-              {{ form.seeking_immigration }}{{ form.seeking_immigration.errors }}
-            </div>
+ <div class="mb-3">
+ <label class="form-label" for="{{ form.seeking_immigration.id_for_label }}">
+ Are you seeking immigration to Canada? *
+ </label>
+ {{ form.seeking_immigration }}{{ form.seeking_immigration.errors }}
+ </div>
 
-            <div class="mb-3">
-              <label class="form-label" for="{{ form.resume.id_for_label }}">Upload Resume</label>
-              {{ form.resume }}{{ form.resume.errors }}
-            </div>
+ <div class="mb-3">
+ <label class="form-label" for="{{ form.resume.id_for_label }}">Upload Resume</label>
+ {{ form.resume }}{{ form.resume.errors }}
+ </div>
 
-            <button type="submit" class="btn btn-primary w-100">
-              Create Job Seeker Account
-            </button>
-          </form>
+ <button type="submit" class="btn btn-primary w-100">
+ Create Job Seeker Account
+ </button>
+ </form>
 
-        </div>
-      </div>
-    </div>
-  </div>
+ </div>
+ </div>
+ </div>
+ </div>
 </div>
 {% endblock %}

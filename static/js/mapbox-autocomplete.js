@@ -10,7 +10,7 @@
     box.style.width = '100%';
     box.style.maxHeight = '240px';
     box.style.overflowY = 'auto';
-    box.style.background = 'white';
+    box.style.background = '#ffffff';
     box.style.border = '1px solid #ccc';
     box.style.borderRadius = '0.25rem';
     box.style.boxShadow = '0 4px 16px rgba(0,0,0,0.2)';
@@ -51,15 +51,29 @@
         row.textContent = item.place_name;
         row.style.padding = '8px 10px';
         row.style.cursor = 'pointer';
+        row.style.background = '#ffffff';
+        row.style.color = '#212529';
+        row.style.borderBottom = '1px solid #f1f1f1';
+
         row.addEventListener('mousedown', e => {
           e.preventDefault();
           input.value = item.place_name;
           close();
         });
-        row.addEventListener('mouseover', () => row.style.background = '#f2f2f2');
-        row.addEventListener('mouseout', () => row.style.background = 'white');
+
+        row.addEventListener('mouseover', () => {
+          row.style.background = '#f2f2f2';
+          row.style.color = '#212529';
+        });
+
+        row.addEventListener('mouseout', () => {
+          row.style.background = '#ffffff';
+          row.style.color = '#212529';
+        });
+
         dd.appendChild(row);
       });
+
       if (items.length) {
         dd.style.display = 'block';
         ctrl.opened = true;
@@ -73,7 +87,6 @@
       url.searchParams.set('access_token', token);
       url.searchParams.set('autocomplete', 'true');
       url.searchParams.set('limit', '6');
-      // Optional: bias to CA
       url.searchParams.set('country', 'CA,US');
 
       const res = await fetch(url.toString());
@@ -100,7 +113,6 @@
     });
 
     input.addEventListener('blur', () => {
-      // close a tick later to allow click selection
       setTimeout(close, 120);
     });
 

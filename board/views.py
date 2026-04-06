@@ -379,8 +379,44 @@ def about(request: HttpRequest) -> HttpResponse:
     return render(request, "board/about.html", {"sitesettings": _sitesettings()})
 
 
-def contact(request: HttpRequest) -> HttpResponse:
-    return render(request, "board/contact.html", {"sitesettings": _sitesettings()})
+from django.core.mail import send_mail
+from django.conf import settings
+
+def contact(request):
+    context = {}
+
+    if request.method == "POST":
+        name = (request.POST.get("name") or "").strip()
+        email = (request.POST.get("email") or "").strip()
+        message = (request.POST.get("message") or "").strip()
+
+        context.update({
+            "form_name": name,
+            "form_email": email,
+            "form_message": message,
+        })
+
+        if name and email and message:
+            try:
+                ss = _sitesettings()
+                to_email = getattr(ss, "contact_email", None) or settings.DEFAULT_FROM_EMAIL
+
+                send_mail(
+                    subject=f"Contact Form: {name}",
+                    message=f"From: {name} <{email}>\n\n{message}",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[to_email],
+                    fail_silently=False,
+                )
+
+                context["submitted"] = True
+
+            except Exception:
+                context["error"] = "There was an error sending your message."
+        else:
+            context["error"] = "All fields are required."
+
+    return render(request, "board/contact.html", context)
 
 
 def terms(request: HttpRequest) -> HttpResponse:

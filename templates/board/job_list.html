@@ -6,79 +6,80 @@
 {% block content %}
 <div class="container py-4">
 
-  <h1 class="h4 fw-bold mb-3">All Jobs</h1>
+ <h1 class="h4 fw-bold mb-3">All Jobs</h1>
 
-  <!-- SEARCH (RESTORED) -->
-  <form method="get" action="{% url 'job_list' %}" class="row g-2 mb-4">
-    <div class="col-md-6">
-      <input
-        type="text"
-        name="q"
-        class="form-control form-control-lg"
-        placeholder="Search jobs (title, keywords)"
-        value="{{ request.GET.q|default_if_none:'' }}"
-      >
-    </div>
-    <div class="col-md-4">
-      <input
-        type="text"
-        name="location"
-        class="form-control form-control-lg"
-        placeholder="Location (city, province)"
-        value="{{ request.GET.location|default_if_none:'' }}"
-      >
-    </div>
-    <div class="col-md-2 d-grid">
-      <button class="btn btn-primary btn-lg fw-bold">Search</button>
-    </div>
-  </form>
+ <!-- SEARCH (RESTORED) -->
+ <form method="get" action="{% url 'job_list' %}" class="row g-2 mb-4">
+ <div class="col-md-6">
+ <input
+ type="text"
+ name="q"
+ class="form-control form-control-lg"
+ placeholder="Search jobs (title, keywords)"
+ value="{{ request.GET.q|default_if_none:'' }}"
+ >
+ </div>
+ <div class="col-md-4">
+ <input
+ type="text"
+ name="location"
+ class="form-control form-control-lg"
+ placeholder="Location (city, province)"
+ value="{{ request.GET.location|default_if_none:'' }}"
+ data-autocomplete="location"
+ >
+ </div>
+ <div class="col-md-2 d-grid">
+ <button class="btn btn-primary btn-lg fw-bold">Search</button>
+ </div>
+ </form>
 
-  <div class="row">
-    <!-- LEFT: JOB LIST -->
-    <div class="col-md-8 mb-4">
-      {% if jobs %}
-        <div class="list-group">
-          {% for job in jobs %}
-            <a href="{% url 'job_detail' job.pk %}" class="list-group-item list-group-item-action mb-2 rounded">
-              <div class="d-flex justify-content-between align-items-start">
-                <div class="d-flex">
-                  <div class="me-3 d-none d-sm-block" style="width:90px;">
-                    {% if job.employer.logo %}
-                      <img
-                        src="{{ job.employer.logo.url }}"
-                        alt="{{ job.employer.company_name }}"
-                        style="max-height:42px; max-width:90px; object-fit:contain;"
-                      >
-                    {% else %}
-                      <div style="height:42px; width:90px; background:#f3f4f6; border:1px solid #e5e7eb; border-radius:8px;"></div>
-                    {% endif %}
-                  </div>
+ <div class="row">
+ <!-- LEFT: JOB LIST -->
+ <div class="col-md-8 mb-4">
+ {% if jobs %}
+ <div class="list-group">
+ {% for job in jobs %}
+ <a href="{% url 'job_detail' job.pk %}" class="list-group-item list-group-item-action mb-2 rounded">
+ <div class="d-flex justify-content-between align-items-start">
+ <div class="d-flex">
+ <div class="me-3 d-none d-sm-block" style="width:90px;">
+ {% if job.employer.logo %}
+ <img
+ src="{{ job.employer.logo.url }}"
+ alt="{{ job.employer.company_name }}"
+ style="max-height:42px; max-width:90px; object-fit:contain;"
+ >
+ {% else %}
+ <div style="height:42px; width:90px; background:#f3f4f6; border:1px solid #e5e7eb; border-radius:8px;"></div>
+ {% endif %}
+ </div>
 
-                  <div>
-                    <!-- TITLE LARGER -->
-                    <div class="fw-bold fs-5">{{ job.title }}</div>
-                    <div class="text-muted fw-semibold">{{ job.employer.company_name }}</div>
-                  </div>
-                </div>
+ <div>
+ <!-- TITLE LARGER -->
+ <div class="fw-bold fs-5">{{ job.title }}</div>
+ <div class="text-muted fw-semibold">{{ job.employer.company_name }}</div>
+ </div>
+ </div>
 
-                <div class="text-end ms-3">
-                  <div class="fw-bold">{{ job.posting_date|date:"M j, Y" }}</div>
-                  <div class="text-muted">{{ job.location }}</div>
-                </div>
-              </div>
-            </a>
-          {% endfor %}
-        </div>
-      {% else %}
-        <div class="alert alert-light border">No jobs found.</div>
-      {% endif %}
-    </div>
+ <div class="text-end ms-3">
+ <div class="fw-bold">{{ job.posting_date|date:"M j, Y" }}</div>
+ <div class="text-muted">{{ job.location }}</div>
+ </div>
+ </div>
+ </a>
+ {% endfor %}
+ </div>
+ {% else %}
+ <div class="alert alert-light border">No jobs found.</div>
+ {% endif %}
+ </div>
 
-    <!-- RIGHT: SIDEBAR (RESTORED) -->
-    <div class="col-md-4">
-      {% include "includes/right_sidebar.html" %}
-    </div>
-  </div>
+ <!-- RIGHT: SIDEBAR (RESTORED) -->
+ <div class="col-md-4">
+ {% include "includes/right_sidebar.html" %}
+ </div>
+ </div>
 
 </div>
 {% endblock %}

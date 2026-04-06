@@ -2,158 +2,159 @@
 {% load static %}
 
 {% block title %}
-  {% if sitesettings and sitesettings.hero_title %}
-    {{ sitesettings.hero_title }}
-  {% elif sitesettings and sitesettings.home_hero_title %}
-    {{ sitesettings.home_hero_title }}
-  {% endif %}
+ {% if sitesettings and sitesettings.hero_title %}
+ {{ sitesettings.hero_title }}
+ {% elif sitesettings and sitesettings.home_hero_title %}
+ {{ sitesettings.home_hero_title }}
+ {% endif %}
 {% endblock %}
 
 {% block content %}
 
 {# HERO — ADMIN DRIVEN ONLY #}
 <section
-  class="py-5"
-  style="
-    {% if sitesettings and sitesettings.hero_image %}
-      background-image: linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.55)),
-      url('{{ sitesettings.hero_image.url }}');
-      background-size: cover;
-      background-position: center;
-    {% elif sitesettings and sitesettings.home_hero_image %}
-      background-image: linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.55)),
-      url('{{ sitesettings.home_hero_image.url }}');
-      background-size: cover;
-      background-position: center;
-    {% endif %}
-  "
+ class="py-5"
+ style="
+ {% if sitesettings and sitesettings.hero_image %}
+ background-image: linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.55)),
+ url('{{ sitesettings.hero_image.url }}');
+ background-size: cover;
+ background-position: center;
+ {% elif sitesettings and sitesettings.home_hero_image %}
+ background-image: linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.55)),
+ url('{{ sitesettings.home_hero_image.url }}');
+ background-size: cover;
+ background-position: center;
+ {% endif %}
+ "
 >
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-8">
-        <h1 class="display-5 fw-bold text-white mb-2">
-          {% if sitesettings and sitesettings.hero_title %}
-            {{ sitesettings.hero_title }}
-          {% elif sitesettings and sitesettings.home_hero_title %}
-            {{ sitesettings.home_hero_title }}
-          {% endif %}
-        </h1>
+ <div class="container">
+ <div class="row">
+ <div class="col-lg-8">
+ <h1 class="display-5 fw-bold text-white mb-2">
+ {% if sitesettings and sitesettings.hero_title %}
+ {{ sitesettings.hero_title }}
+ {% elif sitesettings and sitesettings.home_hero_title %}
+ {{ sitesettings.home_hero_title }}
+ {% endif %}
+ </h1>
 
-        <p class="lead text-white-50 mb-4">
-          {% if sitesettings and sitesettings.hero_subtitle %}
-            {{ sitesettings.hero_subtitle }}
-          {% elif sitesettings and sitesettings.home_hero_subtitle %}
-            {{ sitesettings.home_hero_subtitle }}
-          {% endif %}
-        </p>
+ <p class="lead text-white-50 mb-4">
+ {% if sitesettings and sitesettings.hero_subtitle %}
+ {{ sitesettings.hero_subtitle }}
+ {% elif sitesettings and sitesettings.home_hero_subtitle %}
+ {{ sitesettings.home_hero_subtitle }}
+ {% endif %}
+ </p>
 
-        <form method="get" action="/jobs/" class="row g-2">
-          <div class="col-md-6">
-            <input type="text" name="q" class="form-control form-control-lg"
-                   placeholder="Search jobs (title, keywords)">
-          </div>
-          <div class="col-md-4">
-            <input type="text" name="location" class="form-control form-control-lg"
-                   placeholder="Location (city, province)">
-          </div>
-          <div class="col-md-2 d-grid">
-            <button class="btn btn-primary btn-lg fw-bold">Search</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
+ <form method="get" action="/jobs/" class="row g-2">
+ <div class="col-md-6">
+ <input type="text" name="q" class="form-control form-control-lg"
+ placeholder="Search jobs (title, keywords)">
+ </div>
+ <div class="col-md-4">
+ <input type="text" name="location" class="form-control form-control-lg"
+ placeholder="Location (city, province)"
+ data-autocomplete="location">
+ </div>
+ <div class="col-md-2 d-grid">
+ <button class="btn btn-primary btn-lg fw-bold">Search</button>
+ </div>
+ </form>
+ </div>
+ </div>
+ </div>
 </section>
 
 <div class="container mb-5 mt-4">
-  <h2 class="h4 mb-3">Latest Jobs</h2>
+ <h2 class="h4 mb-3">Latest Jobs</h2>
 
-  <div class="row">
-    <div class="col-md-8 mb-4">
-      {% if jobs %}
-        <div class="list-group">
-          {% for job in jobs|slice:":3" %}
-            <a href="{% url 'job_detail' job.pk %}"
-               class="list-group-item list-group-item-action mb-2 rounded">
-              <div class="d-flex justify-content-between align-items-start">
-                <div class="d-flex">
-                  <div class="me-3 d-none d-sm-block" style="width:90px;">
-                    {% if job.employer.logo %}
-                      <img src="{{ job.employer.logo.url }}"
-                           alt="{{ job.employer.company_name }}"
-                           style="max-height:42px; max-width:90px; object-fit:contain;">
-                    {% else %}
-                      <div style="height:42px;width:90px;
-                                  background:#f3f4f6;border:1px solid #e5e7eb;
-                                  border-radius:8px;"></div>
-                    {% endif %}
-                  </div>
+ <div class="row">
+ <div class="col-md-8 mb-4">
+ {% if jobs %}
+ <div class="list-group">
+ {% for job in jobs|slice:":3" %}
+ <a href="{% url 'job_detail' job.pk %}"
+ class="list-group-item list-group-item-action mb-2 rounded">
+ <div class="d-flex justify-content-between align-items-start">
+ <div class="d-flex">
+ <div class="me-3 d-none d-sm-block" style="width:90px;">
+ {% if job.employer.logo %}
+ <img src="{{ job.employer.logo.url }}"
+ alt="{{ job.employer.company_name }}"
+ style="max-height:42px; max-width:90px; object-fit:contain;">
+ {% else %}
+ <div style="height:42px;width:90px;
+ background:#f3f4f6;border:1px solid #e5e7eb;
+ border-radius:8px;"></div>
+ {% endif %}
+ </div>
 
-                  <div>
-                    <div class="fw-bold" style="font-size:1.05rem;">
-                      {{ job.title }}
-                    </div>
-                    <div class="text-muted fw-semibold">
-                      {{ job.employer.company_name }}
-                    </div>
-                  </div>
-                </div>
+ <div>
+ <div class="fw-bold" style="font-size:1.05rem;">
+ {{ job.title }}
+ </div>
+ <div class="text-muted fw-semibold">
+ {{ job.employer.company_name }}
+ </div>
+ </div>
+ </div>
 
-                <div class="text-end ms-3">
-                  <div class="fw-bold">
-                    {{ job.posting_date|date:"M j, Y" }}
-                  </div>
-                  <div class="text-muted">{{ job.location }}</div>
-                </div>
-              </div>
-            </a>
-          {% endfor %}
-        </div>
+ <div class="text-end ms-3">
+ <div class="fw-bold">
+ {{ job.posting_date|date:"M j, Y" }}
+ </div>
+ <div class="text-muted">{{ job.location }}</div>
+ </div>
+ </div>
+ </a>
+ {% endfor %}
+ </div>
 
-        <div class="mt-3">
-          <a href="/jobs/" class="btn btn-outline-primary fw-bold">
-            View all jobs
-          </a>
-        </div>
-      {% else %}
-        <div class="alert alert-light border">No jobs found.</div>
-      {% endif %}
-    </div>
+ <div class="mt-3">
+ <a href="/jobs/" class="btn btn-outline-primary fw-bold">
+ View all jobs
+ </a>
+ </div>
+ {% else %}
+ <div class="alert alert-light border">No jobs found.</div>
+ {% endif %}
+ </div>
 
-    <div class="col-md-4">
-      <div class="card mb-3">
-        <div class="card-body">
-          <h3 class="h6 fw-bold mb-2">Get Job Alerts</h3>
-          <form method="post" action="{% url 'job_alert_signup' %}">
-            {% csrf_token %}
-            <div class="mb-2">
-              {{ job_alert_form.email }}
-            </div>
-            <button class="btn btn-primary w-100 fw-bold">Sign up</button>
-          </form>
-        </div>
-      </div>
+ <div class="col-md-4">
+ <div class="card mb-3">
+ <div class="card-body">
+ <h3 class="h6 fw-bold mb-2">Get Job Alerts</h3>
+ <form method="post" action="{% url 'job_alert_signup' %}">
+ {% csrf_token %}
+ <div class="mb-2">
+ {{ job_alert_form.email }}
+ </div>
+ <button class="btn btn-primary w-100 fw-bold">Sign up</button>
+ </form>
+ </div>
+ </div>
 
-      {% if featured_jobs %}
-        <div class="card">
-          <div class="card-body">
-            <h3 class="h6 fw-bold mb-2">Featured Jobs</h3>
-            <div class="list-group">
-              {% for job in featured_jobs %}
-                <a href="{% url 'job_detail' job.pk %}"
-                   class="list-group-item list-group-item-action">
-                  <div class="fw-bold">{{ job.title }}</div>
-                  <div class="text-muted small">
-                    {{ job.employer.company_name }}
-                  </div>
-                </a>
-              {% endfor %}
-            </div>
-          </div>
-        </div>
-      {% endif %}
-    </div>
-  </div>
+ {% if featured_jobs %}
+ <div class="card">
+ <div class="card-body">
+ <h3 class="h6 fw-bold mb-2">Featured Jobs</h3>
+ <div class="list-group">
+ {% for job in featured_jobs %}
+ <a href="{% url 'job_detail' job.pk %}"
+ class="list-group-item list-group-item-action">
+ <div class="fw-bold">{{ job.title }}</div>
+ <div class="text-muted small">
+ {{ job.employer.company_name }}
+ </div>
+ </a>
+ {% endfor %}
+ </div>
+ </div>
+ </div>
+ {% endif %}
+ </div>
+ </div>
 </div>
 
 {% endblock %}
