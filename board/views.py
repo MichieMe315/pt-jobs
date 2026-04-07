@@ -386,6 +386,10 @@ def contact(request):
     context = {}
 
     if request.method == "POST":
+        # Block bots (honeypot)
+        if request.POST.get("website"):
+            return redirect("contact")
+
         name = (request.POST.get("name") or "").strip()
         email = (request.POST.get("email") or "").strip()
         message = (request.POST.get("message") or "").strip()
