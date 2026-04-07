@@ -16,23 +16,60 @@
     Send us a message using the form below.
   </p>
 
-  <form method="post" action="{% url 'contact' %}">
+  <form method="post" action="{% url 'contact' %}" id="contactForm">
     {% csrf_token %}
+
+    <!-- Honeypot field (hidden from users, bots will fill it) -->
+    <div style="display:none;">
+      <label>Leave this field empty</label>
+      <input type="text" name="website" autocomplete="off">
+    </div>
+
+    <!-- Timestamp for basic bot detection -->
+    <input type="hidden" name="form_loaded_at" id="form_loaded_at">
+
     <div class="mb-3">
       <label for="id_name" class="form-label">Name</label>
       <input type="text" name="name" id="id_name" class="form-control" required
              value="{{ form_name|default:'' }}">
     </div>
+
     <div class="mb-3">
       <label for="id_email" class="form-label">Email</label>
       <input type="email" name="email" id="id_email" class="form-control" required
              value="{{ form_email|default:'' }}">
     </div>
+
     <div class="mb-3">
       <label for="id_message" class="form-label">Message</label>
       <textarea name="message" id="id_message" rows="5" class="form-control" required>{{ form_message|default:'' }}</textarea>
     </div>
+
     <button type="submit" class="btn btn-primary">Send message</button>
   </form>
 </div>
+
+<script>
+  // Set timestamp when form loads
+  document.getElementById("form_loaded_at").value = Date.now();
+
+  // Basic client-side bot blocking
+  document.getElementById("contactForm").addEventListener("submit", function(e) {
+    const honeypot = document.querySelector('input[name="website"]').value;
+    const loadedAt = parseInt(document.getElementById("form_loaded_at").value, 10);
+    const now = Date.now();
+
+    // Block if honeypot is filled
+    if (honeypot) {
+      e.preventDefault();
+      return false;
+    }
+
+    // Block if submitted too fast (< 2 seconds)
+    if ((now - loadedAt) < 2000) {
+      e.preventDefault();
+      return false;
+    }
+  });
+</script>
 {% endblock %}
