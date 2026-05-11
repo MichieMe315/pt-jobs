@@ -40,7 +40,7 @@
 
 {% block content %}
 <!-- Hero Section -->
-<section class="py-5 bg-gradient" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+<section class="py-5">
   <div class="container">
     <div class="row">
       <div class="col-lg-8">
@@ -51,8 +51,8 @@
           </ol>
         </nav>
         
-        <h1 class="display-5 fw-bold text-white mb-3">{{ h1 }}</h1>
-        <p class="lead text-white-50 mb-4">{{ description }}</p>
+        <h1 class="display-5 fw-bold mb-3">{{ h1 }}</h1>
+        <p class="lead mb-4">{{ description }}</p>
         
         <!-- Quick Search -->
         <form method="get" action="/jobs/" class="row g-2">
@@ -94,6 +94,39 @@
           </div>
         </div>
       </div>
+
+      {% if job_market %}
+      <div class="mb-5">
+        <h2 class="h4 fw-bold mb-3">Physiotherapy job market in {{ province }}</h2>
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-4">
+            {{ job_market|linebreaks }}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if practice_settings %}
+      <div class="mb-5">
+        <h2 class="h4 fw-bold mb-3">Common practice settings in {{ province }}</h2>
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-4">
+            {{ practice_settings|linebreaks }}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if tips_for_applying %}
+      <div class="mb-5">
+        <h2 class="h4 fw-bold mb-3">Tips for applying to physiotherapy jobs in {{ province }}</h2>
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-4">
+            {{ tips_for_applying|linebreaks }}
+          </div>
+        </div>
+      </div>
+      {% endif %}
 
       <!-- Major Cities -->
       <div class="mb-5">
@@ -147,12 +180,12 @@
       </div>
 
       <!-- Certification -->
-      {% if certification_note %}
+      {% if registration_note %}
       <div class="mb-5">
         <h2 class="h4 fw-bold mb-3">Registration Requirements</h2>
         <div class="card border-0 shadow-sm border-start border-4 border-primary">
           <div class="card-body p-4">
-            <p class="mb-0">{{ certification_note }}</p>
+            {{ registration_note|linebreaks }}
           </div>
         </div>
       </div>

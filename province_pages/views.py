@@ -52,7 +52,25 @@ def ontario_view(request):
         "intro": """Ontario represents Canada's largest physiotherapy job market, with opportunities spanning major urban centres like Toronto and Ottawa to growing communities across the province. The diversity of practice settings—from acute care hospitals in downtown Toronto to community clinics in Northern Ontario—makes this province attractive for physiotherapists at all career stages.
 
 The Ontario healthcare system continues to expand access to physiotherapy services, particularly for seniors and post-surgical patients. This expansion has created steady demand for qualified physiotherapists in hospitals, private practice, home care, and long-term care facilities.""",
-        "certification_note": "Physiotherapists should confirm current registration requirements with the provincial regulatory college.",
+        "registration_note": "Physiotherapists in Ontario are regulated by the <a href=\"https://www.cpoh.org\" target=\"_blank\">College of Physiotherapists of Ontario</a>. Candidates should confirm current registration requirements directly with the regulator, especially if educated outside Canada or moving from another province. Requirements can change, so verify before applying.",
+        "job_market": """Ontario’s physiotherapy job market is the largest in Canada, driven by a growing and aging population that requires rehabilitation services. Major urban centres such as Toronto and Ottawa host large hospital networks, private orthopaedic clinics, and academic health centres, offering a wide range of roles from acute care to specialised outpatient services. Rural and northern communities also rely on physiotherapists for community‑based care, creating diverse opportunities across the province. Demand is especially high in areas like seniors’ care, post‑operative rehabilitation, and chronic disease management, ensuring a steady flow of openings throughout the year.""",
+        "practice_settings": """Common practice settings in Ontario include:
+
+* Hospital acute care and rehabilitation units
+* Private orthopaedic and sports medicine clinics
+* Community health centres and public health programs
+* Home‑care and community‑based visiting therapist services
+* Long‑term care facilities and seniors’ housing
+* Academic and research institutions affiliated with universities""",
+        "tips_for_applying": """Tips for applying to physiotherapy jobs in Ontario:
+
+1. **Check registration** – Ensure you are registered with the College of Physiotherapists of Ontario before applying. Internationally educated therapists should verify credential assessment.
+2. **Tailor your CV** – Highlight experience in the specific practice setting (e.g., acute care, sports rehab) that the job advertises.
+3. **Network locally** – Attend provincial PT association events and connect with hiring managers at hospitals.
+4. **Showcase competencies** – Emphasise skills in patient assessment, treatment planning, and multidisciplinary teamwork.
+5. **Prepare for interviews** – Be ready to discuss case studies, especially involving seniors or post‑surgical patients, which are common in Ontario.
+6. **Stay updated** – Follow the College’s continuing education requirements to keep your licence current.
+""",
         "job_board_slug": "ontario",
         "search_keywords": ["Toronto", "Ottawa", "Hamilton", "London", "Kitchener"],
     })
@@ -86,7 +104,10 @@ def british_columbia_view(request):
         "intro": """British Columbia combines urban opportunities in Vancouver with unique rural and coastal positions that attract physiotherapists seeking variety in their practice. The province's health authorities—Vancouver Coastal, Fraser, Interior, Island, and Northern—offer structured career paths with competitive benefits.
 
 BC's outdoor lifestyle and mild climate draw physiotherapists interested in sports medicine and active rehabilitation. From ski injury clinics in Whistler to senior care in Victoria, the province offers practice settings that align with diverse professional interests.""",
-        "certification_note": "Physiotherapists should confirm current registration requirements with the provincial regulatory college.",
+        "registration_note": "Physiotherapists in British Columbia are regulated by the <a href=\"https://www.cpsbc.org\" target=\"_blank\">College of Physical Therapists of British Columbia</a>. Confirm current registration requirements with the college, especially if educated outside Canada or moving from another province. Requirements may change, so verify before applying.",
+        "job_market": "British Columbia’s physiotherapy job market benefits from a mix of urban hospital networks, private clinics, and a growing focus on community‑based care. Major centres such as Vancouver and Victoria host large acute‑care facilities, while smaller cities like Kelowna and Nanaimo provide opportunities in outpatient and sports‑medicine settings. The province’s emphasis on preventive health and aging populations drives demand for therapists across the public and private sectors.",
+        "practice_settings": "Common practice settings in British Columbia include hospital acute care, private orthopaedic and sports medicine clinics, community health centres, home‑care services, and long‑term care facilities.",
+        "tips_for_applying": "Tips for applying in BC: 1) Verify registration with the college; 2) Highlight experience in both urban and rural settings; 3) Emphasise any work with Indigenous communities; 4) Network through the BCPTA; 5) Showcase competencies in musculoskeletal and geriatric care.",
         "job_board_slug": "british-columbia",
         "search_keywords": ["Vancouver", "Victoria", "Kelowna", "Surrey", "Burnaby"],
     })
