@@ -89,7 +89,7 @@
             {% if intro %}
               {{ intro|linebreaks }}
             {% else %}
-              <p>Find physiotherapy opportunities in {{ province }}. Browse current job openings in hospitals, clinics, and private practices across the province.</p>
+              <p>Find physiotherapy opportunities in {{ province }}. Browse current job openings.</p>
             {% endif %}
           </div>
         </div>
@@ -146,50 +146,6 @@
         </div>
       </div>
 
-      <!-- Salary Info -->
-      {% if average_salary_range %}
-      <div class="mb-5">
-        <h2 class="h4 fw-bold mb-3">Compensation Overview</h2>
-        <div class="card border-0 shadow-sm bg-light">
-          <div class="card-body p-4">
-            <div class="d-flex align-items-center">
-              <div class="me-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success">
-                  <line x1="12" x2="12" y1="2" y2="22"/>
-                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                </svg>
-              </div>
-              <div>
-                <p class="mb-1 text-muted">Typical Range</p>
-                <p class="h4 fw-bold mb-0">{{ average_salary_range }}</p>
-                <small class="text-muted">Salaries vary by employer type, experience, and location</small>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      {% endif %}
-
-      <!-- Top Employers -->
-      {% if top_employers %}
-      <div class="mb-5">
-        <h2 class="h4 fw-bold mb-3">Major Employers in {{ province }}</h2>
-        <div class="card border-0 shadow-sm">
-          <div class="list-group list-group-flush">
-            {% for employer in top_employers %}
-            <div class="list-group-item d-flex justify-content-between align-items-center">
-              <div>
-                <div class="fw-bold">{{ employer.name }}</div>
-                <small class="text-muted">{{ employer.location }}</small>
-              </div>
-              <a href="/jobs/?q={{ employer.name|urlencode }}" class="btn btn-sm btn-outline-primary">View Jobs</a>
-            </div>
-            {% endfor %}
-          </div>
-        </div>
-      </div>
-      {% endif %}
-
       <!-- Certification -->
       {% if certification_note %}
       <div class="mb-5">
@@ -207,8 +163,8 @@
         <div class="card border-0 shadow-sm bg-primary text-white">
           <div class="card-body p-4 text-center">
             <h3 class="h4 fw-bold mb-3">Ready to Find Your Next PT Role?</h3>
-            <p class="mb-4">Browse current physiotherapy job openings in {{ province }}.</p>
-            <a href="/jobs/?location={{ province }}" class="btn btn-light btn-lg fw-bold">View All {{ province }} Jobs</a>
+            <p class="mb-4">Explore current physiotherapy job openings in {{ province }}.</p>
+            <a href="/jobs/?location={{ province }}" class="btn btn-light btn-lg fw-bold">Browse Opportunities in {{ province }}</a>
           </div>
         </div>
       </div>
