@@ -394,6 +394,26 @@ def contact(request):
         email = (request.POST.get("email") or "").strip()
         message = (request.POST.get("message") or "").strip()
 
+        # Block common SEO spam contact-form pitches
+        spam_phrases = [
+            "technical seo",
+            "indexing and optimization",
+            "rank better",
+            "main keywords",
+            "relevant traffic",
+            "happy to share more",
+            "seo areas",
+            "seo expert",
+            "google ranking",
+            "increase your traffic",
+            "digital marketing",
+            "backlinks",
+        ]
+
+        message_lower = message.lower()
+        if any(phrase in message_lower for phrase in spam_phrases):
+            return redirect("contact")
+
         context.update({
             "form_name": name,
             "form_email": email,
