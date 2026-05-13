@@ -353,7 +353,7 @@ def home(request: HttpRequest) -> HttpResponse:
     jobs = (
         _active_jobs_qs()
         .select_related("employer")
-        .order_by("-posting_date", "-id")[:3]
+        .order_by("-posting_date", "-id")[:6]
     )
     featured_jobs = (
         _active_jobs_qs()
