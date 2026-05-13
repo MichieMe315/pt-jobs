@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     "board",
     "marketplace",
     "international_candidates",
+    "province_pages",
 ]
 
 

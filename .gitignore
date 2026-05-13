@@ -48,3 +48,4 @@ list[str]
 tuple[str
 
 railway
+.venv/

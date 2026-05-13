@@ -17,6 +17,8 @@ urlpatterns = [
     # Existing app
     path("", include("board.urls")),
 
+    path("", include("province_pages.urls")),
+
     # New apps (kept separate from board)
     path("marketplace/", include("marketplace.urls")),
     path("sponsor-an-international-candidate/", include("international_candidates.urls")),
