@@ -1,268 +1,267 @@
 {% extends "base.html" %}
-{% load static %}
 
 {% block title %}{{ page_title|default:"Physiotherapy Jobs in Canada" }}{% endblock %}
 
 {% block extra_head %}
-<meta name="description" content="{{ meta_description|default:"Find physiotherapy jobs across Canada. Hospital, clinic, and home care opportunities for PTs." }}">
+<meta name="description" content="{{ meta_description|default:'Find physiotherapy jobs across Canada.' }}">
 <link rel="canonical" href="https://www.physiotherapyjobscanada.ca{{ request.path }}">
-
-<!-- Open Graph -->
-<meta property="og:title" content="{{ page_title|default:"Physiotherapy Jobs in Canada" }}">
-<meta property="og:description" content="{{ meta_description|default:"Find physiotherapy jobs across Canada." }}">
+<meta property="og:title" content="{{ page_title|default:'Physiotherapy Jobs in Canada' }}">
+<meta property="og:description" content="{{ meta_description|default:'Find physiotherapy jobs across Canada.' }}">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://www.physiotherapyjobscanada.ca{{ request.path }}">
 
-<!-- Schema.org JSON-LD -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "CollectionPage",
-  "name": "{{ h1|default:"Physiotherapy Jobs" }}",
-  "description": "{{ meta_description|default:"Find physiotherapy jobs." }}",
-  "url": "https://www.physiotherapyjobscanada.ca{{ request.path }}",
-  "mainEntity": {
-    "@type": "ItemList",
-    "itemListElement": [
-      {% for keyword in search_keywords %}
-      {
-        "@type": "ListItem",
-        "position": {{ forloop.counter }},
-        "name": "Physiotherapy Jobs in {{ keyword }}",
-        "url": "https://www.physiotherapyjobscanada.ca/jobs/?location={{ keyword|urlencode }}"
-      }{% if not forloop.last %},{% endif %}
-      {% endfor %}
-    ]
+<style>
+  .province-page,
+  .province-page * {
+    text-shadow: none !important;
+    -webkit-text-stroke: 0 !important;
+    filter: none !important;
   }
-}
-</script>
+
+  .province-page h1,
+  .province-page h2,
+  .province-page h3 {
+    text-shadow: none !important;
+    -webkit-text-stroke: 0 !important;
+    filter: none !important;
+  }
+
+  .province-page h1 {
+    font-size: 2.35rem;
+    font-weight: 700;
+    line-height: 1.15;
+  }
+
+  .province-page h2 {
+    font-size: 1.55rem;
+    font-weight: 700;
+  }
+
+  .province-page h3 {
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  .province-panel {
+    background: #303840;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: .5rem;
+  }
+
+  .province-hero {
+    background: #272f36;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: .5rem;
+  }
+
+  .province-sidebar .list-group-item {
+    background: #303840;
+    color: #f8f9fa;
+    border-color: rgba(255,255,255,.12);
+  }
+
+  .province-sidebar .list-group-item:hover {
+    background: #3a444d;
+    color: #fff;
+  }
+
+  .province-muted {
+    color: rgba(255,255,255,.72);
+  }
+
+  .province-job-card {
+    background: #303840;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: .5rem;
+  }
+
+  .province-job-card a {
+    color: #fff;
+    text-decoration: none;
+  }
+
+  .province-job-card a:hover {
+    text-decoration: underline;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<section class="py-5 bg-gradient" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
-  <div class="container">
+
+<div class="province-page">
+
+  <section class="province-hero p-4 p-md-5 mb-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ province }}</li>
+      </ol>
+    </nav>
+
     <div class="row">
-      <div class="col-lg-8">
-        <nav aria-label="breadcrumb" class="mb-3">
-          <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-light opacity-75">Home</a></li>
-            <li class="breadcrumb-item active text-light opacity-50" aria-current="page">{{ province }}</li>
-          </ol>
-        </nav>
-        
-        <h1 class="display-5 fw-bold text-white mb-3">{{ h1 }}</h1>
-        <p class="lead text-white-50 mb-4">{{ description }}</p>
-        
-        <!-- Quick Search -->
+      <div class="col-lg-9">
+        <h1 class="mb-3">{{ h1 }}</h1>
+        <p class="lead province-muted mb-4">{{ description }}</p>
+
         <form method="get" action="/jobs/" class="row g-2">
           <div class="col-md-6">
-            <input type="text" name="q" class="form-control form-control-lg" 
-                   placeholder="Search physiotherapy jobs" 
-                   value="physiotherapist">
+            <input type="text" name="q" class="form-control form-control-lg" placeholder="Search physiotherapy jobs">
           </div>
           <div class="col-md-4">
-            <input type="text" name="location" class="form-control form-control-lg" 
-                   placeholder="City in {{ province }}" 
-                   value="{{ major_cities.0 }}"
-                   data-autocomplete="location">
+            <input type="text" name="location" class="form-control form-control-lg" placeholder="City or province" value="{{ province }}">
           </div>
           <div class="col-md-2 d-grid">
-            <button class="btn btn-primary btn-lg fw-bold">Find Jobs</button>
+            <button class="btn btn-primary btn-lg fw-bold">Search</button>
           </div>
         </form>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- Main Content -->
-<div class="container py-5">
   <div class="row">
-    <!-- Left Content -->
-    <div class="col-lg-8">
-      <!-- Introduction -->
-      <div class="mb-5">
-        <h2 class="h3 fw-bold mb-4">Physiotherapy Careers in {{ province }}</h2>
-        <div class="card border-0 shadow-sm">
-          <div class="card-body p-4">
-            {% if intro %}
-              {{ intro|linebreaks }}
-            {% else %}
-              <p>Find physiotherapy opportunities in {{ province }}. Browse current job openings in hospitals, clinics, and private practices across the province.</p>
-            {% endif %}
-          </div>
-        </div>
-      </div>
+    <main class="col-lg-8">
 
-      <!-- Major Cities -->
-      <div class="mb-5">
-        <h2 class="h4 fw-bold mb-3">Major Cities with Physiotherapy Opportunities</h2>
-        <div class="row g-3">
-          {% for city in major_cities|slice:":6" %}
-          <div class="col-md-4 col-sm-6">
-            <a href="/jobs/?location={{ city|urlencode }}" class="text-decoration-none">
-              <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body text-center">
-                  <div class="mb-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
-                      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-                      <circle cx="12" cy="10" r="3"/>
-                    </svg>
-                  </div>
-                  <h3 class="h6 fw-bold mb-1">{{ city }}</h3>
-                  <small class="text-muted">View jobs →</small>
+      <section class="mb-4">
+        <h2 class="mb-3">Current Physiotherapy Jobs in {{ province }}</h2>
+
+        {% if live_jobs %}
+          <div class="row g-3">
+            {% for job in live_jobs %}
+            <div class="col-md-6">
+              <div class="province-job-card p-3 h-100">
+                <h3 class="mb-2">
+                  <a href="{% url 'job_detail' job.id %}">{{ job.title }}</a>
+                </h3>
+                <div class="small province-muted mb-2">
+                  {% if job.employer %}{{ job.employer.company_name }}{% endif %}
+                </div>
+                <div class="small province-muted">
+                  {{ job.location }}
                 </div>
               </div>
+            </div>
+            {% endfor %}
+          </div>
+
+          <div class="mt-3">
+            <a href="/jobs/?location={{ province|urlencode }}" class="btn btn-primary fw-bold">
+              View All {{ province }} Jobs
             </a>
           </div>
-          {% endfor %}
-        </div>
-        {% if major_cities|length > 6 %}
-        <div class="mt-3">
-          <small class="text-muted">And more: {{ major_cities|slice:"6:"|join:", " }}</small>
-        </div>
+        {% else %}
+          <div class="province-panel p-4">
+            <p class="mb-3 province-muted">
+              There are no current live postings matched to {{ province }} right now. Browse all current physiotherapy jobs or check back soon.
+            </p>
+            <a href="/jobs/" class="btn btn-primary fw-bold">View All Current Jobs</a>
+          </div>
         {% endif %}
-      </div>
+      </section>
 
-      <!-- Work Settings -->
-      <div class="mb-5">
-        <h2 class="h4 fw-bold mb-3">Common Work Settings</h2>
-        <div class="card border-0 shadow-sm">
-          <div class="card-body">
-            <div class="row">
-              {% for setting in work_settings %}
-              <div class="col-md-6 mb-2">
-                <div class="d-flex align-items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success me-2">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                  <span>{{ setting }}</span>
-                </div>
-              </div>
-              {% endfor %}
-            </div>
-          </div>
+      <section class="mb-4">
+        <h2 class="mb-3">Physiotherapy Careers in {{ province }}</h2>
+        <div class="province-panel p-4">
+          {{ intro|linebreaks }}
         </div>
-      </div>
+      </section>
 
-
-
-      <!-- Certification -->
-      {% if certification_note %}
-      <div class="mb-5">
-        <h2 class="h4 fw-bold mb-3">Registration Requirements</h2>
-        <div class="card border-0 shadow-sm border-start border-4 border-primary">
-          <div class="card-body p-4">
-            <p class="mb-0">{{ certification_note }}</p>
-          </div>
+      {% if practice_settings_text %}
+      <section class="mb-4">
+        <h2 class="mb-3">Common Practice Settings in {{ province }}</h2>
+        <div class="province-panel p-4">
+          {{ practice_settings_text|linebreaks }}
         </div>
-      </div>
+      </section>
       {% endif %}
 
-      <!-- CTA Section -->
-      <div class="mb-5">
-        <div class="card border-0 shadow-sm bg-primary text-white">
-          <div class="card-body p-4 text-center">
-            <h3 class="h4 fw-bold mb-3">Ready to Find Your Next PT Role?</h3>
-            <p class="mb-4">Browse current physiotherapy job openings in {{ province }}.</p>
-            <a href="/jobs/?location={{ province }}" class="btn btn-light btn-lg fw-bold">View All {{ province }} Jobs</a>
-          </div>
+      {% if regional_context %}
+      <section class="mb-4">
+        <h2 class="mb-3">Regional Context Across {{ province }}</h2>
+        <div class="province-panel p-4">
+          {{ regional_context|linebreaks }}
         </div>
-      </div>
+      </section>
+      {% endif %}
 
-      <!-- Other Provinces -->
-      <div class="mb-5">
-        <h2 class="h4 fw-bold mb-3">Explore Other Provinces</h2>
-        <div class="row g-2">
-          <div class="col-6 col-md-3">
-            <a href="/physiotherapy-jobs-ontario/" class="btn btn-outline-secondary w-100">Ontario</a>
-          </div>
-          <div class="col-6 col-md-3">
-            <a href="/physiotherapy-jobs-british-columbia/" class="btn btn-outline-secondary w-100">British Columbia</a>
-          </div>
-          <div class="col-6 col-md-3">
-            <a href="/physiotherapy-jobs-alberta/" class="btn btn-outline-secondary w-100">Alberta</a>
-          </div>
-          <div class="col-6 col-md-3">
-            <a href="/physiotherapy-jobs-quebec/" class="btn btn-outline-secondary w-100">Quebec</a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Right Sidebar -->
-    <div class="col-lg-4">
-      <!-- Quick Links -->
-      <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white">
-          <h3 class="h6 fw-bold mb-0">Quick Links</h3>
-        </div>
-        <div class="list-group list-group-flush">
-          <a href="/jobs/" class="list-group-item list-group-item-action">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2">
-              <rect width="20" height="14" x="2" y="7" rx="2" ry="2"/>
-              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-            </svg>
-            All Physiotherapy Jobs
-          </a>
-          <a href="{% url 'home' %}" class="list-group-item list-group-item-action">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2">
-              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-              <polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-            Back to Homepage
-          </a>
-        </div>
-      </div>
-
-      <!-- Search by City -->
-      <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white">
-          <h3 class="h6 fw-bold mb-0">Search by City</h3>
-        </div>
-        <div class="card-body">
-          <div class="list-group list-group-flush">
-            {% for city in search_keywords|slice:":8" %}
-            <a href="/jobs/?location={{ city|urlencode }}" class="list-group-item list-group-item-action py-2">
-              {{ city }}
-            </a>
+      <section class="mb-4">
+        <h2 class="mb-3">Common Work Settings</h2>
+        <div class="province-panel p-4">
+          <div class="row">
+            {% for setting in work_settings %}
+            <div class="col-md-6 mb-2">
+              <span class="province-muted">•</span>
+              <span>{{ setting }}</span>
+            </div>
             {% endfor %}
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- Job Alert -->
-      <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body p-4">
-          <h3 class="h6 fw-bold mb-3">Get {{ province }} Job Alerts</h3>
-          <p class="small text-muted mb-3">New physiotherapy jobs in {{ province }} delivered to your inbox.</p>
-          <form method="post" action="{% url 'job_alert_signup' %}">
-            {% csrf_token %}
-            <div class="mb-2">
-              <input type="email" name="email" class="form-control" placeholder="Your email address" required>
-            </div>
-            <input type="hidden" name="province" value="{{ province }}">
-            <button class="btn btn-primary w-100 fw-bold">Subscribe</button>
-          </form>
+      {% if registration_note %}
+      <section class="mb-4">
+        <h2 class="mb-3">Registration and Professional Requirements</h2>
+        <div class="province-panel p-4">
+          {{ registration_note|linebreaks }}
         </div>
-      </div>
+      </section>
+      {% endif %}
 
-      <!-- Resources -->
-      <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white">
-          <h3 class="h6 fw-bold mb-0">Physiotherapy Resources</h3>
+      <section class="mb-4">
+        <h2 class="mb-3">Explore Other Provinces</h2>
+        <div class="row g-2">
+          <div class="col-md-3 col-6"><a href="/physiotherapy-jobs-ontario/" class="btn btn-outline-light w-100">Ontario</a></div>
+          <div class="col-md-3 col-6"><a href="/physiotherapy-jobs-british-columbia/" class="btn btn-outline-light w-100">British Columbia</a></div>
+          <div class="col-md-3 col-6"><a href="/physiotherapy-jobs-alberta/" class="btn btn-outline-light w-100">Alberta</a></div>
+          <div class="col-md-3 col-6"><a href="/physiotherapy-jobs-saskatchewan/" class="btn btn-outline-light w-100">Saskatchewan</a></div>
+          <div class="col-md-3 col-6"><a href="/physiotherapy-jobs-manitoba/" class="btn btn-outline-light w-100">Manitoba</a></div>
+          <div class="col-md-3 col-6"><a href="/physiotherapy-jobs-quebec/" class="btn btn-outline-light w-100">Quebec</a></div>
+          <div class="col-md-3 col-6"><a href="/physiotherapy-jobs-nova-scotia/" class="btn btn-outline-light w-100">Nova Scotia</a></div>
+          <div class="col-md-3 col-6"><a href="/physiotherapy-jobs-new-brunswick/" class="btn btn-outline-light w-100">New Brunswick</a></div>
+        </div>
+      </section>
+
+    </main>
+
+    <aside class="col-lg-4 province-sidebar">
+
+      <div class="province-panel mb-4">
+        <div class="p-3 border-bottom border-secondary">
+          <h3 class="mb-0">Quick Links</h3>
         </div>
         <div class="list-group list-group-flush">
-          <a href="/jobs/" class="list-group-item list-group-item-action">
-            Current Job Postings
-          </a>
-          <a href="{% url 'home' %}" class="list-group-item list-group-item-action">
-            Post a Job
-          </a>
+          <a href="/jobs/" class="list-group-item list-group-item-action">View Current Physiotherapy Jobs</a>
+          <a href="/jobs/?location={{ province|urlencode }}" class="list-group-item list-group-item-action">View {{ province }} Jobs</a>
+          <a href="{% url 'home' %}" class="list-group-item list-group-item-action">Physiotherapy Jobs Canada Home</a>
         </div>
       </div>
-    </div>
+
+      <div class="province-panel mb-4 p-3">
+        <h3 class="mb-3">Get {{ province }} Job Alerts</h3>
+        <p class="small province-muted mb-3">New physiotherapy postings in {{ province }} delivered to your inbox.</p>
+        <form method="post" action="{% url 'job_alert_signup' %}">
+          {% csrf_token %}
+          <div class="mb-2">
+            <input type="email" name="email" class="form-control" placeholder="Your email address" required>
+          </div>
+          <input type="hidden" name="province" value="{{ province }}">
+          <button class="btn btn-primary w-100 fw-bold">Sign Up</button>
+        </form>
+      </div>
+
+      <div class="province-panel">
+        <div class="p-3 border-bottom border-secondary">
+          <h3 class="mb-0">Physiotherapy Resources</h3>
+        </div>
+        <div class="list-group list-group-flush">
+          <a href="/jobs/" class="list-group-item list-group-item-action">View Current Physiotherapy Jobs</a>
+          <span class="list-group-item province-muted">Marketplace — Coming Soon</span>
+          <span class="list-group-item province-muted">Student Hub — Coming Soon</span>
+        </div>
+      </div>
+
+    </aside>
   </div>
+
 </div>
+
 {% endblock %}
