@@ -46,8 +46,8 @@
       <div class="col-lg-8">
         <nav aria-label="breadcrumb" class="mb-3">
           <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-light opacity-75">Home</a></li>
-            <li class="breadcrumb-item active text-light opacity-50" aria-current="page">{{ province }}</li>
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ province }}</li>
           </ol>
         </nav>
         
@@ -95,17 +95,7 @@
         </div>
       </div>
 
-      {% if job_market %}
-      <div class="mb-5">
-        <h2 class="h4 fw-bold mb-3">Physiotherapy job market in {{ province }}</h2>
-        <div class="card border-0 shadow-sm">
-          <div class="card-body p-4">
-            {{ job_market|linebreaks }}
-          </div>
-        </div>
-      </div>
-      {% endif %}
-
+      
       {% if practice_settings %}
       <div class="mb-5">
         <h2 class="h4 fw-bold mb-3">Common practice settings in {{ province }}</h2>
@@ -117,20 +107,10 @@
       </div>
       {% endif %}
 
-      {% if tips_for_applying %}
-      <div class="mb-5">
-        <h2 class="h4 fw-bold mb-3">Tips for applying to physiotherapy jobs in {{ province }}</h2>
-        <div class="card border-0 shadow-sm">
-          <div class="card-body p-4">
-            {{ tips_for_applying|linebreaks }}
-          </div>
-        </div>
-      </div>
-      {% endif %}
-
+      
       <!-- Major Cities -->
       <div class="mb-5">
-        <h2 class="h4 fw-bold mb-3">Major Cities with Physiotherapy Opportunities</h2>
+        <h2 class="h4 fw-bold mb-3">Explore Physiotherapy Jobs by City</h2>
         <div class="row g-3">
           {% for city in major_cities|slice:":6" %}
           <div class="col-md-4 col-sm-6">
@@ -286,10 +266,13 @@
         </div>
         <div class="list-group list-group-flush">
           <a href="/jobs/" class="list-group-item list-group-item-action">
-            Current Job Postings
+            View Current Physiotherapy Jobs
           </a>
-          <a href="{% url 'home' %}" class="list-group-item list-group-item-action">
-            Post a Job
+          <a href="#" class="list-group-item list-group-item-action disabled" aria-disabled="true">
+            Marketplace — Coming Soon
+          </a>
+          <a href="#" class="list-group-item list-group-item-action disabled" aria-disabled="true">
+            Student Hub — Coming Soon
           </a>
         </div>
       </div>
