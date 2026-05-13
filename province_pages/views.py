@@ -1,327 +1,275 @@
 """
 Province SEO Pages Views
-------------------------
+-------------------------
 Each view renders province-specific content with:
 - Unique H1, title, and meta description
 - Province-specific career information
 - Links to jobs filtered by province/keywords
 """
 from django.shortcuts import render
-from django.urls import reverse
 
 
 def get_province_context(province_name, major_cities, work_settings, description):
     """
     Build common context for province pages.
-    Assumes Job model exists in board app with fields:
-    - title, location, employer, posting_date, is_active
     """
-    context = {
+    return {
         "province": province_name,
         "major_cities": major_cities,
         "work_settings": work_settings,
         "description": description,
         "page_type": "province_landing",
     }
-    return context
 
 
 def ontario_view(request):
-    """Physiotherapy Jobs Ontario"""
     major_cities = [
         "Toronto", "Ottawa", "Mississauga", "Brampton", "Hamilton",
         "Kitchener", "London", "Markham", "Vaughan", "Windsor"
     ]
     work_settings = [
-        "Hospitals",
-        "Private clinics",
-        "Community health centres",
-        "Home-care services",
-        "Long-term care facilities",
+        "Private orthopedic clinics",
+        "Hospital rehabilitation departments",
+        "Home care and community health",
+        "Sports medicine facilities",
+        "Long-term care homes",
+        "University health centres",
     ]
-
     context = get_province_context(
         province_name="Ontario",
         major_cities=major_cities,
         work_settings=work_settings,
-        description="Ontario offers diverse physiotherapy opportunities across Canada's most populous province."
+        description="Physiotherapy jobs in Ontario.",
     )
-
     context.update({
-        "page_title": "Physiotherapy Jobs in Ontario | Find PT Careers Across the Province",
-        "meta_description": "Find physiotherapy jobs in Ontario. Opportunities in Toronto, Ottawa, Hamilton, London, and across the province. Hospitals, clinics, and home care settings hiring now.",
+        "page_title": "Physiotherapy Jobs in Ontario | Find PT Careers",
+        "meta_description": "Find physiotherapy jobs in Ontario. Opportunities in Toronto, Ottawa, Hamilton, and across the province.",
         "h1": "Physiotherapy Jobs in Ontario",
-        "intro": """Ontario offers diverse physiotherapy opportunities across Canada's most populous province, with positions spanning major urban centres like Toronto and Ottawa to growing communities across the province. The diversity of practice settings-from acute care hospitals in downtown Toronto to community clinics in Northern Ontario-makes this province attractive for physiotherapists at all career stages.
-
-The Ontario healthcare system continues to expand access to physiotherapy services, particularly for seniors and post-surgical patients. This expansion has created steady demand for qualified physiotherapists in hospitals, private practice, home care, and long-term care facilities.""",
-        "registration_note": "Physiotherapists in Ontario are regulated provincially. Candidates should confirm current registration requirements directly with the appropriate provincial physiotherapy regulator before applying, especially if they were educated outside Canada or are moving from another province.",
-
-        "practice_settings": "Typical practice settings include hospitals, private clinics, community health centres, home-care services, and long-term care facilities.",
-
+        "intro": "Find physiotherapy positions in Ontario, from major cities to growing communities. Practice settings include hospitals, private clinics, and home care.",
+        "certification_note": "Register with the College of Physiotherapists of Ontario.",
         "job_board_slug": "ontario",
         "search_keywords": ["Toronto", "Ottawa", "Hamilton", "London", "Kitchener"],
     })
-
     return render(request, "province_pages/province_base.html", context)
 
 
 def british_columbia_view(request):
-    """Physiotherapy Jobs British Columbia"""
     major_cities = [
         "Vancouver", "Surrey", "Burnaby", "Richmond", "Victoria",
         "Kelowna", "Abbotsford", "Coquitlam", "Langley", "Nanaimo"
     ]
     work_settings = [
-        "Hospitals",
-        "Private clinics",
-        "Community health centres",
-        "Home-care services",
-        "Long-term care facilities",
+        "Coastal private practices",
+        "Regional hospitals",
+        "Rural health settings",
+        "Sport rehabilitation centres",
+        "Workplace wellness programs",
+        "Active aging facilities",
     ]
-
     context = get_province_context(
         province_name="British Columbia",
         major_cities=major_cities,
         work_settings=work_settings,
-        description="BC offers diverse physiotherapy opportunities from Vancouver to rural communities."
+        description="Physiotherapy jobs in British Columbia.",
     )
-
     context.update({
         "page_title": "Physiotherapy Jobs in British Columbia | Vancouver & Beyond",
-        "meta_description": "Explore physiotherapy careers in British Columbia. Jobs in Vancouver, Victoria, Kelowna, and throughout BC. Urban hospitals, coastal clinics, and rural health opportunities.",
+        "meta_description": "Explore physiotherapy careers in BC. Jobs in Vancouver, Victoria, Kelowna, and throughout the province.",
         "h1": "Physiotherapy Jobs in British Columbia",
-        "intro": """British Columbia offers diverse physiotherapy opportunities from urban centres like Vancouver to rural and coastal communities across the province.
-
-BC's outdoor lifestyle and mild climate draw physiotherapists interested in sports medicine and active rehabilitation. From ski injury clinics in Whistler to senior care in Victoria, the province offers practice settings that align with diverse professional interests.""",
-        "registration_note": "Physiotherapists in British Columbia are regulated provincially. Candidates should confirm current registration requirements directly with the appropriate provincial physiotherapy regulator before applying, especially if they were educated outside Canada or are moving from another province.",
-
-        "practice_settings": "Typical practice settings include hospitals, private clinics, community health centres, home-care services, and long-term care facilities.",
+        "intro": "Find physiotherapy roles in BC, from coastal cities to rural communities. Practice settings include private clinics, hospitals, and rehabilitation centres.",
+        "certification_note": "Register with the College of Physical Therapists of British Columbia.",
         "job_board_slug": "british-columbia",
         "search_keywords": ["Vancouver", "Victoria", "Kelowna", "Surrey", "Burnaby"],
     })
-
     return render(request, "province_pages/province_base.html", context)
 
 
 def alberta_view(request):
-    """Physiotherapy Jobs Alberta"""
     major_cities = [
         "Calgary", "Edmonton", "Red Deer", "Lethbridge", "St. Albert",
         "Medicine Hat", "Grande Prairie", "Airdrie", "Spruce Grove", "Fort McMurray"
     ]
     work_settings = [
-        "Hospitals",
-        "Private clinics",
-        "Community health centres",
-        "Home‑care services",
-        "Long‑term care facilities",
+        "Oil and gas industrial rehab",
+        "Teaching hospitals",
+        "Rural health centres",
+        "Sports performance clinics",
+        "Workers compensation facilities",
+        "Remote postings",
     ]
-
     context = get_province_context(
         province_name="Alberta",
         major_cities=major_cities,
         work_settings=work_settings,
-        description="Alberta offers diverse practice settings and career opportunities."
+        description="Physiotherapy jobs in Alberta.",
     )
-
     context.update({
-        "page_title": "Physiotherapy Jobs in Alberta | Calgary & Edmonton Opportunities",
-        "meta_description": "Find physiotherapy jobs in Alberta. Opportunities in Calgary, Edmonton, and across the province. Hospitals, industrial rehab, sports clinics, and rural health positions available.",
+        "page_title": "Physiotherapy Jobs in Alberta | Calgary & Edmonton",
+        "meta_description": "Find physiotherapy jobs in Alberta. Opportunities in Calgary, Edmonton, and across the province.",
         "h1": "Physiotherapy Jobs in Alberta",
-        "intro": """Alberta offers diverse practice settings and career opportunities, with a strong economy and growing population that have created sustained demand for physiotherapy services across all practice areas.
-
-The province's health authority manages public healthcare across urban and rural positions. Private practice thrives in Calgary and Edmonton, with particular strength in sports medicine and occupational rehabilitation.""",
-        "certification_note": "Physiotherapists should confirm current registration requirements with the provincial regulatory college.",
+        "intro": "Find physiotherapy positions in Alberta, spanning urban centres to rural communities. Settings include hospitals, clinics, and industrial rehab.",
+        "certification_note": "Register with the College of Physiotherapists of Alberta.",
         "job_board_slug": "alberta",
         "search_keywords": ["Calgary", "Edmonton", "Red Deer", "Lethbridge", "Medicine Hat"],
     })
-
     return render(request, "province_pages/province_base.html", context)
 
 
 def saskatchewan_view(request):
-    """Physiotherapy Jobs Saskatchewan"""
     major_cities = [
         "Saskatoon", "Regina", "Prince Albert", "Moose Jaw", "Lloydminster",
         "North Battleford", "Yorkton", "Swift Current", "Estevan", "Weyburn"
     ]
     work_settings = [
         "Hospitals",
-        "Private clinics",
-        "Community health centres",
-        "Home‑care services",
-        "Long‑term care facilities",
+        "Rural health centres",
+        "Agricultural injury rehab",
+        "University clinics",
+        "Remote postings",
+        "Multi-service community health",
     ]
-
     context = get_province_context(
         province_name="Saskatchewan",
         major_cities=major_cities,
         work_settings=work_settings,
-        description="Saskatchewan offers strong rural opportunities and growing urban centres."
+        description="Physiotherapy jobs in Saskatchewan.",
     )
-
     context.update({
         "page_title": "Physiotherapy Jobs in Saskatchewan | Saskatoon & Regina",
-        "meta_description": "Discover physiotherapy careers in Saskatchewan. Jobs in Saskatoon, Regina, Prince Albert, and rural communities. Urban hospitals and rural health opportunities available.",
+        "meta_description": "Discover physiotherapy careers in Saskatchewan. Jobs in Saskatoon, Regina, and rural communities.",
         "h1": "Physiotherapy Jobs in Saskatchewan",
-        "intro": """Saskatchewan offers physiotherapists the opportunity to practice with significant autonomy, particularly in rural settings where professionals often work as the primary rehabilitation provider.
-
-The province's growing cities-Saskatoon and Regina-offer urban practice opportunities while maintaining a lower cost of living than major Canadian centres. Rural positions often include housing allowances and retention bonuses to attract practitioners to underserved communities.""",
-        "certification_note": "Physiotherapists should confirm current registration requirements with the provincial regulatory college.",
+        "intro": "Find physiotherapy roles in Saskatchewan, with opportunities in urban centres and rural communities. Settings include hospitals and community clinics.",
+        "certification_note": "Register with the Saskatchewan College of Physical Therapists.",
         "job_board_slug": "saskatchewan",
         "search_keywords": ["Saskatoon", "Regina", "Prince Albert", "Moose Jaw", "Lloydminster"],
     })
-
     return render(request, "province_pages/province_base.html", context)
 
 
 def manitoba_view(request):
-    """Physiotherapy Jobs Manitoba"""
     major_cities = [
         "Winnipeg", "Brandon", "Steinbach", "Thompson", "Portage la Prairie",
         "Winkler", "Selkirk", "Morden", "Dauphin", "The Pas"
     ]
     work_settings = [
         "Hospitals",
-        "Private clinics",
-        "Community health centres",
-        "Home‑care services",
-        "Long‑term care facilities",
+        "Remote nursing stations",
+        "Chronic disease management",
+        "Indigenous community health",
+        "Regional health centre",
+        "Private orthopaedic clinics",
     ]
-
     context = get_province_context(
         province_name="Manitoba",
         major_cities=major_cities,
         work_settings=work_settings,
-        description="Manitoba offers unique northern and Indigenous health opportunities."
+        description="Physiotherapy jobs in Manitoba.",
     )
-
     context.update({
-        "page_title": "Physiotherapy Jobs in Manitoba | Winnipeg & Northern Opportunities",
-        "meta_description": "Find physiotherapy jobs in Manitoba. Opportunities in Winnipeg, Brandon, and Northern communities. Urban hospitals, rural health centres, and Indigenous health positions.",
+        "page_title": "Physiotherapy Jobs in Manitoba | Winnipeg & Rural Area",
+        "meta_description": "Find physiotherapy jobs in Manitoba. Opportunities in Winnipeg, Brandon, and rural communities.",
         "h1": "Physiotherapy Jobs in Manitoba",
-        "intro": """Manitoba offers physiotherapists unique opportunities to work with diverse populations, including Indigenous communities in Northern Manitoba. The province's Shared Health system coordinates care delivery across urban and remote settings.
-
-Winnipeg serves as the primary hub for physiotherapy positions across the province.""",
-        "certification_note": "Physiotherapists should confirm current registration requirements with the provincial regulatory college.",
+        "intro": "Find physiotherapy positions in Manitoba, with roles in urban hospitals and remote community clinics. Work with diverse populations across the province.",
+        "certification_note": "Register with the College of Physiotherapists of Manitoba.",
         "job_board_slug": "manitoba",
-
         "search_keywords": ["Winnipeg", "Brandon", "Steinbach", "Thompson", "Portage la Prairie"],
     })
-
     return render(request, "province_pages/province_base.html", context)
 
 
 def quebec_view(request):
-    """Physiotherapy Jobs Quebec (Physiotherapie)"""
     major_cities = [
         "Montreal", "Quebec City", "Laval", "Gatineau", "Longueuil",
         "Sherbrooke", "Saguenay", "Trois-Rivieres", "Terrebonne", "Saint-Jean-sur-Richelieu"
     ]
     work_settings = [
         "Hospitals",
-        "Private clinics",
-        "Community health centres",
-        "Home‑care services",
-        "Long‑term care facilities",
+        "Private francophone clinics",
+        "Rehabilitation centres",
+        "University-affiliated facilities",
+        "Bilingual rural health",
+        "Long-term care facilities",
     ]
-
     context = get_province_context(
         province_name="Quebec",
         major_cities=major_cities,
         work_settings=work_settings,
-        description="Quebec offers bilingual opportunities in Canada's largest francophone province."
+        description="Physiotherapy jobs in Quebec.",
     )
-
     context.update({
-        "page_title": "Physiotherapy Jobs in Quebec | Montreal & Quebec City Opportunities",
-        "meta_description": "Find physiotherapy jobs in Quebec. Opportunities in Montreal, Quebec City, and across the province. Bilingual positions in hospitals, clinics, and rehabilitation centres.",
+        "page_title": "Physiotherapy Jobs in Quebec | Montreal & Quebec City",
+        "meta_description": "Find physiotherapy jobs in Quebec. Opportunities in Montreal, Quebec City, and across the province.",
         "h1": "Physiotherapy Jobs in Quebec",
-        "intro": """Quebec presents unique opportunities for physiotherapists, particularly those with French language skills. The province's distinct healthcare system offers stable public sector employment across the province.
-
-Montreal serves as the primary hub with major teaching hospitals like CHUM and McGill University Health Centre. Quebec City, Sherbrooke, and regional centres offer growing opportunities. Bilingual physiotherapists are in high demand, with some positions available for English-only speakers in specific settings.""",
-        "certification_note": "Physiotherapists should confirm current registration requirements with the provincial regulatory college.",
+        "intro": "Find physiotherapy roles in Quebec, particularly for those with French language skills. Practice settings include hospitals, clinics, and rehabilitation centres.",
+        "certification_note": "Register with the Ordre professionnel de la physiotherapie du Quebec.",
         "job_board_slug": "quebec",
         "search_keywords": ["Montreal", "Quebec City", "Laval", "Gatineau", "Sherbrooke"],
     })
-
     return render(request, "province_pages/province_base.html", context)
 
 
 def nova_scotia_view(request):
-    """Physiotherapy Jobs Nova Scotia"""
     major_cities = [
         "Halifax", "Dartmouth", "Sydney", "Truro", "New Glasgow",
         "Glace Bay", "Kentville", "Amherst", "Bridgewater", "Yarmouth"
     ]
     work_settings = [
         "Hospitals",
-        "Private clinics",
-        "Community health centres",
-        "Home‑care services",
-        "Long‑term care facilities",
+        "Regional hospitals",
+        "Private practices",
+        "Seniors' residential care",
+        "University clinics",
+        "Home care",
     ]
-
     context = get_province_context(
         province_name="Nova Scotia",
         major_cities=major_cities,
         work_settings=work_settings,
-        description="Nova Scotia offers coastal living with growing healthcare opportunities."
+        description="Physiotherapy jobs in Nova Scotia.",
     )
-
     context.update({
-        "page_title": "Physiotherapy Jobs in Nova Scotia | Halifax & Maritime Opportunities",
-        "meta_description": "Explore physiotherapy careers in Nova Scotia. Jobs in Halifax, Sydney, Truro, and across the Maritimes. Urban hospitals, coastal clinics, and rural health opportunities.",
+        "page_title": "Physiotherapy Jobs in Nova Scotia | Halifax & Maritime",
+        "meta_description": "Explore physiotherapy careers in Nova Scotia. Jobs in Halifax, Sydney, Truro, and across the Maritimes.",
         "h1": "Physiotherapy Jobs in Nova Scotia",
-        "intro": """Nova Scotia offers physiotherapists an attractive combination of coastal lifestyle and professional opportunity. The Nova Scotia Health Authority oversees care delivery across the province, with Halifax serving as the major centre for specialized rehabilitation.
-
-The province's aging population has increased demand for physiotherapy in long-term care and home settings. Rural positions often include incentives to attract practitioners to underserved communities. The expanding Dalhousie University health programs contribute to a dynamic professional environment.""",
-        "certification_note": "Physiotherapists should confirm current registration requirements with the provincial regulatory college.",
+        "intro": "Find physiotherapy positions in Nova Scotia, from the Halifax area to rural communities. Practice settings include hospitals, clinics, and home care.",
+        "certification_note": "Register with the Nova Scotia College of Physiotherapists.",
         "job_board_slug": "nova-scotia",
         "search_keywords": ["Halifax", "Dartmouth", "Sydney", "Truro", "New Glasgow"],
     })
-
     return render(request, "province_pages/province_base.html", context)
 
 
 def new_brunswick_view(request):
-    """Physiotherapy Jobs New Brunswick"""
     major_cities = [
         "Moncton", "Saint John", "Fredericton", "Dieppe", "Miramichi",
         "Edmundston", "Bathurst", "Campbellton", "Oromocto", "Grand Falls"
     ]
     work_settings = [
         "Hospitals",
-        "Private clinics",
-        "Community health centres",
-        "Home‑care services",
-        "Long‑term care facilities",
+        "Private francophone clinics",
+        "Rural community health centres",
+        "Nursing home rehabilitation",
+        "Multi-service health clinics",
     ]
-
     context = get_province_context(
         province_name="New Brunswick",
         major_cities=major_cities,
         work_settings=work_settings,
-        description="New Brunswick offers bilingual practice in Canada's only officially bilingual province."
+        description="Physiotherapy jobs in New Brunswick.",
     )
-
     context.update({
-        "page_title": "Physiotherapy Jobs in New Brunswick | Bilingual Opportunities",
-        "meta_description": "Find physiotherapy jobs in New Brunswick. Opportunities in Moncton, Saint John, Fredericton, and bilingual communities. Horizon and Vitalite Health networks hiring now.",
+        "page_title": "Physiotherapy Jobs in New Brunswick | Bilingual",
+        "meta_description": "Find physiotherapy jobs in New Brunswick. Opportunities in Moncton, Saint John, Fredericton, and bilingual communities.",
         "h1": "Physiotherapy Jobs in New Brunswick",
-        "intro": """New Brunswick offers physiotherapists a unique bilingual practice environment-Canada's only officially bilingual province. Both Horizon Health Network and Vitalite Health Network provide stable public sector employment across the province.
-
-The province's aging demographics have driven investment in senior care and rehabilitation services. Rural opportunities are plentiful, with many communities actively recruiting to address healthcare gaps. Bilingual physiotherapists have expanded opportunities, particularly in Vitalite's francophone regions.""",
-        "certification_note": "Physiotherapists should confirm current registration requirements with the provincial regulatory college.",
+        "intro": "Find physiotherapy roles in New Brunswick, a bilingual province. Practice settings include hospitals, clinics, and nursing homes.",
+        "certification_note": "Register with the College of Physiotherapists of New Brunswick.",
         "job_board_slug": "new-brunswick",
         "search_keywords": ["Moncton", "Saint John", "Fredericton", "Dieppe", "Miramichi"],
     })
-
     return render(request, "province_pages/province_base.html", context)
 
 
 def newfoundland_view(request):
-    """Physiotherapy Jobs Newfoundland and Labrador"""
     major_cities = [
         "St. John's", "Mount Pearl", "Corner Brook", "Conception Bay South",
         "Grand Falls-Windsor", "Paradise", "Gander", "Happy Valley-Goose Bay",
@@ -329,65 +277,55 @@ def newfoundland_view(request):
     ]
     work_settings = [
         "Hospitals",
-        "Private clinics",
-        "Community health centres",
-        "Home‑care services",
-        "Long‑term care facilities",
+        "Rural positions",
+        "Community clinics",
+        "Remote nursing stations",
+        "Long-term care homes",
+        "Fly-in/fly-out arrangements",
     ]
-
     context = get_province_context(
         province_name="Newfoundland and Labrador",
         major_cities=major_cities,
         work_settings=work_settings,
-        description="Newfoundland offers adventurous rural practice opportunities."
+        description="Physiotherapy jobs in Newfoundland and Labrador.",
     )
-
     context.update({
         "page_title": "Physiotherapy Jobs in Newfoundland and Labrador | St. John's & Rural",
-        "meta_description": "Discover physiotherapy careers in Newfoundland and Labrador. Jobs in St. John's, Corner Brook, Labrador, and remote communities. Eastern Health and rural opportunities with incentives.",
+        "meta_description": "Discover physiotherapy careers in Newfoundland and Labrador. Jobs in St. John's, Corner Brook, Labrador, and remote communities.",
         "h1": "Physiotherapy Jobs in Newfoundland and Labrador",
-        "intro": """Newfoundland and Labrador offers physiotherapists unique opportunities for adventurous practice in spectacular coastal and northern settings. The province's health regions offer diverse practice environments.
-
-St. John's provides urban opportunities with the major teaching hospitals. Rural and Labrador positions often include substantial recruitment incentives, including relocation assistance, housing supports, and loan forgiveness programs. The scope of practice in rural settings can be expansive, with physiotherapists functioning as primary rehabilitation providers.""",
-        "certification_note": "Physiotherapists should confirm current registration requirements with the provincial regulatory college.",
+        "intro": "Find physiotherapy positions in Newfoundland and Labrador, from coastal towns to remote communities. Settings include hospitals and community clinics.",
+        "certification_note": "Register with the Newfoundland and Labrador College of Physiotherapists.",
         "job_board_slug": "newfoundland",
         "search_keywords": ["St. John's", "Corner Brook", "Grand Falls", "Labrador", "Gander"],
     })
-
     return render(request, "province_pages/province_base.html", context)
 
 
 def prince_edward_island_view(request):
-    """Physiotherapy Jobs Prince Edward Island"""
     major_cities = [
         "Charlottetown", "Summerside", "Stratford", "Cornwall",
         "Montague", "Kensington", "Alberton", "Souris", "Tignish"
     ]
     work_settings = [
         "Hospitals",
-        "Private clinics",
-        "Community health centres",
-        "Home‑care services",
-        "Long‑term care facilities",
+        "Community care centres",
+        "Home care services",
+        "Long-term care facilities",
+        "Rural coverage",
     ]
-
     context = get_province_context(
         province_name="Prince Edward Island",
         major_cities=major_cities,
         work_settings=work_settings,
-        description="PEI offers intimate community practice with island lifestyle."
+        description="Physiotherapy jobs in Prince Edward Island.",
     )
-
     context.update({
-        "page_title": "Physiotherapy Jobs in Prince Edward Island | Charlottetown Opportunities",
-        "meta_description": "Find physiotherapy jobs in Prince Edward Island. Opportunities in Charlottetown, Summerside, and across the island. Community health, hospital, and rural positions available.",
+        "page_title": "Physiotherapy Jobs in Prince Edward Island | Charlottetown",
+        "meta_description": "Find physiotherapy jobs in Prince Edward Island. Opportunities in Charlottetown, Summerside, and across the island.",
         "h1": "Physiotherapy Jobs in Prince Edward Island",
-        "intro": """Prince Edward Island offers physiotherapists a unique opportunity to practice in an intimate community setting where professionals often know their patients personally. Health PEI manages all public healthcare delivery across the island.
-
-With only two major hospitals-Queen Elizabeth Hospital in Charlottetown and Prince County Hospital in Summerside-physiotherapists often work across multiple settings. The island's growing seasonal population and aging residents create year-round demand for rehabilitation services.""",
-        "certification_note": "Physiotherapists should confirm current registration requirements with the provincial regulatory college.",
+        "intro": "Find physiotherapy roles on Prince Edward Island, a small province where practitioners often know patients personally. Settings include hospitals, clinics, and home care.",
+        "certification_note": "Register with the College of Physiotherapists of Prince Edward Island.",
         "job_board_slug": "prince-edward-island",
         "search_keywords": ["Charlottetown", "Summerside", "Stratford", "Cornwall", "Montague"],
     })
-
     return render(request, "province_pages/province_base.html", context)

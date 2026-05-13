@@ -40,26 +40,26 @@
 
 {% block content %}
 <!-- Hero Section -->
-<section class="py-5">
+<section class="py-5 bg-gradient" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
   <div class="container">
     <div class="row">
       <div class="col-lg-8">
         <nav aria-label="breadcrumb" class="mb-3">
           <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{{ province }}</li>
+            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-light opacity-75">Home</a></li>
+            <li class="breadcrumb-item active text-light opacity-50" aria-current="page">{{ province }}</li>
           </ol>
         </nav>
         
-        <h1 class="display-5 fw-bold mb-3">{{ h1 }}</h1>
-        <p class="lead mb-4">{{ description }}</p>
+        <h1 class="display-5 fw-bold text-white mb-3">{{ h1 }}</h1>
+        <p class="lead text-white-50 mb-4">{{ description }}</p>
         
         <!-- Quick Search -->
         <form method="get" action="/jobs/" class="row g-2">
           <div class="col-md-6">
             <input type="text" name="q" class="form-control form-control-lg" 
                    placeholder="Search physiotherapy jobs" 
-                   >
+                   value="physiotherapist">
           </div>
           <div class="col-md-4">
             <input type="text" name="location" class="form-control form-control-lg" 
@@ -89,33 +89,20 @@
             {% if intro %}
               {{ intro|linebreaks }}
             {% else %}
-              <p>Find physiotherapy opportunities in {{ province }}. Browse current job openings.</p>
+              <p>Find physiotherapy opportunities in {{ province }}. Browse current job openings in hospitals, clinics, and private practices across the province.</p>
             {% endif %}
           </div>
         </div>
       </div>
 
-      
-      {% if practice_settings %}
-      <div class="mb-5">
-        <h2 class="h4 fw-bold mb-3">Common practice settings in {{ province }}</h2>
-        <div class="card border-0 shadow-sm">
-          <div class="card-body p-4">
-            {{ practice_settings|linebreaks }}
-          </div>
-        </div>
-      </div>
-      {% endif %}
-
-      
       <!-- Major Cities -->
       <div class="mb-5">
-        <h2 class="h4 fw-bold mb-3">Explore Physiotherapy Jobs by City</h2>
+        <h2 class="h4 fw-bold mb-3">Major Cities with Physiotherapy Opportunities</h2>
         <div class="row g-3">
           {% for city in major_cities|slice:":6" %}
           <div class="col-md-4 col-sm-6">
             <a href="/jobs/?location={{ city|urlencode }}" class="text-decoration-none">
-              <div class="card h-100 border-0 shadow-sm ">
+              <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body text-center">
                   <div class="mb-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
@@ -159,13 +146,15 @@
         </div>
       </div>
 
+
+
       <!-- Certification -->
-      {% if registration_note %}
+      {% if certification_note %}
       <div class="mb-5">
         <h2 class="h4 fw-bold mb-3">Registration Requirements</h2>
         <div class="card border-0 shadow-sm border-start border-4 border-primary">
           <div class="card-body p-4">
-            {{ registration_note|linebreaks }}
+            <p class="mb-0">{{ certification_note }}</p>
           </div>
         </div>
       </div>
@@ -176,8 +165,8 @@
         <div class="card border-0 shadow-sm bg-primary text-white">
           <div class="card-body p-4 text-center">
             <h3 class="h4 fw-bold mb-3">Ready to Find Your Next PT Role?</h3>
-            <p class="mb-4">Explore current physiotherapy job openings in {{ province }}.</p>
-            <a href="/jobs/?location={{ province }}" class="btn btn-light btn-lg fw-bold">Browse Opportunities in {{ province }}</a>
+            <p class="mb-4">Browse current physiotherapy job openings in {{ province }}.</p>
+            <a href="/jobs/?location={{ province }}" class="btn btn-light btn-lg fw-bold">View All {{ province }} Jobs</a>
           </div>
         </div>
       </div>
@@ -266,13 +255,10 @@
         </div>
         <div class="list-group list-group-flush">
           <a href="/jobs/" class="list-group-item list-group-item-action">
-            View Current Physiotherapy Jobs
+            Current Job Postings
           </a>
-          <a href="#" class="list-group-item list-group-item-action disabled" aria-disabled="true">
-            Marketplace — Coming Soon
-          </a>
-          <a href="#" class="list-group-item list-group-item-action disabled" aria-disabled="true">
-            Student Hub — Coming Soon
+          <a href="{% url 'home' %}" class="list-group-item list-group-item-action">
+            Post a Job
           </a>
         </div>
       </div>
