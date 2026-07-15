@@ -3,11 +3,11 @@
 <footer class="mt-5 pt-4 pb-3 border-top bg-dark text-light">
   <div class="container">
 
-    <!-- Three link columns -->
+    <!-- Footer navigation -->
     <div class="row justify-content-center mb-4">
 
       <!-- Job Seekers -->
-      <div class="col-12 col-md-4 col-lg-3 mb-3 text-center">
+      <div class="col-12 col-md-6 col-lg-3 mb-3 text-center">
         <div class="d-inline-block text-start">
           <h5 class="text-uppercase fw-bold mb-3">Job Seekers</h5>
           <ul class="list-unstyled mb-0">
@@ -20,7 +20,7 @@
       </div>
 
       <!-- Employers -->
-      <div class="col-12 col-md-4 col-lg-3 mb-3 text-center">
+      <div class="col-12 col-md-6 col-lg-3 mb-3 text-center">
         <div class="d-inline-block text-start">
           <h5 class="text-uppercase fw-bold mb-3">Employers</h5>
           <ul class="list-unstyled mb-0">
@@ -33,7 +33,7 @@
       </div>
 
       <!-- Company -->
-      <div class="col-12 col-md-4 col-lg-3 mb-3 text-center">
+      <div class="col-12 col-md-6 col-lg-3 mb-3 text-center">
         <div class="d-inline-block text-start">
           <h5 class="text-uppercase fw-bold mb-3">Company</h5>
           <ul class="list-unstyled mb-0">
@@ -43,10 +43,26 @@
           </ul>
         </div>
       </div>
+
+      <!-- Jobs by Province -->
+      <div class="col-12 col-md-6 col-lg-3 mb-3 text-center">
+        <div class="d-inline-block text-start">
+          <h5 class="text-uppercase fw-bold mb-3">Jobs by Province</h5>
+          <ul class="list-unstyled mb-0">
+            <li><a href="{% url 'province_ontario' %}" class="link-light text-decoration-none">Ontario</a></li>
+            <li><a href="{% url 'province_bc' %}" class="link-light text-decoration-none">British Columbia</a></li>
+            <li><a href="{% url 'province_alberta' %}" class="link-light text-decoration-none">Alberta</a></li>
+            <li><a href="{% url 'province_saskatchewan' %}" class="link-light text-decoration-none">Saskatchewan</a></li>
+            <li><a href="{% url 'province_manitoba' %}" class="link-light text-decoration-none">Manitoba</a></li>
+            <li><a href="{% url 'province_nova_scotia' %}" class="link-light text-decoration-none">Nova Scotia</a></li>
+          </ul>
+        </div>
+      </div>
     </div>
 
     <!-- Follow us row -->
     {% with ss=sitesettings %}
+    {% if ss and ss.facebook_url or ss and ss.instagram_url or ss and ss.reddit_url or ss and ss.linkedin_url or ss and ss.twitter_url %}
     <div class="row mb-3">
       <div class="col-12 text-center">
         <h5 class="text-uppercase fw-bold mb-3">Follow us</h5>
@@ -74,6 +90,7 @@
         </div>
       </div>
     </div>
+    {% endif %}
     {% endwith %}
 
     <!-- Bottom line -->

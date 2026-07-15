@@ -4,10 +4,11 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.sitemaps.views import sitemap
 from django.views.generic import TemplateView
-from board.sitemaps import StaticViewSitemap, JobSitemap
+from board.sitemaps import JobSitemap, ProvinceSitemap, StaticViewSitemap
 
 sitemaps = {
     "static": StaticViewSitemap,
+    "provinces": ProvinceSitemap,
     "jobs": JobSitemap,
 }
 
