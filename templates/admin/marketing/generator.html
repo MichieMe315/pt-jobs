@@ -1,0 +1,75 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs"><a href="{% url 'admin:index' %}">Home</a> &rsaquo; Marketing Generator</div>
+{% endblock %}
+
+{% block content %}
+<style>
+  .marketing-wrap { max-width: 850px; }
+  .marketing-card { background:#fff; border:1px solid #d8e0e7; border-radius:8px; padding:24px; }
+  .marketing-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px 24px; }
+  .marketing-field label { display:block; font-weight:600; margin-bottom:6px; }
+  .marketing-field select { width:100%; max-width:none; min-height:38px; }
+  .marketing-actions { margin-top:24px; display:flex; flex-wrap:wrap; gap:12px; }
+  .marketing-actions button { border:0; border-radius:4px; padding:11px 18px; cursor:pointer; font-weight:600; }
+  .marketing-primary { background:#417690; color:#fff; }
+  .marketing-secondary { background:#e8eef2; color:#263746; }
+  .marketing-note { margin:0 0 20px; padding:12px 14px; background:#eef6fb; border-left:4px solid #417690; }
+  .marketing-warning { margin:0 0 20px; padding:12px 14px; background:#fff4e5; border-left:4px solid #e67e22; }
+  .errorlist { color:#ba2121; }
+  [hidden] { display:none !important; }
+  @media(max-width:700px){ .marketing-grid { grid-template-columns:1fr; } }
+</style>
+<div class="marketing-wrap">
+  <h1>Marketing Generator</h1>
+
+  {% if database_empty %}
+    <p class="marketing-warning"><strong>Your local database is empty.</strong> It contains no employers or jobs, so live province, city, and logo results cannot appear locally. Test this branch against a database containing the live records.</p>
+  {% else %}
+    <p class="marketing-note"><strong>{{ eligible_count }}</strong> approved employers currently have an active, unexpired job and an uploaded logo. Found {{ province_count }} provinces and {{ city_count }} cities from active job locations.</p>
+  {% endif %}
+
+  <div class="marketing-card">
+    <form method="get" target="_blank" id="marketing-generator-form">
+      {{ form.non_field_errors }}
+      <div class="marketing-grid">
+        {% for field in form %}
+          <div class="marketing-field" data-field="{{ field.name }}">
+            {{ field.label_tag }}
+            {{ field }}
+            {{ field.errors }}
+          </div>
+        {% endfor %}
+      </div>
+      <div class="marketing-actions">
+        <button class="marketing-secondary" type="submit" name="action" value="preview" {% if not eligible_count %}disabled{% endif %}>Preview PNG</button>
+        <button class="marketing-primary" type="submit" name="action" value="download" {% if not eligible_count %}disabled{% endif %}>Generate and download PNG</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+(function () {
+  const type = document.getElementById("id_graphic_type");
+  const provinceWrap = document.querySelector('[data-field="province"]');
+  const cityWrap = document.querySelector('[data-field="city"]');
+  const province = document.getElementById("id_province");
+  const city = document.getElementById("id_city");
+
+  function updateLocationFields() {
+    const value = type ? type.value : "canada";
+    if (provinceWrap) provinceWrap.hidden = value !== "province";
+    if (cityWrap) cityWrap.hidden = value !== "city";
+    if (province) province.required = value === "province";
+    if (city) city.required = value === "city";
+  }
+
+  if (type) {
+    type.addEventListener("change", updateLocationFields);
+    updateLocationFields();
+  }
+})();
+</script>
+{% endblock %}

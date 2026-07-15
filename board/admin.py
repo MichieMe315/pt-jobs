@@ -698,3 +698,7 @@ class UserAdmin(DjangoUserAdmin):
     ordering = ("-date_joined", "-id")
     list_display = DjangoUserAdmin.list_display + ("date_joined",)
     list_filter = DjangoUserAdmin.list_filter
+
+# Admin-only social graphic generator. No models or migrations are added.
+from .marketing.admin_views import install_marketing_admin_urls
+install_marketing_admin_urls()
