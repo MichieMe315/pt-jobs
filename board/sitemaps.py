@@ -14,6 +14,28 @@ class StaticViewSitemap(Sitemap):
         return reverse(item)
 
 
+class ProvinceSitemap(Sitemap):
+    changefreq = "weekly"
+    priority = 0.8
+
+    def items(self):
+        return [
+            "province_ontario",
+            "province_bc",
+            "province_alberta",
+            "province_saskatchewan",
+            "province_manitoba",
+            "province_quebec",
+            "province_nova_scotia",
+            "province_new_brunswick",
+            "province_newfoundland",
+            "province_pei",
+        ]
+
+    def location(self, item):
+        return reverse(item)
+
+
 class JobSitemap(Sitemap):
     changefreq = "daily"
     priority = 0.9

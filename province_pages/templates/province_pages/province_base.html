@@ -9,6 +9,40 @@
 <meta property="og:description" content="{{ meta_description|default:'Find physiotherapy jobs across Canada.' }}">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://www.physiotherapyjobscanada.ca{{ request.path }}">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "{{ h1|escapejs }}",
+  "description": "{{ meta_description|escapejs }}",
+  "url": "https://www.physiotherapyjobscanada.ca{{ request.path }}",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "Physiotherapy Jobs Canada",
+    "url": "https://www.physiotherapyjobscanada.ca/"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://www.physiotherapyjobscanada.ca/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "{{ province|escapejs }} Physiotherapy Jobs",
+      "item": "https://www.physiotherapyjobscanada.ca{{ request.path }}"
+    }
+  ]
+}
+</script>
 
 <style>
   .province-page,
@@ -123,7 +157,6 @@
 
       <section class="mb-4">
         <h2 class="mb-3">Current Physiotherapy Jobs in {{ province }}</h2>
-
         {% if live_jobs %}
           <div class="row g-3">
             {% for job in live_jobs %}
@@ -184,6 +217,19 @@
       {% endif %}
 
       <section class="mb-4">
+        <h2 class="mb-3">Browse Physiotherapy Jobs by City</h2>
+        <div class="province-panel p-4">
+          <div class="d-flex flex-wrap gap-2">
+            {% for city in cities %}
+              <a href="/jobs/?location={{ city|urlencode }}" class="btn btn-outline-light btn-sm">
+                {{ city }} Jobs
+              </a>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+
+      <section class="mb-4">
         <h2 class="mb-3">Common Work Settings</h2>
         <div class="province-panel p-4">
           <div class="row">
@@ -207,16 +253,18 @@
       {% endif %}
 
       <section class="mb-4">
-        <h2 class="mb-3">Explore Other Provinces</h2>
+        <h2 class="mb-3">Explore Physiotherapy Jobs Across Canada</h2>
         <div class="row g-2">
-          <div class="col-md-3 col-6"><a href="/physiotherapy-jobs-ontario/" class="btn btn-outline-light w-100">Ontario</a></div>
-          <div class="col-md-3 col-6"><a href="/physiotherapy-jobs-british-columbia/" class="btn btn-outline-light w-100">British Columbia</a></div>
-          <div class="col-md-3 col-6"><a href="/physiotherapy-jobs-alberta/" class="btn btn-outline-light w-100">Alberta</a></div>
-          <div class="col-md-3 col-6"><a href="/physiotherapy-jobs-saskatchewan/" class="btn btn-outline-light w-100">Saskatchewan</a></div>
-          <div class="col-md-3 col-6"><a href="/physiotherapy-jobs-manitoba/" class="btn btn-outline-light w-100">Manitoba</a></div>
-          <div class="col-md-3 col-6"><a href="/physiotherapy-jobs-quebec/" class="btn btn-outline-light w-100">Quebec</a></div>
-          <div class="col-md-3 col-6"><a href="/physiotherapy-jobs-nova-scotia/" class="btn btn-outline-light w-100">Nova Scotia</a></div>
-          <div class="col-md-3 col-6"><a href="/physiotherapy-jobs-new-brunswick/" class="btn btn-outline-light w-100">New Brunswick</a></div>
+          <div class="col-md-4 col-6"><a href="{% url 'province_ontario' %}" class="btn btn-outline-light w-100">Ontario</a></div>
+          <div class="col-md-4 col-6"><a href="{% url 'province_bc' %}" class="btn btn-outline-light w-100">British Columbia</a></div>
+          <div class="col-md-4 col-6"><a href="{% url 'province_alberta' %}" class="btn btn-outline-light w-100">Alberta</a></div>
+          <div class="col-md-4 col-6"><a href="{% url 'province_saskatchewan' %}" class="btn btn-outline-light w-100">Saskatchewan</a></div>
+          <div class="col-md-4 col-6"><a href="{% url 'province_manitoba' %}" class="btn btn-outline-light w-100">Manitoba</a></div>
+          <div class="col-md-4 col-6"><a href="{% url 'province_quebec' %}" class="btn btn-outline-light w-100">Quebec</a></div>
+          <div class="col-md-4 col-6"><a href="{% url 'province_nova_scotia' %}" class="btn btn-outline-light w-100">Nova Scotia</a></div>
+          <div class="col-md-4 col-6"><a href="{% url 'province_new_brunswick' %}" class="btn btn-outline-light w-100">New Brunswick</a></div>
+          <div class="col-md-4 col-6"><a href="{% url 'province_newfoundland' %}" class="btn btn-outline-light w-100">Newfoundland &amp; Labrador</a></div>
+          <div class="col-md-4 col-6"><a href="{% url 'province_pei' %}" class="btn btn-outline-light w-100">Prince Edward Island</a></div>
         </div>
       </section>
 

@@ -165,6 +165,7 @@ def render_province(request, slug):
             "moving from another province."
         ),
         "work_settings": WORK_SETTINGS,
+        "cities": data["cities"],
         "live_jobs": live_jobs,
     }
     return render(request, "province_pages/province_base.html", context)
