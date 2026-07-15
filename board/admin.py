@@ -263,8 +263,8 @@ class EmployerAdmin(admin.ModelAdmin):
     list_display_links = ("id", "company_name", "email")
     search_fields = ("company_name", "name", "email", "location")
     list_filter = ("is_approved", "login_active")
-    # Pending approvals first, then newest signups.
-    ordering = ("is_approved", "-created_at", "-id")
+    # Newest signups first; unapproved records win only when timestamps match.
+    ordering = ("-created_at", "is_approved", "-id")
 
     # Buttons
     readonly_fields = ("view_employer_jobs", "view_employer_packages")
@@ -359,8 +359,8 @@ class JobSeekerAdmin(admin.ModelAdmin):
     list_display_links = ("id", "email", "first_name")
     search_fields = ("email", "first_name", "last_name", "position_desired", "current_location")
     list_filter = ("registered_in_canada", "require_sponsorship", "is_approved", "login_active")
-    # Pending approvals first, then newest signups.
-    ordering = ("is_approved", "-created_at", "-id")
+    # Newest signups first; unapproved records win only when timestamps match.
+    ordering = ("-created_at", "is_approved", "-id")
 
     def save_model(self, request, obj, form, change):
         """
