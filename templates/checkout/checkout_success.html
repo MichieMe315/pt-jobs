@@ -3,10 +3,22 @@
 {% block content %}
 <div class="container py-4">
   <div class="alert alert-success">
-    <h4 class="mb-1">Payment Successful</h4>
+    <h1 class="h4 mb-1">Payment Successful</h1>
     <p class="mb-0">Your package has been purchased and credits have been added to your account.</p>
   </div>
 
-  <a href="{% url 'employer_dashboard' %}" class="btn btn-primary">Go to Dashboard</a>
+  {% if pending_job %}
+    <div class="card mb-3">
+      <div class="card-body">
+        <h2 class="h5 mb-2">Continue publishing your job</h2>
+        <p class="mb-3">Your draft is saved and ready to review:</p>
+        <div class="fw-bold mb-1">{{ pending_job.title }}</div>
+        {% if pending_job.location %}<div class="text-muted mb-3">{{ pending_job.location }}</div>{% endif %}
+        <a href="{% url 'job_edit' pending_job.id %}" class="btn btn-primary">Continue Publishing</a>
+      </div>
+    </div>
+  {% endif %}
+
+  <a href="{% url 'employer_dashboard' %}" class="btn btn-outline-secondary">Go to Dashboard</a>
 </div>
 {% endblock %}

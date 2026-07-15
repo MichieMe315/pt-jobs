@@ -761,6 +761,7 @@ def job_create(request: HttpRequest) -> HttpResponse:
         _sync_employer_credits(employer)
 
         if publish:
+            request.session.pop("pending_create_job_id", None)
             # Employer confirmation
             send_templated_email(
                 "job_posting_confirmation",
@@ -847,6 +848,15 @@ def job_edit(request: HttpRequest, job_id: int) -> HttpResponse:
 
         updated.save()
         _sync_employer_credits(employer)
+
+        if publish and was_inactive:
+            for pending_key in (
+                "pending_create_job_id",
+                "pending_publish_job_id",
+                "pending_duplicate_job_id",
+            ):
+                if request.session.get(pending_key) == updated.id:
+                    request.session.pop(pending_key, None)
 
         # OPTIONAL: notify admin if a draft becomes published via edit
         if publish and was_inactive:
@@ -1665,6 +1675,15 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
     md = getattr(session, "metadata", {}) or {}
 
     try:
+        session_employer_id = int(md.get("employer_id") or 0)
+    except (TypeError, ValueError):
+        session_employer_id = 0
+
+    if session_employer_id != employer.id:
+        messages.error(request, "This payment session does not belong to your employer account.")
+        return redirect("package_list")
+
+    try:
         pkg_id = int(md.get("package_id") or 0)
     except Exception:
         pkg_id = 0
@@ -1730,10 +1749,32 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
         },
     )
 
+    pending_job = None
+    for pending_key in (
+        "pending_create_job_id",
+        "pending_publish_job_id",
+        "pending_duplicate_job_id",
+    ):
+        pending_job_id = request.session.get(pending_key)
+        if not pending_job_id:
+            continue
+        pending_job = Job.objects.filter(
+            id=pending_job_id,
+            employer=employer,
+            is_active=False,
+        ).first()
+        if pending_job:
+            break
+        request.session.pop(pending_key, None)
+
     return render(
         request,
         "checkout/checkout_success.html",
-        {"sitesettings": _sitesettings(), "package": package},
+        {
+            "sitesettings": _sitesettings(),
+            "package": package,
+            "pending_job": pending_job,
+        },
     )
 
 

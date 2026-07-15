@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load currency %}
 {% block title %}{{ job.title }} – {{ job.employer.company_name }}{% endblock %}
 
 {% block content %}
@@ -44,9 +45,9 @@
                     {% if job.compensation_min and job.compensation_max %} – {% endif %}
                     {% if job.compensation_max %}{{ job.compensation_max|floatformat:"0" }}%{% endif %}
                   {% else %}
-                    {% if job.compensation_min %}${{ job.compensation_min }}{% endif %}
+                    {% if job.compensation_min %}${{ job.compensation_min|decimal_currency }}{% endif %}
                     {% if job.compensation_min and job.compensation_max %} – {% endif %}
-                    {% if job.compensation_max %}${{ job.compensation_max }}{% endif %}
+                    {% if job.compensation_max %}${{ job.compensation_max|decimal_currency }}{% endif %}
                   {% endif %}
                 {% endwith %}
               </li>
