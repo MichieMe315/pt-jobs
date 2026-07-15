@@ -263,7 +263,8 @@ class EmployerAdmin(admin.ModelAdmin):
     list_display_links = ("id", "company_name", "email")
     search_fields = ("company_name", "name", "email", "location")
     list_filter = ("is_approved", "login_active")
-    ordering = ("-created_at", "-id")
+    # Pending approvals first, then newest signups.
+    ordering = ("is_approved", "-created_at", "-id")
 
     # Buttons
     readonly_fields = ("view_employer_jobs", "view_employer_packages")
@@ -358,7 +359,8 @@ class JobSeekerAdmin(admin.ModelAdmin):
     list_display_links = ("id", "email", "first_name")
     search_fields = ("email", "first_name", "last_name", "position_desired", "current_location")
     list_filter = ("registered_in_canada", "require_sponsorship", "is_approved", "login_active")
-    ordering = ("-created_at", "-id")
+    # Pending approvals first, then newest signups.
+    ordering = ("is_approved", "-created_at", "-id")
 
     def save_model(self, request, obj, form, change):
         """
@@ -612,6 +614,20 @@ class SiteSettingsAdmin(admin.ModelAdmin):
     list_display_links = ("id", "site_name")
     search_fields = ("site_name", "google_analytics_id")
     ordering = ("-id",)
+    fieldsets = (
+        ("Site", {"fields": ("site_name", "contact_email", "posting_duration_days")}),
+        ("Homepage hero", {"fields": ("hero_image", "hero_title", "hero_subtitle")}),
+        ("Branding", {"fields": ("branding_logo", "branding_favicon", "branding_primary_color", "branding_secondary_color")}),
+        ("Social links", {
+            "fields": ("facebook_url", "instagram_url", "linkedin_url", "twitter_url", "reddit_url"),
+            "description": "Add full profile URLs here. The footer buttons appear automatically when a URL is present.",
+        }),
+        ("Analytics and SEO", {"fields": ("google_analytics_id", "seo_meta_title", "seo_meta_description")}),
+        ("Map and marketing", {"fields": ("mapbox_token", "side_banner_html", "bottom_banner_html"), "classes": ("collapse",)}),
+    )
+
+    def has_add_permission(self, request):
+        return not SiteSettings.objects.exists()
 
 
 @admin.register(EmailTemplate)

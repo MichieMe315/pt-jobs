@@ -1,7 +1,7 @@
 # board/views.py
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from typing import Optional
 
@@ -43,6 +43,7 @@ from .models import (
     SiteSettings,
     EmailTemplate,
     PaymentGatewayConfig,
+    JobAlert,
     CareerFitLead,
 )
 
@@ -1892,4 +1893,51 @@ def invoice_download(request: HttpRequest, invoice_id: int) -> HttpResponse:
 def admin_dashboard(request: HttpRequest) -> HttpResponse:
     if not request.user.is_staff:
         raise PermissionDenied
-    return render(request, "admin/dashboard.html", {"sitesettings": _sitesettings()})
+
+    today = timezone.localdate()
+    period = request.GET.get("period", "today")
+
+    if period == "7":
+        start = today - timedelta(days=6)
+        end = today
+    elif period == "30":
+        start = today - timedelta(days=29)
+        end = today
+    elif period == "custom":
+        try:
+            start = date.fromisoformat(request.GET.get("start", ""))
+            end = date.fromisoformat(request.GET.get("end", ""))
+        except ValueError:
+            start = end = today
+        if start > end:
+            start, end = end, start
+    else:
+        period = "today"
+        start = end = today
+
+    start_dt = timezone.make_aware(datetime.combine(start, datetime.min.time()))
+    end_dt = timezone.make_aware(datetime.combine(end + timedelta(days=1), datetime.min.time()))
+
+    paid_invoices = Invoice.objects.filter(
+        status="paid",
+        order_date__gte=start_dt,
+        order_date__lt=end_dt,
+    )
+
+    context = {
+        "sitesettings": _sitesettings(),
+        "period": period,
+        "start": start,
+        "end": end,
+        "jobs_posted": Job.objects.filter(created_at__gte=start_dt, created_at__lt=end_dt).count(),
+        "applications_sent": Application.objects.filter(created_at__gte=start_dt, created_at__lt=end_dt).count(),
+        "sales_count": paid_invoices.count(),
+        "sales_total": (paid_invoices.aggregate(total=Sum("amount"))["total"] or 0) / 100,
+        "employers_new": Employer.objects.filter(created_at__gte=start_dt, created_at__lt=end_dt).count(),
+        "jobseekers_new": JobSeeker.objects.filter(created_at__gte=start_dt, created_at__lt=end_dt).count(),
+        "alerts_created": JobAlert.objects.filter(created_at__gte=start_dt, created_at__lt=end_dt).count(),
+        "pending_employers": Employer.objects.filter(is_approved=False).order_by("-created_at", "-id")[:10],
+        "pending_jobseekers": JobSeeker.objects.filter(is_approved=False).order_by("-created_at", "-id")[:10],
+        "recent_paid_invoices": Invoice.objects.filter(status="paid").select_related("employer").order_by("-order_date", "-id")[:10],
+    }
+    return render(request, "admin/dashboard.html", context)
