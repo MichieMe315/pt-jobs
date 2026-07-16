@@ -81,62 +81,122 @@ def _open_logo(field):
         return None
 
 
+def _draw_centered_lines(draw, lines, center_x, start_y, line_gap, font, fill):
+    for index, line in enumerate(lines):
+        draw.text((center_x, start_y + index * line_gap), line, font=font, fill=fill, anchor="ma")
+
+
 def render_graphic(cards: Iterable[EmployerCard], title: str, subtitle: str, output_format: str) -> bytes:
     sizes = {"portrait": (1080, 1350), "square": (1080, 1080), "landscape": (1200, 630)}
     width, height = sizes.get(output_format, sizes["portrait"])
     cards = list(cards)
 
-    navy, blue, pale, border, grey = "#123A5A", "#2E80C5", "#F5F8FB", "#DDE7EF", "#5B7083"
+    navy = "#123A5A"
+    blue = "#2E80C5"
+    pale = "#F4F8FB"
+    border = "#D5E2EC"
+    grey = "#5B7083"
+    white = "#FFFFFF"
+
     canvas = Image.new("RGB", (width, height), pale)
     draw = ImageDraw.Draw(canvas)
-
     margin = int(width * 0.055)
-    header_h = 190 if height >= 1000 else 115
-    footer_h = 145 if height >= 1000 else 85
 
-    draw.rounded_rectangle((margin, 35, width-margin, header_h), radius=28, fill="white")
-    title_font = _fit_text(draw, title.upper(), width-2*margin-60, 60 if height >= 1000 else 40, True)
-    draw.text((width/2, 72 if height >= 1000 else 51), title.upper(), font=title_font, fill=navy, anchor="ma")
-    subtitle_font = _fit_text(draw, subtitle, width-2*margin-70, 25 if height >= 1000 else 18)
-    draw.text((width/2, 143 if height >= 1000 else 91), subtitle, font=subtitle_font, fill=grey, anchor="ma")
-
-    grid_top = header_h + 45
-    grid_bottom = height - footer_h - 30
-    count = max(1, len(cards))
     if output_format == "landscape":
-        cols = min(6, max(3, count))
-    elif count <= 12:
-        cols = 3
+        header_bottom = 132
+        footer_top = height - 94
+        title_size = 44
+        subtitle_size = 18
+        cols = min(6, max(3, len(cards)))
+        gap = 16
+        card_radius = 16
+        logo_padding = 18
     else:
-        cols = 4
-    rows = (count + cols - 1) // cols
-    gap = 18
-    card_w = int((width - 2*margin - gap*(cols-1)) / cols)
-    card_h = int((grid_bottom-grid_top-gap*(rows-1)) / max(rows, 1))
+        header_bottom = 235 if output_format == "portrait" else 205
+        footer_top = height - (190 if output_format == "portrait" else 170)
+        title_size = 64 if output_format == "portrait" else 55
+        subtitle_size = 24 if output_format == "portrait" else 21
+        cols = 4 if len(cards) > 9 else 3
+        gap = 18
+        card_radius = 20
+        logo_padding = 22
+
+    # Header: strong hierarchy, no oversized empty box.
+    draw.rounded_rectangle((margin, 34, width - margin, header_bottom), radius=30, fill=white)
+    draw.rounded_rectangle((margin + 34, 55, margin + 46, header_bottom - 20), radius=6, fill=blue)
+
+    normalized_title = (title or "NOW HIRING ACROSS CANADA").upper().strip()
+    if " ACROSS " in normalized_title:
+        first, second = normalized_title.split(" ACROSS ", 1)
+        title_lines = [first, f"ACROSS {second}"]
+    else:
+        title_lines = [normalized_title]
+
+    max_title_width = width - 2 * margin - 145
+    title_font = _fit_text(draw, max(title_lines, key=len), max_title_width, title_size, True, 30)
+    title_y = 61 if len(title_lines) == 2 else 84
+    title_gap = int(title_font.size * 0.92) if hasattr(title_font, "size") else 48
+    _draw_centered_lines(draw, title_lines, width / 2, title_y, title_gap, title_font, navy)
+
+    subtitle_font = _fit_text(draw, subtitle, max_title_width, subtitle_size, False, 14)
+    subtitle_y = header_bottom - 43
+    draw.text((width / 2, subtitle_y), subtitle, font=subtitle_font, fill=grey, anchor="ma")
+
+    # Tight logo-only grid. Logos are the artwork; no names or job counts.
+    grid_top = header_bottom + (28 if output_format != "landscape" else 18)
+    grid_bottom = footer_top - (25 if output_format != "landscape" else 16)
+    count = max(1, len(cards))
+    rows = max(1, (count + cols - 1) // cols)
+    card_w = int((width - 2 * margin - gap * (cols - 1)) / cols)
+    card_h = int((grid_bottom - grid_top - gap * (rows - 1)) / rows)
 
     for idx, card in enumerate(cards):
         row, col = divmod(idx, cols)
-        x = margin + col*(card_w+gap)
-        y = grid_top + row*(card_h+gap)
-        draw.rounded_rectangle((x, y, x+card_w, y+card_h), radius=18, fill="white", outline=border, width=2)
-        text_space = 52 if card_h >= 140 else 36
-        logo_box = (x+18, y+14, x+card_w-18, y+card_h-text_space)
+        x = margin + col * (card_w + gap)
+        y = grid_top + row * (card_h + gap)
+        draw.rounded_rectangle(
+            (x, y, x + card_w, y + card_h),
+            radius=card_radius,
+            fill=white,
+            outline=border,
+            width=2,
+        )
+
         logo = _open_logo(card.logo)
         if logo:
-            contained = ImageOps.contain(logo, (max(1, logo_box[2]-logo_box[0]), max(1, logo_box[3]-logo_box[1])))
-            px = logo_box[0] + (logo_box[2]-logo_box[0]-contained.width)//2
-            py = logo_box[1] + (logo_box[3]-logo_box[1]-contained.height)//2
+            max_logo_w = max(1, card_w - logo_padding * 2)
+            max_logo_h = max(1, card_h - logo_padding * 2)
+            contained = ImageOps.contain(logo, (max_logo_w, max_logo_h), Image.Resampling.LANCZOS)
+            px = x + (card_w - contained.width) // 2
+            py = y + (card_h - contained.height) // 2
             canvas.paste(contained, (px, py), contained)
-        name_font = _fit_text(draw, card.name, card_w-24, 18 if height >= 1000 else 13, True, 10)
-        draw.text((x+card_w/2, y+card_h-34 if card_h >= 140 else y+card_h-23), card.name, font=name_font, fill=navy, anchor="mm")
-        if card_h >= 150:
-            jobs = f"{card.active_jobs} active job" + ("s" if card.active_jobs != 1 else "")
-            draw.text((x+card_w/2, y+card_h-14), jobs, font=_font(12), fill=grey, anchor="mm")
 
-    footer_y = height-footer_h
-    draw.text((width/2, footer_y+30), "PHYSIOTHERAPY  •  OT  •  RMT  •  SLP  •  CHIRO", font=_fit_text(draw, "PHYSIOTHERAPY  •  OT  •  RMT  •  SLP  •  CHIRO", width-2*margin, 27 if height >= 1000 else 18, True), fill=navy, anchor="ma")
-    draw.rounded_rectangle((margin, footer_y+67 if height >= 1000 else footer_y+44, width-margin, height-25), radius=22, fill=blue)
-    draw.text((width/2, height-61 if height >= 1000 else height-39), "PhysiotherapyJobsCanada.ca", font=_fit_text(draw, "PhysiotherapyJobsCanada.ca", width-2*margin-40, 34 if height >= 1000 else 23, True), fill="white", anchor="mm")
+    # Footer: strong CTA and readable site address.
+    if output_format == "landscape":
+        profession_y = footer_top + 16
+        banner_y1 = footer_top + 44
+        banner_y2 = height - 20
+        profession_size = 17
+        site_size = 24
+        cta = "EXPLORE CURRENT OPPORTUNITIES"
+    else:
+        profession_y = footer_top + 18
+        banner_y1 = footer_top + 58
+        banner_y2 = height - 24
+        profession_size = 23 if output_format == "portrait" else 20
+        site_size = 36 if output_format == "portrait" else 31
+        cta = "EXPLORE CURRENT OPPORTUNITIES"
+
+    profession = "PHYSIOTHERAPY  •  OT  •  RMT  •  SLP  •  CHIROPRACTIC"
+    profession_font = _fit_text(draw, profession, width - 2 * margin, profession_size, True, 13)
+    draw.text((width / 2, profession_y), profession, font=profession_font, fill=navy, anchor="ma")
+
+    draw.rounded_rectangle((margin, banner_y1, width - margin, banner_y2), radius=24, fill=blue)
+    cta_font = _fit_text(draw, cta, width - 2 * margin - 70, 17 if output_format != "landscape" else 13, True, 11)
+    site_font = _fit_text(draw, "PhysiotherapyJobsCanada.ca", width - 2 * margin - 70, site_size, True, 20)
+    banner_mid = (banner_y1 + banner_y2) / 2
+    draw.text((width / 2, banner_mid - (22 if output_format != "landscape" else 13)), cta, font=cta_font, fill=white, anchor="mm")
+    draw.text((width / 2, banner_mid + (25 if output_format != "landscape" else 13)), "PhysiotherapyJobsCanada.ca", font=site_font, fill=white, anchor="mm")
 
     output = BytesIO()
     canvas.save(output, format="PNG", optimize=True)
