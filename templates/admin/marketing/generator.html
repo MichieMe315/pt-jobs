@@ -1,75 +1,256 @@
 {% extends "admin/base_site.html" %}
-{% load i18n %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+  .marketing-wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+
+  .marketing-intro {
+    margin: 0 0 22px;
+    color: var(--body-quiet-color);
+  }
+
+  .marketing-stats {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 0 0 22px;
+  }
+
+  .marketing-stat {
+    background: var(--body-bg);
+    border: 1px solid var(--hairline-color);
+    border-radius: 8px;
+    padding: 12px 16px;
+    min-width: 135px;
+  }
+
+  .marketing-stat strong {
+    display: block;
+    font-size: 21px;
+    color: var(--body-fg);
+  }
+
+  .marketing-form {
+    background: var(--body-bg);
+    border: 1px solid var(--hairline-color);
+    border-radius: 10px;
+    padding: 22px;
+    max-width: 720px;
+  }
+
+  .marketing-field {
+    margin-bottom: 18px;
+  }
+
+  .marketing-field label {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 7px;
+  }
+
+  .marketing-field select {
+    width: 100%;
+    max-width: 520px;
+    min-height: 40px;
+  }
+
+  .marketing-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 22px;
+  }
+
+  .marketing-actions button {
+    cursor: pointer;
+    min-height: 42px;
+    padding: 0 20px;
+    border-radius: 6px;
+    border: 0;
+    font-weight: 700;
+  }
+
+  .marketing-preview {
+    background: var(--button-bg);
+    color: var(--button-fg);
+  }
+
+  .marketing-download {
+    background: #c91427;
+    color: white;
+  }
+
+  .marketing-errors {
+    margin: 0 0 20px;
+  }
+
+  .marketing-note {
+    margin-top: 18px;
+    color: var(--body-quiet-color);
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+</style>
+{% endblock %}
 
 {% block breadcrumbs %}
-<div class="breadcrumbs"><a href="{% url 'admin:index' %}">Home</a> &rsaquo; Marketing Generator</div>
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+  &rsaquo; Marketing Generator
+</div>
 {% endblock %}
 
 {% block content %}
-<style>
-  .marketing-wrap { max-width: 850px; }
-  .marketing-card { background:#fff; border:1px solid #d8e0e7; border-radius:8px; padding:24px; }
-  .marketing-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px 24px; }
-  .marketing-field label { display:block; font-weight:600; margin-bottom:6px; }
-  .marketing-field select { width:100%; max-width:none; min-height:38px; }
-  .marketing-actions { margin-top:24px; display:flex; flex-wrap:wrap; gap:12px; }
-  .marketing-actions button { border:0; border-radius:4px; padding:11px 18px; cursor:pointer; font-weight:600; }
-  .marketing-primary { background:#417690; color:#fff; }
-  .marketing-secondary { background:#e8eef2; color:#263746; }
-  .marketing-note { margin:0 0 20px; padding:12px 14px; background:#eef6fb; border-left:4px solid #417690; }
-  .marketing-warning { margin:0 0 20px; padding:12px 14px; background:#fff4e5; border-left:4px solid #e67e22; }
-  .errorlist { color:#ba2121; }
-  [hidden] { display:none !important; }
-  @media(max-width:700px){ .marketing-grid { grid-template-columns:1fr; } }
-</style>
 <div class="marketing-wrap">
   <h1>Marketing Generator</h1>
+  <p class="marketing-intro">
+    Generate ready-to-post employer collages using active employers with uploaded logos.
+  </p>
+
+  <div class="marketing-stats">
+    <div class="marketing-stat">
+      <strong>{{ eligible_count }}</strong>
+      eligible employers
+    </div>
+    <div class="marketing-stat">
+      <strong>{{ province_count }}</strong>
+      active provinces
+    </div>
+    <div class="marketing-stat">
+      <strong>{{ city_count }}</strong>
+      active cities
+    </div>
+  </div>
 
   {% if database_empty %}
-    <p class="marketing-warning"><strong>Your local database is empty.</strong> It contains no employers or jobs, so live province, city, and logo results cannot appear locally. Test this branch against a database containing the live records.</p>
-  {% else %}
-    <p class="marketing-note"><strong>{{ eligible_count }}</strong> approved employers currently have an active, unexpired job and an uploaded logo. Found {{ province_count }} provinces and {{ city_count }} cities from active job locations.</p>
+    <ul class="messagelist marketing-errors">
+      <li class="warning">
+        This database contains no employers or jobs.
+      </li>
+    </ul>
   {% endif %}
 
-  <div class="marketing-card">
-    <form method="get" target="_blank" id="marketing-generator-form">
-      {{ form.non_field_errors }}
-      <div class="marketing-grid">
-        {% for field in form %}
-          <div class="marketing-field" data-field="{{ field.name }}">
-            {{ field.label_tag }}
-            {{ field }}
-            {{ field.errors }}
-          </div>
-        {% endfor %}
-      </div>
-      <div class="marketing-actions">
-        <button class="marketing-secondary" type="submit" name="action" value="preview" {% if not eligible_count %}disabled{% endif %}>Preview PNG</button>
-        <button class="marketing-primary" type="submit" name="action" value="download" {% if not eligible_count %}disabled{% endif %}>Generate and download PNG</button>
-      </div>
-    </form>
-  </div>
+  {% if form.non_field_errors %}
+    <ul class="errorlist nonfield marketing-errors">
+      {% for error in form.non_field_errors %}
+        <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <form method="get" class="marketing-form" id="marketing-form">
+    <div class="marketing-field">
+      <label for="{{ form.graphic_type.id_for_label }}">Graphic</label>
+      {{ form.graphic_type }}
+      {{ form.graphic_type.errors }}
+    </div>
+
+    <div class="marketing-field">
+      <label for="{{ form.headline.id_for_label }}">Headline</label>
+      {{ form.headline }}
+      {{ form.headline.errors }}
+    </div>
+
+    <div class="marketing-field" id="province-field">
+      <label for="{{ form.province.id_for_label }}">Province</label>
+      {{ form.province }}
+      {{ form.province.errors }}
+    </div>
+
+    <div class="marketing-field" id="city-field">
+      <label for="{{ form.city.id_for_label }}">City</label>
+      {{ form.city }}
+      {{ form.city.errors }}
+    </div>
+
+    <div class="marketing-field">
+      <label for="{{ form.logo_limit.id_for_label }}">Number of employers</label>
+      {{ form.logo_limit }}
+      {{ form.logo_limit.errors }}
+    </div>
+
+    <div class="marketing-field">
+      <label for="{{ form.output_format.id_for_label }}">Format</label>
+      {{ form.output_format }}
+      {{ form.output_format.errors }}
+    </div>
+
+    <div class="marketing-actions">
+      <button
+        class="marketing-preview"
+        type="submit"
+        name="action"
+        value="preview"
+        formtarget="_blank"
+      >
+        Preview graphic
+      </button>
+
+      <button
+        class="marketing-download"
+        type="submit"
+        name="action"
+        value="download"
+      >
+        Download PNG
+      </button>
+    </div>
+
+    <p class="marketing-note">
+      Only approved employers with active, unexpired jobs and uploaded logos are included.
+    </p>
+  </form>
 </div>
+
+{{ city_map_json|json_script:"marketing-city-map" }}
+
 <script>
 (function () {
-  const type = document.getElementById("id_graphic_type");
-  const provinceWrap = document.querySelector('[data-field="province"]');
-  const cityWrap = document.querySelector('[data-field="city"]');
-  const province = document.getElementById("id_province");
-  const city = document.getElementById("id_city");
+  const typeSelect = document.getElementById("id_graphic_type");
+  const provinceSelect = document.getElementById("id_province");
+  const citySelect = document.getElementById("id_city");
+  const provinceField = document.getElementById("province-field");
+  const cityField = document.getElementById("city-field");
+  const cityMapNode = document.getElementById("marketing-city-map");
+  const cityMap = cityMapNode ? JSON.parse(cityMapNode.textContent) : {};
 
-  function updateLocationFields() {
-    const value = type ? type.value : "canada";
-    if (provinceWrap) provinceWrap.hidden = value !== "province";
-    if (cityWrap) cityWrap.hidden = value !== "city";
-    if (province) province.required = value === "province";
-    if (city) city.required = value === "city";
+  function rebuildCities() {
+    const province = provinceSelect.value;
+    const current = citySelect.value;
+    const cities = province && cityMap[province]
+      ? cityMap[province]
+      : Object.values(cityMap).flat();
+
+    const unique = [...new Set(cities)].sort((a, b) => a.localeCompare(b));
+    citySelect.innerHTML = '<option value="">Select a city</option>';
+
+    unique.forEach((city) => {
+      const option = document.createElement("option");
+      option.value = city;
+      option.textContent = city;
+      if (city === current) option.selected = true;
+      citySelect.appendChild(option);
+    });
   }
 
-  if (type) {
-    type.addEventListener("change", updateLocationFields);
-    updateLocationFields();
+  function updateVisibility() {
+    const type = typeSelect.value;
+    provinceField.hidden = !(type === "province" || type === "city");
+    cityField.hidden = type !== "city";
   }
+
+  provinceSelect.addEventListener("change", rebuildCities);
+  typeSelect.addEventListener("change", updateVisibility);
+
+  rebuildCities();
+  updateVisibility();
 })();
 </script>
 {% endblock %}

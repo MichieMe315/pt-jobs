@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from datetime import timedelta
+import json
+
 from django.contrib import admin
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Count, Prefetch, Q
@@ -12,14 +14,22 @@ from django.utils.text import slugify
 
 from board.models import Employer, Job
 from .forms import MarketingGraphicForm
-from .generator import EmployerCard, PROVINCES, render_graphic, split_location
+from .generator import (
+    EmployerCard,
+    PROVINCES,
+    headline_text,
+    render_graphic,
+    split_location,
+)
 
 
 def _active_jobs_queryset():
     today = timezone.localdate()
-    return Job.objects.filter(is_active=True).filter(
-        Q(expiry_date__isnull=True) | Q(expiry_date__gte=today)
-    ).select_related("employer")
+    return (
+        Job.objects.filter(is_active=True)
+        .filter(Q(expiry_date__isnull=True) | Q(expiry_date__gte=today))
+        .select_related("employer")
+    )
 
 
 def _active_employers():
@@ -36,36 +46,66 @@ def _active_employers():
             )
         )
         .filter(active_job_count__gt=0)
-        .prefetch_related(Prefetch("jobs", queryset=active_jobs, to_attr="marketing_active_jobs"))
+        .prefetch_related(
+            Prefetch("jobs", queryset=active_jobs, to_attr="marketing_active_jobs")
+        )
         .order_by("company_name", "name", "pk")
     )
 
 
-def _choices(employers):
-    provinces, cities = set(), set()
+def _location_choices(employers):
+    province_cities = {}
+
     for employer in employers:
         for job in getattr(employer, "marketing_active_jobs", []):
             city, province = split_location(job.location or employer.location)
-            if province:
-                provinces.add(province)
+            if not province:
+                continue
+            province_cities.setdefault(province, set())
             if city:
-                cities.add(city)
+                province_cities[province].add(city)
+
     province_choices = [
         (code, PROVINCES.get(code, code))
-        for code in sorted(provinces, key=lambda c: PROVINCES.get(c, c))
+        for code in sorted(
+            province_cities,
+            key=lambda code: PROVINCES.get(code, code).lower(),
+        )
     ]
-    city_choices = [(city, city) for city in sorted(cities, key=str.lower)]
-    return province_choices, city_choices
+
+    all_cities = sorted(
+        {city for cities in province_cities.values() for city in cities},
+        key=str.lower,
+    )
+    city_choices = [(city, city) for city in all_cities]
+
+    city_map = {
+        province: sorted(cities, key=str.lower)
+        for province, cities in province_cities.items()
+    }
+    return province_choices, city_choices, city_map
 
 
 def _employer_matches_location(employer, province="", city=""):
     for job in getattr(employer, "marketing_active_jobs", []):
         job_city, job_province = split_location(job.location or employer.location)
-        if province and job_province == province:
-            return True
-        if city and job_city.lower() == city.lower():
+        province_match = not province or job_province == province
+        city_match = not city or job_city.lower() == city.lower()
+        if province_match and city_match:
             return True
     return False
+
+
+def _selection_context(cleaned):
+    kind = cleaned["graphic_type"]
+    province = cleaned.get("province") or ""
+    city = cleaned.get("city") or ""
+
+    if kind == "province":
+        return PROVINCES.get(province, province)
+    if kind == "city":
+        return city
+    return "Canada"
 
 
 def _select(employers, cleaned):
@@ -74,30 +114,47 @@ def _select(employers, cleaned):
 
     if kind == "province":
         province = cleaned["province"]
-        items = [e for e in items if _employer_matches_location(e, province=province)]
-        title = f"Hiring in {PROVINCES.get(province, province)}"
+        items = [
+            employer
+            for employer in items
+            if _employer_matches_location(employer, province=province)
+        ]
     elif kind == "city":
         city = cleaned["city"]
-        items = [e for e in items if _employer_matches_location(e, city=city)]
-        title = f"Hiring in {city}"
+        province = cleaned.get("province") or ""
+        items = [
+            employer
+            for employer in items
+            if _employer_matches_location(
+                employer,
+                province=province,
+                city=city,
+            )
+        ]
     elif kind == "new":
         cutoff = timezone.now() - timedelta(days=30)
-        items = [e for e in items if e.created_at >= cutoff]
-        items.sort(key=lambda e: e.created_at, reverse=True)
-        title = "New Employers This Month"
+        items = [employer for employer in items if employer.created_at >= cutoff]
+        items.sort(key=lambda employer: employer.created_at, reverse=True)
     elif kind == "top":
-        items.sort(key=lambda e: (-e.active_job_count, (e.company_name or e.name).lower()))
-        title = "Top Hiring Employers"
-    else:
-        title = "Now Hiring Across Canada"
+        items.sort(
+            key=lambda employer: (
+                -employer.active_job_count,
+                (employer.company_name or employer.name or "").lower(),
+            )
+        )
 
-    return items[: cleaned["logo_limit"]], title
+    return items[: cleaned["logo_limit"]]
 
 
 @staff_member_required
 def marketing_generator(request):
     employers = _active_employers()
-    province_choices, city_choices = _choices(employers)
+    province_choices, city_choices, city_map = _location_choices(employers)
+
+    selected_province = request.GET.get("province", "")
+    if selected_province and selected_province in city_map:
+        city_choices = [(city, city) for city in city_map[selected_province]]
+
     form = MarketingGraphicForm(
         request.GET or None,
         province_choices=province_choices,
@@ -105,32 +162,46 @@ def marketing_generator(request):
     )
 
     if form.is_valid() and request.GET.get("action") in {"preview", "download"}:
-        selected, title = _select(employers, form.cleaned_data)
+        selected = _select(employers, form.cleaned_data)
+
         if not selected:
             form.add_error(
                 None,
-                "No employers with active, unexpired jobs and uploaded logos matched this selection.",
+                "No active employers with uploaded logos matched this selection.",
             )
         else:
             cards = [
                 EmployerCard(
-                    e.company_name or e.name or "Employer",
-                    e.location,
-                    e.logo,
-                    e.active_job_count,
-                    e.created_at,
+                    name=employer.company_name or employer.name or "Employer",
+                    location=employer.location or "",
+                    logo=employer.logo,
+                    active_jobs=employer.active_job_count,
+                    created_at=employer.created_at,
                 )
-                for e in selected
+                for employer in selected
             ]
+
+            region = _selection_context(form.cleaned_data)
+            headline = headline_text(form.cleaned_data["headline"])
+
             png = render_graphic(
-                cards,
-                title,
-                f"{len(cards)} employers currently hiring",
-                form.cleaned_data["output_format"],
+                cards=cards,
+                headline_key=form.cleaned_data["headline"],
+                headline=headline,
+                region=region,
+                output_format=form.cleaned_data["output_format"],
             )
-            disposition = "inline" if request.GET["action"] == "preview" else "attachment"
+
+            disposition = (
+                "inline"
+                if request.GET["action"] == "preview"
+                else "attachment"
+            )
+            filename = slugify(f"{headline}-{region}") or "marketing-graphic"
             response = HttpResponse(png, content_type="image/png")
-            response["Content-Disposition"] = f'{disposition}; filename="{slugify(title)}.png"'
+            response["Content-Disposition"] = (
+                f'{disposition}; filename="{filename}.png"'
+            )
             return response
 
     context = {
@@ -139,7 +210,8 @@ def marketing_generator(request):
         "form": form,
         "eligible_count": len(employers),
         "province_count": len(province_choices),
-        "city_count": len(city_choices),
+        "city_count": sum(len(cities) for cities in city_map.values()),
+        "city_map_json": json.dumps(city_map),
         "database_empty": Employer.objects.count() == 0 and Job.objects.count() == 0,
         "opts": None,
     }
@@ -149,6 +221,7 @@ def marketing_generator(request):
 def install_marketing_admin_urls():
     if getattr(admin.site, "_marketing_generator_installed", False):
         return
+
     original_get_urls = admin.site.get_urls
 
     def get_urls():
