@@ -1,8 +1,8 @@
+
 from __future__ import annotations
 
 from dataclasses import dataclass
 from io import BytesIO
-from pathlib import Path
 import re
 from typing import Iterable
 
@@ -11,23 +11,15 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps, ImageFilter
 
 
 PROVINCES = {
-    "AB": "Alberta",
-    "BC": "British Columbia",
-    "MB": "Manitoba",
-    "NB": "New Brunswick",
-    "NL": "Newfoundland and Labrador",
-    "NS": "Nova Scotia",
-    "NT": "Northwest Territories",
-    "NU": "Nunavut",
-    "ON": "Ontario",
-    "PE": "Prince Edward Island",
-    "QC": "Quebec",
-    "SK": "Saskatchewan",
-    "YT": "Yukon",
+    "AB": "Alberta", "BC": "British Columbia", "MB": "Manitoba",
+    "NB": "New Brunswick", "NL": "Newfoundland and Labrador",
+    "NS": "Nova Scotia", "NT": "Northwest Territories", "NU": "Nunavut",
+    "ON": "Ontario", "PE": "Prince Edward Island", "QC": "Quebec",
+    "SK": "Saskatchewan", "YT": "Yukon",
 }
 PROVINCE_ALIASES = {
-    **{key.lower(): key for key in PROVINCES},
-    **{value.lower(): key for key, value in PROVINCES.items()},
+    **{k.lower(): k for k in PROVINCES},
+    **{v.lower(): k for k, v in PROVINCES.items()},
 }
 
 HEADLINES = {
@@ -49,65 +41,47 @@ class EmployerCard:
 
 
 def headline_text(key: str) -> str:
-    first, second = HEADLINES.get(key, HEADLINES["top_real"])
-    return f"{first} {second}"
+    a, b = HEADLINES.get(key, HEADLINES["top_real"])
+    return f"{a} {b}"
 
 
 def split_location(value: str) -> tuple[str, str]:
     value = (value or "").strip()
     if not value:
         return "", ""
-
-    parts = [
-        part.strip()
-        for part in re.split(r",|\s+-\s+", value)
-        if part.strip()
-    ]
+    parts = [p.strip() for p in re.split(r",|\s+-\s+", value) if p.strip()]
     city = parts[0] if parts else ""
     province = ""
-
     for part in reversed(parts[1:] or parts):
         cleaned = re.sub(r"\s+Canada$", "", part, flags=re.I).strip()
-        key = PROVINCE_ALIASES.get(cleaned.lower())
-        if key:
-            province = key
+        code = PROVINCE_ALIASES.get(cleaned.lower())
+        if code:
+            province = code
             break
-
     return city, province
 
 
 def _font(size: int, bold: bool = False):
-    candidates = (
-        [
-            "DejaVuSansCondensed-Bold.ttf",
-            "DejaVuSans-Bold.ttf",
-            "Arial Bold.ttf",
-            "arialbd.ttf",
-        ]
-        if bold
-        else [
-            "DejaVuSans.ttf",
-            "Arial.ttf",
-            "arial.ttf",
-        ]
+    names = (
+        ["DejaVuSansCondensed-Bold.ttf", "DejaVuSans-Bold.ttf", "arialbd.ttf"]
+        if bold else
+        ["DejaVuSans.ttf", "arial.ttf"]
     )
-    for candidate in candidates:
+    for name in names:
         try:
-            return ImageFont.truetype(candidate, size)
+            return ImageFont.truetype(name, size)
         except OSError:
-            continue
+            pass
     return ImageFont.load_default()
 
 
-def _fit_text(draw, text, max_width, start_size, bold=False, min_size=12):
-    size = start_size
-    while size > min_size:
+def _fit(draw, text, max_width, start_size, bold=True, minimum=12):
+    for size in range(start_size, minimum - 1, -1):
         font = _font(size, bold)
         box = draw.textbbox((0, 0), text, font=font)
         if box[2] - box[0] <= max_width:
             return font
-        size -= 1
-    return _font(min_size, bold)
+    return _font(minimum, bold)
 
 
 def _open_logo(field):
@@ -125,7 +99,7 @@ def _open_logo(field):
         return None
 
 
-def _brand_logo():
+def _brand():
     path = finders.find("board/marketing/brand-logo.jpg")
     if not path:
         return None
@@ -135,307 +109,191 @@ def _brand_logo():
         return None
 
 
-def _rounded_shadow(canvas, box, radius, fill, shadow=(0, 0, 0, 28), offset=5):
+def _shadow_card(canvas, box, radius):
     x1, y1, x2, y2 = box
-    layer = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
-    layer_draw = ImageDraw.Draw(layer)
-    layer_draw.rounded_rectangle(
-        (x1, y1 + offset, x2, y2 + offset),
-        radius=radius,
-        fill=shadow,
-    )
-    layer = layer.filter(ImageFilter.GaussianBlur(8))
-    canvas.paste(layer, (0, 0), layer)
-    draw = ImageDraw.Draw(canvas)
-    draw.rounded_rectangle(box, radius=radius, fill=fill)
+    shadow = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+    sd = ImageDraw.Draw(shadow)
+    sd.rounded_rectangle((x1, y1 + 5, x2, y2 + 5), radius=radius, fill=(0, 0, 0, 38))
+    shadow = shadow.filter(ImageFilter.GaussianBlur(9))
+    canvas.paste(shadow, (0, 0), shadow)
+    ImageDraw.Draw(canvas).rounded_rectangle(box, radius=radius, fill="#FFFFFF")
 
 
-def _draw_background(draw, width, height):
-    draw.rectangle((0, 0, width, height), fill="#F7F7F5")
-    # restrained diagonal texture similar to the approved mock-up
-    for offset in range(-height, width, 34):
-        draw.line(
-            (offset, 0, offset + height, height),
-            fill="#ECECE9",
-            width=1,
-        )
+def _config(fmt):
+    if fmt == "portrait":
+        return dict(size=(1080, 1350), margin=54, header=350, footer=220, cols=4, gap=14)
+    if fmt == "landscape":
+        return dict(size=(1200, 630), margin=38, header=170, footer=112, cols=6, gap=10)
+    return dict(size=(1080, 1080), margin=54, header=305, footer=190, cols=4, gap=13)
 
 
-def _format_config(output_format):
-    if output_format == "portrait":
-        return {
-            "size": (1080, 1350),
-            "margin": 58,
-            "header_h": 345,
-            "footer_h": 205,
-            "cols": 4,
-            "gap": 15,
-        }
-    if output_format == "landscape":
-        return {
-            "size": (1200, 630),
-            "margin": 42,
-            "header_h": 170,
-            "footer_h": 105,
-            "cols": 6,
-            "gap": 12,
-        }
-    return {
-        "size": (1080, 1080),
-        "margin": 58,
-        "header_h": 315,
-        "footer_h": 190,
-        "cols": 4,
-        "gap": 14,
-    }
+def _resolve_call(args, kwargs):
+    """
+    Supports both deployed signatures:
+      old: render_graphic(cards, title, subtitle, output_format)
+      new: render_graphic(cards=..., headline_key=..., headline=..., region=..., output_format=...)
+    """
+    cards = kwargs.get("cards")
+    if cards is None and args:
+        cards = args[0]
+
+    output_format = kwargs.get("output_format")
+    if not output_format:
+        output_format = args[3] if len(args) >= 4 else "square"
+
+    headline_key = kwargs.get("headline_key", "top_real")
+    region = kwargs.get("region", "Canada")
+
+    # Infer region from old title if possible.
+    if len(args) >= 2 and isinstance(args[1], str):
+        old_title = args[1]
+        lower = old_title.lower()
+        if "hiring in " in lower:
+            region = old_title[lower.index("hiring in ") + 10:].strip()
+        elif "canada" in lower:
+            region = "Canada"
+
+    return list(cards or []), headline_key, region, output_format
 
 
-def render_graphic(
-    cards: Iterable[EmployerCard],
-    headline_key: str,
-    headline: str,
-    region: str,
-    output_format: str,
-) -> bytes:
-    cards = list(cards)
-    cfg = _format_config(output_format)
+def render_graphic(*args, **kwargs) -> bytes:
+    cards, headline_key, region, output_format = _resolve_call(args, kwargs)
+    cfg = _config(output_format)
     width, height = cfg["size"]
     margin = cfg["margin"]
 
-    navy = "#071F36"
-    red = "#C91427"
-    white = "#FFFFFF"
-    charcoal = "#172433"
-    light_grey = "#E4E6E8"
+    NAVY = "#071D33"
+    RED = "#C4162A"
+    WHITE = "#FFFFFF"
+    TEXT = "#172433"
+    BG = "#F6F5F2"
 
-    canvas = Image.new("RGB", (width, height), "#F7F7F5")
+    canvas = Image.new("RGB", (width, height), BG)
     draw = ImageDraw.Draw(canvas)
-    _draw_background(draw, width, height)
 
-    # ----- Brand logo -----
-    brand = _brand_logo()
+    # Fine diagonal texture.
+    for offset in range(-height, width, 28):
+        draw.line((offset, 0, offset + height, height), fill="#ECEAE6", width=1)
+
+    # Brand plaque.
+    brand = _brand()
     if brand:
         if output_format == "landscape":
-            brand_box = (width // 2 - 140, 15, width // 2 + 140, 76)
+            target = (270, 72)
+            top = 8
         else:
-            brand_box = (width // 2 - 180, 20, width // 2 + 180, 116)
+            target = (330, 104)
+            top = 14
+        b = ImageOps.contain(brand, target, Image.Resampling.LANCZOS)
+        canvas.paste(b, ((width - b.width) // 2, top))
 
-        bx1, by1, bx2, by2 = brand_box
-        contained = ImageOps.contain(
-            brand,
-            (bx2 - bx1, by2 - by1),
-            Image.Resampling.LANCZOS,
-        )
-        px = bx1 + (bx2 - bx1 - contained.width) // 2
-        py = by1 + (by2 - by1 - contained.height) // 2
-        canvas.paste(contained, (px, py))
-
-    # ----- Headline -----
     first, second = HEADLINES.get(headline_key, HEADLINES["top_real"])
+
     if output_format == "landscape":
-        title_size = 48
-        title_y1 = 70
-        title_gap = 48
+        y1, gap, start = 67, 47, 52
     else:
-        title_size = 78 if output_format == "square" else 82
-        title_y1 = 122
-        title_gap = 78
+        y1, gap, start = 125, 73, 78
 
-    title_font_1 = _fit_text(
-        draw,
-        first,
-        width - 2 * margin,
-        title_size,
-        True,
-        34,
-    )
-    title_font_2 = _fit_text(
-        draw,
-        second,
-        width - 2 * margin,
-        title_size,
-        True,
-        34,
-    )
-    draw.text(
-        (width / 2, title_y1),
-        first,
-        font=title_font_1,
-        fill=navy,
-        anchor="ma",
-    )
-    draw.text(
-        (width / 2, title_y1 + title_gap),
-        second,
-        font=title_font_2,
-        fill=red,
-        anchor="ma",
-    )
+    f1 = _fit(draw, first, width - 2 * margin, start, True, 30)
+    f2 = _fit(draw, second, width - 2 * margin, start, True, 30)
+    draw.text((width / 2, y1), first, font=f1, fill=NAVY, anchor="ma")
+    draw.text((width / 2, y1 + gap), second, font=f2, fill=RED, anchor="ma")
 
-    # ----- Employer count line -----
-    count_y = cfg["header_h"] - (30 if output_format == "landscape" else 42)
-    line_width = 120 if output_format != "landscape" else 78
-    draw.line(
-        (margin, count_y, margin + line_width, count_y),
-        fill=red,
-        width=2,
-    )
-    draw.line(
-        (width - margin - line_width, count_y, width - margin, count_y),
-        fill=red,
-        width=2,
-    )
+    # Count band.
+    count_y = cfg["header"] - (25 if output_format == "landscape" else 38)
+    side = 110 if output_format != "landscape" else 72
+    draw.line((margin, count_y, margin + side, count_y), fill=RED, width=2)
+    draw.line((width - margin - side, count_y, width - margin, count_y), fill=RED, width=2)
 
-    region_text = region.upper() if region else "CANADA"
-    count_text = f"{len(cards)} EMPLOYERS  CURRENTLY HIRING IN {region_text}"
-    count_font = _fit_text(
-        draw,
-        count_text,
-        width - 2 * margin - 2 * line_width - 36,
-        24 if output_format != "landscape" else 15,
-        True,
-        12,
-    )
-    draw.text(
-        (width / 2, count_y),
-        count_text,
-        font=count_font,
-        fill=charcoal,
-        anchor="mm",
-    )
+    region_label = (region or "Canada").upper()
+    count_text = f"{len(cards)} EMPLOYERS  CURRENTLY HIRING IN {region_label}"
+    cf = _fit(draw, count_text, width - 2 * margin - 2 * side - 26,
+              22 if output_format != "landscape" else 14, True, 11)
+    draw.text((width / 2, count_y), count_text, font=cf, fill=TEXT, anchor="mm")
 
-    # ----- Logo grid -----
-    footer_top = height - cfg["footer_h"]
-    grid_top = cfg["header_h"]
-    grid_bottom = footer_top - 10
+    # Grid.
+    footer_top = height - cfg["footer"]
+    grid_top = cfg["header"]
+    grid_bottom = footer_top - 12
     cols = min(cfg["cols"], max(1, len(cards)))
     rows = max(1, (len(cards) + cols - 1) // cols)
-    gap = cfg["gap"]
+    gap_px = cfg["gap"]
+    card_w = int((width - 2 * margin - gap_px * (cols - 1)) / cols)
+    card_h = int((grid_bottom - grid_top - gap_px * (rows - 1)) / rows)
 
-    card_w = int((width - 2 * margin - gap * (cols - 1)) / cols)
-    card_h = int((grid_bottom - grid_top - gap * (rows - 1)) / rows)
-    card_h = max(card_h, 72)
+    # Avoid ugly single card stuck at left: center incomplete final rows.
+    for idx, card in enumerate(cards):
+        row = idx // cols
+        col = idx % cols
+        row_start = row * cols
+        row_count = min(cols, len(cards) - row_start)
+        row_width = row_count * card_w + (row_count - 1) * gap_px
+        row_x = (width - row_width) / 2
 
-    for index, card in enumerate(cards):
-        row, col = divmod(index, cols)
-        x = margin + col * (card_w + gap)
-        y = grid_top + row * (card_h + gap)
+        x = int(row_x + col * (card_w + gap_px))
+        y = int(grid_top + row * (card_h + gap_px))
         box = (x, y, x + card_w, y + card_h)
-
-        _rounded_shadow(
-            canvas,
-            box,
-            radius=14 if output_format == "landscape" else 17,
-            fill=white,
-        )
+        _shadow_card(canvas, box, 16 if output_format != "landscape" else 12)
 
         logo = _open_logo(card.logo)
         if logo:
-            padding_x = 18 if output_format == "landscape" else 20
-            padding_y = 12 if output_format == "landscape" else 15
-            contained = ImageOps.contain(
-                logo,
-                (
-                    max(1, card_w - padding_x * 2),
-                    max(1, card_h - padding_y * 2),
-                ),
-                Image.Resampling.LANCZOS,
-            )
-            px = x + (card_w - contained.width) // 2
-            py = y + (card_h - contained.height) // 2
-            canvas.paste(contained, (px, py), contained)
+            max_w = card_w - (34 if output_format != "landscape" else 24)
+            max_h = card_h - (26 if output_format != "landscape" else 18)
+            fitted = ImageOps.contain(logo, (max_w, max_h), Image.Resampling.LANCZOS)
+            px = x + (card_w - fitted.width) // 2
+            py = y + (card_h - fitted.height) // 2
+            canvas.paste(fitted, (px, py), fitted)
 
-    # ----- Footer -----
-    footer_y = footer_top
-    draw.rectangle((0, footer_y, width, height), fill=navy)
+    # Footer.
+    draw.rectangle((0, footer_top, width, height), fill=NAVY)
+    top_band = 105 if output_format != "landscape" else 62
+    cta_w = 330 if output_format != "landscape" else 275
 
-    if output_format == "landscape":
-        cta_w = 260
-        top_band_h = 62
-    else:
-        cta_w = 330
-        top_band_h = 104
+    draw.polygon([
+        (width - cta_w - 48, footer_top),
+        (width, footer_top),
+        (width, footer_top + top_band),
+        (width - cta_w, footer_top + top_band),
+    ], fill=RED)
 
-    # Red angled CTA panel
-    draw.polygon(
-        [
-            (width - cta_w - 52, footer_y),
-            (width, footer_y),
-            (width, footer_y + top_band_h),
-            (width - cta_w, footer_y + top_band_h),
-        ],
-        fill=red,
-    )
+    labels = ["PHYSIOTHERAPY", "OT", "RMT", "OT", "CHIROPRACTIC", "KINESIOLOGY"]
+    usable = width - cta_w - 70
+    step = usable / len(labels)
+    lf = _font(15 if output_format != "landscape" else 10, True)
 
-    professions = [
-        "PHYSIOTHERAPY",
-        "OT",
-        "RMT",
-        "OT",
-        "CHIROPRACTIC",
-        "KINESIOLOGY",
-    ]
-    usable_w = width - cta_w - 76
-    step = usable_w / len(professions)
-    profession_font = _font(17 if output_format != "landscape" else 11, True)
+    for i, label in enumerate(labels):
+        cx = 24 + step * i + step / 2
+        # small badge above label
+        badge_r = 18 if output_format != "landscape" else 11
+        badge_y = footer_top + 33 if output_format != "landscape" else footer_top + 20
+        draw.ellipse((cx-badge_r, badge_y-badge_r, cx+badge_r, badge_y+badge_r),
+                     outline=WHITE, width=2)
+        initials = {"PHYSIOTHERAPY":"PT", "CHIROPRACTIC":"DC", "KINESIOLOGY":"KIN"}.get(label, label)
+        bif = _fit(draw, initials, badge_r*1.5, 12 if output_format != "landscape" else 8, True, 7)
+        draw.text((cx, badge_y), initials, font=bif, fill=WHITE, anchor="mm")
+        draw.text((cx, footer_top + top_band - 22), label, font=lf, fill=WHITE, anchor="mm")
+        if i < len(labels) - 1:
+            sx = 24 + step * (i + 1)
+            draw.line((sx, footer_top + 18, sx, footer_top + top_band - 18), fill=RED, width=2)
 
-    for i, label in enumerate(professions):
-        cx = 28 + step * i + step / 2
-        draw.text(
-            (cx, footer_y + top_band_h / 2),
-            label,
-            font=profession_font,
-            fill=white,
-            anchor="mm",
-        )
-        if i < len(professions) - 1:
-            sx = 28 + step * (i + 1)
-            draw.line(
-                (sx, footer_y + 18, sx, footer_y + top_band_h - 18),
-                fill=red,
-                width=2,
-            )
-
-    cta_font = _fit_text(
-        draw,
-        "FIND YOUR NEXT\nCAREER MOVE.",
-        cta_w - 45,
-        28 if output_format != "landscape" else 18,
-        True,
-        14,
-    )
+    cta_font = _fit(draw, "FIND YOUR NEXT", cta_w - 50,
+                    25 if output_format != "landscape" else 16, True, 13)
     cta_x = width - cta_w / 2
-    cta_y = footer_y + top_band_h / 2
-    draw.multiline_text(
-        (cta_x, cta_y),
-        "FIND YOUR NEXT\nCAREER MOVE.",
-        font=cta_font,
-        fill=white,
-        anchor="mm",
-        align="center",
-        spacing=3,
-    )
+    draw.text((cta_x, footer_top + top_band/2 - 14), "FIND YOUR NEXT",
+              font=cta_font, fill=WHITE, anchor="mm")
+    draw.text((cta_x, footer_top + top_band/2 + 17), "CAREER MOVE.",
+              font=cta_font, fill=WHITE, anchor="mm")
+    draw.line((cta_x - 90, footer_top + top_band - 17,
+               cta_x + 90, footer_top + top_band - 17), fill=WHITE, width=3)
 
-    # Website bar: one colour, all white, as requested.
-    website_y = footer_y + top_band_h
-    draw.line((0, website_y, width, website_y), fill="#34495D", width=2)
-    site_text = "PHYSIOTHERAPYJOBSCANADA.CA"
-    site_font = _fit_text(
-        draw,
-        site_text,
-        width - 2 * margin,
-        29 if output_format != "landscape" else 19,
-        True,
-        16,
-    )
-    draw.text(
-        (width / 2, website_y + (height - website_y) / 2),
-        site_text,
-        font=site_font,
-        fill=white,
-        anchor="mm",
-    )
+    website_top = footer_top + top_band
+    draw.line((0, website_top, width, website_top), fill="#31465A", width=2)
+    site = "PHYSIOTHERAPYJOBSCANADA.CA"
+    sf = _fit(draw, site, width - 2 * margin,
+              28 if output_format != "landscape" else 18, True, 14)
+    draw.text((width/2, website_top + (height - website_top)/2),
+              site, font=sf, fill=WHITE, anchor="mm")
 
-    output = BytesIO()
-    canvas.save(output, format="PNG", optimize=True)
-    return output.getvalue()
+    out = BytesIO()
+    canvas.save(out, format="PNG", optimize=True)
+    return out.getvalue()
