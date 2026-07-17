@@ -1,47 +1,175 @@
 {% extends "admin/base_site.html" %}
 {% load i18n %}
-{% block breadcrumbs %}<div class="breadcrumbs"><a href="{% url 'admin:index' %}">{% translate 'Home' %}</a> &rsaquo; Marketing Generator</div>{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+  .marketing-wrap { max-width: 980px; }
+  .marketing-form {
+    background: var(--body-bg);
+    border: 1px solid var(--hairline-color);
+    border-radius: 10px;
+    max-width: 700px;
+    padding: 22px;
+  }
+  .marketing-field { margin-bottom: 18px; }
+  .marketing-field label {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 7px;
+  }
+  .marketing-field select {
+    width: 100%;
+    max-width: 540px;
+    min-height: 40px;
+  }
+  .marketing-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 22px;
+  }
+  .marketing-actions button {
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 700;
+    min-height: 42px;
+    padding: 0 20px;
+  }
+  .preview-button { background: var(--button-bg); color: var(--button-fg); }
+  .download-button { background: #c9162b; color: white; }
+  [hidden] { display: none !important; }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">{% translate "Home" %}</a>
+  &rsaquo; Marketing Generator
+</div>
+{% endblock %}
+
 {% block content %}
-<h1>Marketing Generator</h1>
-<form method="get" id="marketing-form" style="max-width:720px;background:var(--body-bg);border:1px solid var(--hairline-color);padding:22px;border-radius:10px;">
-  {{ form.non_field_errors }}
-  {% for field in form %}
-    <div class="mg-field" id="field-{{ field.name }}" style="margin-bottom:18px;">
-      <label for="{{ field.id_for_label }}" style="display:block;font-weight:700;margin-bottom:7px;">{{ field.label }}</label>
-      {{ field }} {{ field.errors }}
+<div class="marketing-wrap">
+  <h1>Marketing Generator</h1>
+
+  {% if form.non_field_errors %}
+    {{ form.non_field_errors }}
+  {% endif %}
+
+  <form method="get" class="marketing-form">
+    <div class="marketing-field">
+      <label for="{{ form.graphic_type.id_for_label }}">Graphic</label>
+      {{ form.graphic_type }}
+      {{ form.graphic_type.errors }}
     </div>
-  {% endfor %}
-  <div style="display:flex;gap:10px;flex-wrap:wrap;">
-    <button type="submit" name="action" value="preview" formtarget="_blank" class="button">Preview graphic</button>
-    <button type="submit" name="action" value="download" class="button" style="background:#c9162b;color:white;">Download PNG</button>
-  </div>
-</form>
+
+    <div class="marketing-field" id="headline-field">
+      <label for="{{ form.headline.id_for_label }}">Headline</label>
+      {{ form.headline }}
+      {{ form.headline.errors }}
+    </div>
+
+    <div class="marketing-field" id="employer-field">
+      <label for="{{ form.employer.id_for_label }}">Clinic</label>
+      {{ form.employer }}
+      {{ form.employer.errors }}
+    </div>
+
+    <div class="marketing-field" id="single-style-field">
+      <label for="{{ form.single_style.id_for_label }}">Single clinic style</label>
+      {{ form.single_style }}
+      {{ form.single_style.errors }}
+    </div>
+
+    <div class="marketing-field" id="province-field">
+      <label for="{{ form.province.id_for_label }}">Province</label>
+      {{ form.province }}
+      {{ form.province.errors }}
+    </div>
+
+    <div class="marketing-field" id="city-field">
+      <label for="{{ form.city.id_for_label }}">City</label>
+      {{ form.city }}
+      {{ form.city.errors }}
+    </div>
+
+    <div class="marketing-field" id="limit-field">
+      <label for="{{ form.logo_limit.id_for_label }}">Number of employers</label>
+      {{ form.logo_limit }}
+      {{ form.logo_limit.errors }}
+    </div>
+
+    <div class="marketing-field">
+      <label for="{{ form.output_format.id_for_label }}">Format</label>
+      {{ form.output_format }}
+      {{ form.output_format.errors }}
+    </div>
+
+    <div class="marketing-actions">
+      <button class="preview-button" type="submit" name="action" value="preview" formtarget="_blank">
+        Preview graphic
+      </button>
+      <button class="download-button" type="submit" name="action" value="download">
+        Download PNG
+      </button>
+    </div>
+  </form>
+</div>
+
 {{ city_map_json|json_script:"marketing-city-map" }}
+
 <script>
-(() => {
-  const type = document.getElementById('id_graphic_type');
-  const province = document.getElementById('id_province');
-  const city = document.getElementById('id_city');
-  const mapNode = document.getElementById('marketing-city-map');
-  const cityMap = mapNode ? JSON.parse(mapNode.textContent) : {};
-  const box = n => document.getElementById('field-' + n);
-  function cities() {
-    const current = city.value;
-    const values = province.value && cityMap[province.value] ? cityMap[province.value] : Object.values(cityMap).flat();
-    city.innerHTML = '<option value="">Select a city</option>';
-    [...new Set(values)].sort().forEach(name => {
-      const o = document.createElement('option'); o.value = name; o.textContent = name; o.selected = name === current; city.appendChild(o);
+(function () {
+  const typeSelect = document.getElementById("id_graphic_type");
+  const provinceSelect = document.getElementById("id_province");
+  const citySelect = document.getElementById("id_city");
+  const headlineField = document.getElementById("headline-field");
+  const employerField = document.getElementById("employer-field");
+  const singleStyleField = document.getElementById("single-style-field");
+  const provinceField = document.getElementById("province-field");
+  const cityField = document.getElementById("city-field");
+  const limitField = document.getElementById("limit-field");
+  const cityMapNode = document.getElementById("marketing-city-map");
+  const cityMap = cityMapNode ? JSON.parse(cityMapNode.textContent) : {};
+
+  function rebuildCities() {
+    const province = provinceSelect.value;
+    const current = citySelect.value;
+    const cities = province && cityMap[province]
+      ? cityMap[province]
+      : Object.values(cityMap).flat();
+
+    const unique = [...new Set(cities)].sort((a, b) => a.localeCompare(b));
+    citySelect.innerHTML = '<option value="">Select a city</option>';
+
+    unique.forEach((city) => {
+      const option = document.createElement("option");
+      option.value = city;
+      option.textContent = city;
+      if (city === current) option.selected = true;
+      citySelect.appendChild(option);
     });
   }
-  function show() {
-    const v = type.value, single = v === 'single';
-    box('employer').hidden = !single;
-    box('headline').hidden = single;
-    box('logo_limit').hidden = single;
-    box('province').hidden = !(v === 'province' || v === 'city');
-    box('city').hidden = v !== 'city';
+
+  function updateVisibility() {
+    const type = typeSelect.value;
+    const single = type === "single";
+
+    employerField.hidden = !single;
+    singleStyleField.hidden = !single;
+    headlineField.hidden = single;
+    limitField.hidden = single;
+    provinceField.hidden = !(type === "province" || type === "city");
+    cityField.hidden = type !== "city";
   }
-  province.addEventListener('change', cities); type.addEventListener('change', show); cities(); show();
+
+  provinceSelect.addEventListener("change", rebuildCities);
+  typeSelect.addEventListener("change", updateVisibility);
+
+  rebuildCities();
+  updateVisibility();
 })();
 </script>
 {% endblock %}
