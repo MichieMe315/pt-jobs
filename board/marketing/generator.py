@@ -244,7 +244,7 @@ def render_graphic(*args, **kwargs) -> bytes:
         )
 
     # Clean transparent brand logo on white.
-    brand = _brand_logo()
+    brand = None # removed logo
     if brand:
         brand = ImageOps.contain(
             brand,
@@ -290,7 +290,7 @@ def render_graphic(*args, **kwargs) -> bytes:
         width=2,
     )
 
-    count_text = f"{len(cards)} EMPLOYERS  CURRENTLY HIRING IN {(region or 'Canada').upper()}"
+    count_text = ("Discover employers hiring now" if (region or "Canada")=="Canada" else f"Discover employers hiring in {region}")
     count_font = _fit(
         draw,
         count_text,
@@ -366,9 +366,9 @@ def render_graphic(*args, **kwargs) -> bytes:
 
     professions = [
         ("PT", "PHYSIOTHERAPY"),
-        ("OT", "OT"),
-        ("RMT", "RMT"),
-        ("SLP", "SLP"),
+        ("OT", "Occupational Therapy"),
+        ("RMT", "Registered Massage Therapy"),
+        ("SLP", "Speech Language Pathology"),
         ("DC", "CHIROPRACTIC"),
         ("KIN", "KINESIOLOGY"),
     ]
