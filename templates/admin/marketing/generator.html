@@ -1,256 +1,47 @@
 {% extends "admin/base_site.html" %}
-{% load i18n static %}
-
-{% block extrastyle %}
-{{ block.super }}
-<style>
-  .marketing-wrap {
-    max-width: 1180px;
-    margin: 0 auto;
-  }
-
-  .marketing-intro {
-    margin: 0 0 22px;
-    color: var(--body-quiet-color);
-  }
-
-  .marketing-stats {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin: 0 0 22px;
-  }
-
-  .marketing-stat {
-    background: var(--body-bg);
-    border: 1px solid var(--hairline-color);
-    border-radius: 8px;
-    padding: 12px 16px;
-    min-width: 135px;
-  }
-
-  .marketing-stat strong {
-    display: block;
-    font-size: 21px;
-    color: var(--body-fg);
-  }
-
-  .marketing-form {
-    background: var(--body-bg);
-    border: 1px solid var(--hairline-color);
-    border-radius: 10px;
-    padding: 22px;
-    max-width: 720px;
-  }
-
-  .marketing-field {
-    margin-bottom: 18px;
-  }
-
-  .marketing-field label {
-    display: block;
-    font-weight: 700;
-    margin-bottom: 7px;
-  }
-
-  .marketing-field select {
-    width: 100%;
-    max-width: 520px;
-    min-height: 40px;
-  }
-
-  .marketing-actions {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 22px;
-  }
-
-  .marketing-actions button {
-    cursor: pointer;
-    min-height: 42px;
-    padding: 0 20px;
-    border-radius: 6px;
-    border: 0;
-    font-weight: 700;
-  }
-
-  .marketing-preview {
-    background: var(--button-bg);
-    color: var(--button-fg);
-  }
-
-  .marketing-download {
-    background: #c91427;
-    color: white;
-  }
-
-  .marketing-errors {
-    margin: 0 0 20px;
-  }
-
-  .marketing-note {
-    margin-top: 18px;
-    color: var(--body-quiet-color);
-  }
-
-  [hidden] {
-    display: none !important;
-  }
-</style>
-{% endblock %}
-
-{% block breadcrumbs %}
-<div class="breadcrumbs">
-  <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
-  &rsaquo; Marketing Generator
-</div>
-{% endblock %}
-
+{% load i18n %}
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="{% url 'admin:index' %}">{% translate 'Home' %}</a> &rsaquo; Marketing Generator</div>{% endblock %}
 {% block content %}
-<div class="marketing-wrap">
-  <h1>Marketing Generator</h1>
-  <p class="marketing-intro">
-    Generate ready-to-post employer collages using active employers with uploaded logos.
-  </p>
-
-  <div class="marketing-stats">
-    <div class="marketing-stat">
-      <strong>{{ eligible_count }}</strong>
-      eligible employers
+<h1>Marketing Generator</h1>
+<form method="get" id="marketing-form" style="max-width:720px;background:var(--body-bg);border:1px solid var(--hairline-color);padding:22px;border-radius:10px;">
+  {{ form.non_field_errors }}
+  {% for field in form %}
+    <div class="mg-field" id="field-{{ field.name }}" style="margin-bottom:18px;">
+      <label for="{{ field.id_for_label }}" style="display:block;font-weight:700;margin-bottom:7px;">{{ field.label }}</label>
+      {{ field }} {{ field.errors }}
     </div>
-    <div class="marketing-stat">
-      <strong>{{ province_count }}</strong>
-      active provinces
-    </div>
-    <div class="marketing-stat">
-      <strong>{{ city_count }}</strong>
-      active cities
-    </div>
+  {% endfor %}
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <button type="submit" name="action" value="preview" formtarget="_blank" class="button">Preview graphic</button>
+    <button type="submit" name="action" value="download" class="button" style="background:#c9162b;color:white;">Download PNG</button>
   </div>
-
-  {% if database_empty %}
-    <ul class="messagelist marketing-errors">
-      <li class="warning">
-        This database contains no employers or jobs.
-      </li>
-    </ul>
-  {% endif %}
-
-  {% if form.non_field_errors %}
-    <ul class="errorlist nonfield marketing-errors">
-      {% for error in form.non_field_errors %}
-        <li>{{ error }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
-
-  <form method="get" class="marketing-form" id="marketing-form">
-    <div class="marketing-field">
-      <label for="{{ form.graphic_type.id_for_label }}">Graphic</label>
-      {{ form.graphic_type }}
-      {{ form.graphic_type.errors }}
-    </div>
-
-    <div class="marketing-field">
-      <label for="{{ form.headline.id_for_label }}">Headline</label>
-      {{ form.headline }}
-      {{ form.headline.errors }}
-    </div>
-
-    <div class="marketing-field" id="province-field">
-      <label for="{{ form.province.id_for_label }}">Province</label>
-      {{ form.province }}
-      {{ form.province.errors }}
-    </div>
-
-    <div class="marketing-field" id="city-field">
-      <label for="{{ form.city.id_for_label }}">City</label>
-      {{ form.city }}
-      {{ form.city.errors }}
-    </div>
-
-    <div class="marketing-field">
-      <label for="{{ form.logo_limit.id_for_label }}">Number of employers</label>
-      {{ form.logo_limit }}
-      {{ form.logo_limit.errors }}
-    </div>
-
-    <div class="marketing-field">
-      <label for="{{ form.output_format.id_for_label }}">Format</label>
-      {{ form.output_format }}
-      {{ form.output_format.errors }}
-    </div>
-
-    <div class="marketing-actions">
-      <button
-        class="marketing-preview"
-        type="submit"
-        name="action"
-        value="preview"
-        formtarget="_blank"
-      >
-        Preview graphic
-      </button>
-
-      <button
-        class="marketing-download"
-        type="submit"
-        name="action"
-        value="download"
-      >
-        Download PNG
-      </button>
-    </div>
-
-    <p class="marketing-note">
-      Only approved employers with active, unexpired jobs and uploaded logos are included.
-    </p>
-  </form>
-</div>
-
+</form>
 {{ city_map_json|json_script:"marketing-city-map" }}
-
 <script>
-(function () {
-  const typeSelect = document.getElementById("id_graphic_type");
-  const provinceSelect = document.getElementById("id_province");
-  const citySelect = document.getElementById("id_city");
-  const provinceField = document.getElementById("province-field");
-  const cityField = document.getElementById("city-field");
-  const cityMapNode = document.getElementById("marketing-city-map");
-  const cityMap = cityMapNode ? JSON.parse(cityMapNode.textContent) : {};
-
-  function rebuildCities() {
-    const province = provinceSelect.value;
-    const current = citySelect.value;
-    const cities = province && cityMap[province]
-      ? cityMap[province]
-      : Object.values(cityMap).flat();
-
-    const unique = [...new Set(cities)].sort((a, b) => a.localeCompare(b));
-    citySelect.innerHTML = '<option value="">Select a city</option>';
-
-    unique.forEach((city) => {
-      const option = document.createElement("option");
-      option.value = city;
-      option.textContent = city;
-      if (city === current) option.selected = true;
-      citySelect.appendChild(option);
+(() => {
+  const type = document.getElementById('id_graphic_type');
+  const province = document.getElementById('id_province');
+  const city = document.getElementById('id_city');
+  const mapNode = document.getElementById('marketing-city-map');
+  const cityMap = mapNode ? JSON.parse(mapNode.textContent) : {};
+  const box = n => document.getElementById('field-' + n);
+  function cities() {
+    const current = city.value;
+    const values = province.value && cityMap[province.value] ? cityMap[province.value] : Object.values(cityMap).flat();
+    city.innerHTML = '<option value="">Select a city</option>';
+    [...new Set(values)].sort().forEach(name => {
+      const o = document.createElement('option'); o.value = name; o.textContent = name; o.selected = name === current; city.appendChild(o);
     });
   }
-
-  function updateVisibility() {
-    const type = typeSelect.value;
-    provinceField.hidden = !(type === "province" || type === "city");
-    cityField.hidden = type !== "city";
+  function show() {
+    const v = type.value, single = v === 'single';
+    box('employer').hidden = !single;
+    box('headline').hidden = single;
+    box('logo_limit').hidden = single;
+    box('province').hidden = !(v === 'province' || v === 'city');
+    box('city').hidden = v !== 'city';
   }
-
-  provinceSelect.addEventListener("change", rebuildCities);
-  typeSelect.addEventListener("change", updateVisibility);
-
-  rebuildCities();
-  updateVisibility();
+  province.addEventListener('change', cities); type.addEventListener('change', show); cities(); show();
 })();
 </script>
 {% endblock %}

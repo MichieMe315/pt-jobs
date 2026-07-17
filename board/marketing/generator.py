@@ -244,7 +244,7 @@ def render_graphic(*args, **kwargs) -> bytes:
         )
 
     # Clean transparent brand logo on white.
-    brand = None # removed logo
+    brand = _brand_logo()
     if brand:
         brand = ImageOps.contain(
             brand,
@@ -290,7 +290,7 @@ def render_graphic(*args, **kwargs) -> bytes:
         width=2,
     )
 
-    count_text = ("Discover employers hiring now" if (region or "Canada")=="Canada" else f"Discover employers hiring in {region}")
+    count_text = f"{len(cards)} EMPLOYERS  CURRENTLY HIRING IN {(region or 'Canada').upper()}"
     count_font = _fit(
         draw,
         count_text,
@@ -366,9 +366,9 @@ def render_graphic(*args, **kwargs) -> bytes:
 
     professions = [
         ("PT", "PHYSIOTHERAPY"),
-        ("OT", "Occupational Therapy"),
-        ("RMT", "Registered Massage Therapy"),
-        ("SLP", "Speech Language Pathology"),
+        ("OT", "OT"),
+        ("RMT", "RMT"),
+        ("SLP", "SLP"),
         ("DC", "CHIROPRACTIC"),
         ("KIN", "KINESIOLOGY"),
     ]
@@ -474,6 +474,64 @@ def render_graphic(*args, **kwargs) -> bytes:
         anchor="mm",
     )
 
+    output = BytesIO()
+    canvas.save(output, format="PNG", optimize=True)
+    return output.getvalue()
+
+
+
+def render_single_graphic(card: EmployerCard, output_format: str = "square") -> bytes:
+    sizes = {"square": (1080, 1080), "portrait": (1080, 1350), "landscape": (1200, 630)}
+    width, height = sizes.get(output_format, sizes["square"])
+    navy, red, white, text, bg = "#061E35", "#C9162B", "#FFFFFF", "#192636", "#F8F7F4"
+    canvas = Image.new("RGB", (width, height), bg)
+    draw = ImageDraw.Draw(canvas)
+    for offset in range(-height, width, 44):
+        draw.line((offset, 0, offset + height, height), fill="#EEECE8", width=1)
+
+    landscape = output_format == "landscape"
+    portrait = output_format == "portrait"
+    headline_font = _fit(draw, "NOW HIRING", width - 100, 76 if not landscape else 52, True, 32)
+    draw.text((width / 2, 58 if not landscape else 34), "NOW HIRING", font=headline_font, fill=red, anchor="ma", stroke_width=1, stroke_fill=red)
+    name_font = _fit(draw, card.name.upper(), width - 120, 48 if not landscape else 38, True, 24)
+    draw.text((width / 2, 150 if not landscape else 105), card.name.upper(), font=name_font, fill=navy, anchor="ma")
+
+    if landscape:
+        logo_box = (55, 155, 535, 500)
+        info_x, info_y = 600, 210
+        footer_top = 525
+    else:
+        logo_box = (100, 250 if not portrait else 290, width - 100, 760 if not portrait else 930)
+        info_x, info_y = width / 2, 800 if not portrait else 980
+        footer_top = 900 if not portrait else 1130
+
+    _shadow_card(canvas, logo_box, 26)
+    logo = _open_logo(card.logo)
+    if logo:
+        x1, y1, x2, y2 = logo_box
+        fitted = ImageOps.contain(logo, (x2 - x1 - 100, y2 - y1 - 90), Image.Resampling.LANCZOS)
+        canvas.paste(fitted, (x1 + (x2 - x1 - fitted.width)//2, y1 + (y2 - y1 - fitted.height)//2), fitted)
+
+    location = card.location or "Canada"
+    jobs = f"{card.active_jobs} ACTIVE JOBS" if card.active_jobs != 1 else "1 ACTIVE JOB"
+    if landscape:
+        loc_font = _fit(draw, location, width - info_x - 55, 26, False, 17)
+        jobs_font = _fit(draw, jobs, width - info_x - 55, 30, True, 18)
+        draw.text((info_x, info_y), location, font=loc_font, fill=text)
+        draw.text((info_x, info_y + 65), jobs, font=jobs_font, fill=red)
+        cta_font = _fit(draw, "VIEW CURRENT OPPORTUNITIES", width - info_x - 55, 24, True, 15)
+        draw.text((info_x, info_y + 140), "VIEW CURRENT OPPORTUNITIES", font=cta_font, fill=navy)
+    else:
+        loc_font = _fit(draw, location, width - 140, 27, False, 17)
+        jobs_font = _fit(draw, jobs, width - 140, 31, True, 18)
+        draw.text((info_x, info_y), location, font=loc_font, fill=text, anchor="ma")
+        draw.text((info_x, info_y + 52), jobs, font=jobs_font, fill=red, anchor="ma")
+
+    draw.rectangle((0, footer_top, width, height), fill=navy)
+    cta_font = _fit(draw, "VIEW CURRENT OPPORTUNITIES", width - 100, 28 if not landscape else 21, True, 15)
+    site_font = _fit(draw, "PHYSIOTHERAPYJOBSCANADA.CA", width - 100, 34 if not landscape else 23, True, 16)
+    draw.text((width/2, footer_top + (height-footer_top)*0.34), "VIEW CURRENT OPPORTUNITIES", font=cta_font, fill=white, anchor="mm")
+    draw.text((width/2, footer_top + (height-footer_top)*0.72), "PHYSIOTHERAPYJOBSCANADA.CA", font=site_font, fill=white, anchor="mm")
     output = BytesIO()
     canvas.save(output, format="PNG", optimize=True)
     return output.getvalue()
