@@ -813,8 +813,10 @@ def job_edit(request: HttpRequest, job_id: int) -> HttpResponse:
     employer = request.user.employer
     job = get_object_or_404(Job, id=job_id, employer=employer)
 
-    posting_date = job.posting_date or timezone.localdate()
-    max_expiry = _max_expiry_date(posting_date)
+    was_inactive = not job.is_active
+    existing_posting_date = job.posting_date or timezone.localdate()
+    form_posting_date = timezone.localdate() if was_inactive else existing_posting_date
+    max_expiry = _max_expiry_date(form_posting_date)
 
     active_package = _available_packages_qs(employer).order_by("expires_at", "id").first()
     form = JobForm(request.POST or None, instance=job, max_expiry_date=max_expiry)
@@ -825,14 +827,15 @@ def job_edit(request: HttpRequest, job_id: int) -> HttpResponse:
         if not updated.source:
             updated.source = "employer"
 
-        # HARD expiry clamp server-side
-        updated.posting_date = posting_date
-        updated.expiry_date = _clamp_expiry(posting_date, getattr(updated, "expiry_date", None))
-
         action = (request.POST.get("action") or "publish").strip().lower()
         publish = action != "draft"
 
-        was_inactive = not job.is_active
+        # A previously inactive job being published (including after a credit
+        # purchase) starts a fresh posting window. Draft edits and edits to an
+        # already-active job keep their existing posting window.
+        posting_date = timezone.localdate() if (publish and was_inactive) else existing_posting_date
+        updated.posting_date = posting_date
+        updated.expiry_date = _clamp_expiry(posting_date, getattr(updated, "expiry_date", None))
         updated.is_active = bool(publish)
 
         if publish and was_inactive:

@@ -263,8 +263,8 @@ class EmployerAdmin(admin.ModelAdmin):
     list_display_links = ("id", "company_name", "email")
     search_fields = ("company_name", "name", "email", "location")
     list_filter = ("is_approved", "login_active")
-    # Newest signups first; unapproved records win only when timestamps match.
-    ordering = ("-created_at", "is_approved", "-id")
+    # Employers needing approval/reapproval first; newest profile changes first.
+    ordering = ("is_approved", "-updated_at", "-id")
 
     # Buttons
     readonly_fields = ("view_employer_jobs", "view_employer_packages")
