@@ -11,12 +11,13 @@ from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.db.models import Count, Q, Sum
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.http import require_POST
 
@@ -251,8 +252,8 @@ def _gateway_context() -> dict:
     cfg = _gateway_config()
     return {
         # support both key names (your model has both)
-        "stripe_publishable_key": getattr(cfg, "stripe_publishable_key", "") if cfg else "",
-        "stripe_public_key": getattr(cfg, "stripe_public_key", "") if cfg else "",
+        "stripe_publishable_key": (getattr(cfg, "stripe_public_key", "") or getattr(cfg, "stripe_publishable_key", "") or "").strip() if cfg else "",
+        "stripe_public_key": (getattr(cfg, "stripe_public_key", "") or getattr(cfg, "stripe_publishable_key", "") or "").strip() if cfg else "",
         "stripe_secret_key": getattr(cfg, "stripe_secret_key", "") if cfg else "",
         "paypal_client_id": getattr(cfg, "paypal_client_id", "") if cfg else "",
         "paypal_mode": getattr(cfg, "paypal_mode", "sandbox") if cfg else "sandbox",
@@ -498,7 +499,9 @@ def login_view(request: HttpRequest) -> HttpResponse:
                 return render(request, "board/login.html", {"sitesettings": ss, "form": form})
 
             nxt = request.GET.get("next")
-            if nxt:
+            if nxt and url_has_allowed_host_and_scheme(
+                nxt, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+            ):
                 return redirect(nxt)
 
             if hasattr(user, "employer"):
@@ -520,11 +523,15 @@ def job_alert_signup(request: HttpRequest) -> HttpResponse:
     ss = _sitesettings()
     form = JobAlertForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
-        # form.save() may exist in your form; if not, just keep success message
-        try:
-            form.save()
-        except Exception:
-            pass
+        alert, _ = JobAlert.objects.get_or_create(
+            email=form.cleaned_data["email"],
+            q=form.cleaned_data["q"],
+            location=form.cleaned_data["location"],
+            defaults={"active": True},
+        )
+        if not alert.active:
+            alert.active = True
+            alert.save(update_fields=["active"])
         messages.success(request, "Thanks! You’re signed up for job alerts.")
         return redirect("home")
     return render(request, "board/job_alert_signup.html", {"sitesettings": ss, "form": form})
@@ -1395,13 +1402,6 @@ def jobseeker_dashboard(request: HttpRequest) -> HttpResponse:
         .order_by("-created_at", "-id")
     )
 
-    career_snapshot = (
-        CareerFitLead.objects
-        .filter(claimed_by=js)
-        .order_by("-created_at", "-id")
-        .first()
-    )
-
     upload_form = ResumeUploadForm(request.POST or None, request.FILES or None)
     if request.method == "POST" and upload_form.is_valid():
         r = upload_form.save(commit=False)
@@ -1419,7 +1419,6 @@ def jobseeker_dashboard(request: HttpRequest) -> HttpResponse:
             "resumes": resumes,
             "applications": applications,
             "upload_form": upload_form,
-            "career_snapshot": career_snapshot,
         },
     )
 
@@ -1694,64 +1693,70 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
 
     package = get_object_or_404(PostingPackage, id=pkg_id, is_active=True)
 
-    existing = Invoice.objects.filter(
-        processor="stripe",
-        processor_reference=session_id
-    ).first()
-
-    if not existing:
-        amount_cents = int(getattr(session, "amount_total", None) or (package.price_cents or 0))
-        used_code = (md.get("discount_code") or "").strip() or ""
-
-        invoice = Invoice.objects.create(
-            employer=employer,
-            amount=amount_cents,
-            currency="CAD",
+    with transaction.atomic():
+        Employer.objects.select_for_update().get(pk=employer.pk)
+        existing = Invoice.objects.filter(
             processor="stripe",
-            status="paid",
-            processor_reference=session_id,
-            discount_code=used_code
-        )
+            processor_reference=session_id
+        ).first()
 
-        pp_kwargs = dict(
-            employer=employer,
-            package=package,
-            credits_granted=int(package.credits),
-            credits_remaining=int(package.credits),
-            source="stripe",
-        )
+        created = existing is None
+        if created:
+            amount_cents = int(getattr(session, "amount_total", None) or (package.price_cents or 0))
+            used_code = (md.get("discount_code") or "").strip() or ""
 
-        try:
-            if any(f.name == "duration_days" for f in PurchasedPackage._meta.get_fields()):
-                pp_kwargs["duration_days"] = int(package.duration_days)
-        except Exception:
-            pass
+            invoice = Invoice.objects.create(
+                employer=employer,
+                amount=amount_cents,
+                currency="CAD",
+                processor="stripe",
+                status="paid",
+                processor_reference=session_id,
+                discount_code=used_code
+            )
 
-        PurchasedPackage.objects.create(**pp_kwargs)
+            pp_kwargs = dict(
+                employer=employer,
+                package=package,
+                credits_granted=int(package.credits),
+                credits_remaining=int(package.credits),
+                source="stripe",
+            )
 
-        # Admin notification (fires once per new invoice/session)
-        send_templated_email(
-            "admin_new_order",
-            _admin_emails(),
-            {
-                "package_name": package.name,
-                "employer_email": employer.email,
-                "invoice_id": invoice.id,
-            },
-        )
-    else:
-        invoice = existing
+            try:
+                if any(f.name == "duration_days" for f in PurchasedPackage._meta.get_fields()):
+                    pp_kwargs["duration_days"] = int(package.duration_days)
+            except Exception:
+                pass
 
-    _sync_employer_credits(employer)
+            PurchasedPackage.objects.create(**pp_kwargs)
 
-    send_templated_email(
-        "order_confirmation",
-        [(employer.email or request.user.email or "").strip()],
-        {
-            "email": (employer.email or request.user.email or "").strip(),
-            "package_name": package.name,
-        },
-    )
+        else:
+            invoice = existing
+
+        _sync_employer_credits(employer)
+
+    if created:
+        def notify_order():
+            send_templated_email(
+                "admin_new_order",
+                _admin_emails(),
+                {
+                    "package_name": package.name,
+                    "employer_email": employer.email,
+                    "invoice_id": invoice.id,
+                },
+            )
+            send_templated_email(
+                "order_confirmation",
+                [(employer.email or request.user.email or "").strip()],
+                {
+                    "email": (employer.email or request.user.email or "").strip(),
+                    "package_name": package.name,
+                },
+            )
+
+        transaction.on_commit(notify_order)
 
     pending_job = None
     for pending_key in (

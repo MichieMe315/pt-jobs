@@ -17,8 +17,14 @@ User = get_user_model()
 # Validation helpers (Contract: no links/emails in certain text)
 # ============================================================
 
-_URL_RE = re.compile(
-    r"(?i)\b(?:https?://|www\.)\S+|\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+(?:[a-z]{2,})(?:/[^\s]*)?\b"
+# Explicit URLs are unambiguous. Bare domains are limited to common web TLDs
+# and require at least two characters before the first dot so normal clinical
+# abbreviations such as B.Sc., M.Sc., etc. are not mistaken for websites.
+_EXPLICIT_URL_RE = re.compile(r"(?i)\b(?:https?://|www\.)\S+")
+_BARE_DOMAIN_RE = re.compile(
+    r"(?i)(?<![\w@])(?:[a-z0-9][a-z0-9-]{1,62}\.)+"
+    r"(?:ca|com|org|net|co|io|info|biz|me|us|uk|edu|gov|health|care|clinic|jobs|physio|therapy|app|site|online)"
+    r"(?:/[^\s]*)?(?!\w)"
 )
 
 _EMAIL_RE = re.compile(r"[\w\.-]+@[\w\.-]+\.\w+", re.IGNORECASE)
@@ -28,7 +34,7 @@ def validate_no_links_or_emails(value: str) -> None:
     val = (value or "").strip()
     if not val:
         return
-    if _URL_RE.search(val) or _EMAIL_RE.search(val):
+    if _EXPLICIT_URL_RE.search(val) or _BARE_DOMAIN_RE.search(val) or _EMAIL_RE.search(val):
         raise forms.ValidationError("Links and email addresses are not allowed in this field.")
 
 
@@ -344,6 +350,8 @@ class JobApplicationForm(StyledFormMixin, forms.ModelForm):
 
 class JobAlertForm(StyledFormMixin, forms.Form):
     email = forms.EmailField(required=True)
+    q = forms.CharField(required=False, max_length=200)
+    location = forms.CharField(required=False, max_length=200)
 
 
 class ResumeUploadForm(StyledFormMixin, forms.ModelForm):

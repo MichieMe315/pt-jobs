@@ -1,6 +1,8 @@
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
 from .models import Job
+from django.db.models import Q
+from django.utils import timezone
 
 
 class StaticViewSitemap(Sitemap):
@@ -41,7 +43,9 @@ class JobSitemap(Sitemap):
     priority = 0.9
 
     def items(self):
-        return Job.objects.filter(is_active=True)
+        return Job.objects.filter(is_active=True).filter(
+            Q(expiry_date__isnull=True) | Q(expiry_date__gte=timezone.localdate())
+        )
 
     def lastmod(self, obj):
         return getattr(obj, "updated_at", None) or getattr(obj, "created_at", None)

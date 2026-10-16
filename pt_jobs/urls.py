@@ -4,6 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.sitemaps.views import sitemap
 from django.views.generic import TemplateView
+from board.views import admin_dashboard
 from board.sitemaps import JobSitemap, ProvinceSitemap, StaticViewSitemap
 
 sitemaps = {
@@ -13,6 +14,7 @@ sitemaps = {
 }
 
 urlpatterns = [
+    path("admin/dashboard/", admin_dashboard, name="admin_dashboard"),
     path("admin/", admin.site.urls),
 
     # Existing app
