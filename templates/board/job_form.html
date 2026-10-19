@@ -101,7 +101,7 @@
  id="expiry_date"
  name="expiry_date"
  class="form-control"
- value="{{ form.expiry_date.value|default_if_none:'' }}"
+ value="{% if form.is_bound %}{{ form.expiry_date.value|default_if_none:'' }}{% elif form.expiry_date.value %}{{ form.expiry_date.value|date:'Y-m-d' }}{% endif %}"
  {% if max_expiry_iso %} data-max="{{ max_expiry_iso }}"{% endif %}
  />
  {% for error in form.expiry_date.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
@@ -137,8 +137,8 @@ document.addEventListener("DOMContentLoaded", function() {
  // stored values: Hourly / Salary / Other
  const v = (compType?.value || "");
  let sym = "";
- if (v === "Hourly" || v === "Salary") sym = "$";
- if (v === "Other") sym = "%";
+ if (v === "hourly" || v === "yearly") sym = "$";
+ if (v === "split") sym = "%";
  if (minPrefix) minPrefix.textContent = sym;
  if (maxPrefix) maxPrefix.textContent = sym;
  }

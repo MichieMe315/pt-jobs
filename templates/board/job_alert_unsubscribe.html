@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Unsubscribe from job alerts{% endblock %}
+{% block content %}
+<div class="card mx-auto p-4" style="max-width:720px">
+{% if unsubscribed %}<h1 class="h4">You’re unsubscribed</h1><p>You will no longer receive job alerts.</p>
+{% else %}<h1 class="h4">Unsubscribe from job alerts?</h1><p>Stop job alerts for {{ alert.email }}.</p><form method="post">{% csrf_token %}<button class="btn btn-primary" type="submit">Unsubscribe</button></form>{% endif %}
+</div>
+{% endblock %}

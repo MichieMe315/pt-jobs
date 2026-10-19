@@ -5,6 +5,8 @@ from django.urls import path
 from . import views as v
 
 urlpatterns = [
+    path("job-alerts/unsubscribe/<str:token>/", v.job_alert_unsubscribe, name="job_alert_unsubscribe"),
+    path("stripe/webhook/", v.stripe_webhook, name="stripe_webhook"),
     # Public
     path("", v.home, name="home"),
     path("about/", v.about, name="about"),
