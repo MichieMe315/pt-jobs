@@ -12,12 +12,13 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db import IntegrityError, transaction
-from django.db.models import Count, Q, Sum
+from django.db.models import Count, F, Q, Sum
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.http import require_POST
 
@@ -243,9 +244,8 @@ def _stripe_enabled(cfg: Optional[PaymentGatewayConfig]) -> bool:
 def _paypal_enabled(cfg: Optional[PaymentGatewayConfig]) -> bool:
     if not cfg:
         return False
-    cid = (getattr(cfg, "paypal_client_id", "") or "").strip()
-    csec = (getattr(cfg, "paypal_client_secret", "") or getattr(cfg, "paypal_secret", "") or "").strip()
-    return bool(getattr(cfg, "use_paypal", False) and cid and csec)
+    # Do not offer a payment method without server-side order capture.
+    return False
 
 
 def _gateway_context() -> dict:
@@ -312,35 +312,40 @@ def _available_packages_qs(employer: Employer):
 
 
 def _available_credits(employer: Employer) -> int:
+    if not PurchasedPackage.objects.filter(employer=employer).exists():
+        return max(0, int(employer.credits or 0))
     total = _available_packages_qs(employer).aggregate(total=Sum("credits_remaining"))["total"]
     return int(total or 0)
 
 
 def _sync_employer_credits(employer: Employer) -> None:
-    try:
-        employer.credits = _available_credits(employer)
-        employer.save(update_fields=["credits"])
-    except Exception:
-        return
+    # Legacy-only balances remain authoritative until package records exist.
+    with transaction.atomic():
+        locked = Employer.objects.select_for_update().get(pk=employer.pk)
+        total = _available_credits(locked)
+        Employer.objects.filter(pk=locked.pk).update(credits=total)
+        employer.credits = total
 
 
+@transaction.atomic
 def _consume_employer_credit(employer: Employer) -> bool:
-    """
-    Credit is consumed ONLY when a job is published (not draft, not duplicate).
-    """
-    pkg = _available_packages_qs(employer).order_by("expires_at", "id").first()
+    locked = Employer.objects.select_for_update().get(pk=employer.pk)
+    pkg = _available_packages_qs(locked).select_for_update().order_by("expires_at", "id").first()
     if pkg:
-        pkg.credits_remaining = max(0, int(pkg.credits_remaining or 0) - 1)
-        pkg.save(update_fields=["credits_remaining"])
-        _sync_employer_credits(employer)
-        return True
-
-    # explicit last-resort path (ONLY if packages are missing)
-    if employer.credits and employer.credits > 0:
-        employer.credits = max(0, int(employer.credits) - 1)
-        employer.save(update_fields=["credits"])
-        return True
-
+        consumed = PurchasedPackage.objects.filter(pk=pkg.pk, credits_remaining__gt=0).update(
+            credits_remaining=F("credits_remaining") - 1
+        )
+        _sync_employer_credits(locked)
+        employer.credits = locked.credits
+        return bool(consumed)
+    # Never resurrect expired or exhausted package balances through the cache.
+    if not PurchasedPackage.objects.filter(employer=locked).exists():
+        consumed = Employer.objects.filter(pk=locked.pk, credits__gt=0).update(credits=F("credits") - 1)
+        locked.refresh_from_db(fields=["credits"])
+        employer.credits = locked.credits
+        return bool(consumed)
+    _sync_employer_credits(locked)
+    employer.credits = locked.credits
     return False
 
 
@@ -715,6 +720,13 @@ def job_detail(request: HttpRequest, job_id: int) -> HttpResponse:
 
     # allow viewing inactive detail page if template expects it; but keep public list filtered
     job = get_object_or_404(Job.objects.select_related("employer"), id=job_id)
+    if not job.is_active:
+        owner = request.user.is_authenticated and job.employer.user_id == request.user.pk
+        expired = bool(job.expiry_date and job.expiry_date < timezone.localdate())
+        previously_published = expired and job.expiry_email_sent
+        if not (request.user.is_staff or owner or previously_published):
+            from django.http import Http404
+            raise Http404
     job_alert_form = JobAlertForm()
     return render(
         request,
@@ -724,6 +736,7 @@ def job_detail(request: HttpRequest, job_id: int) -> HttpResponse:
 
 
 @login_required
+@transaction.atomic
 def job_create(request: HttpRequest) -> HttpResponse:
     if not hasattr(request.user, "employer"):
         raise PermissionDenied
@@ -732,7 +745,7 @@ def job_create(request: HttpRequest) -> HttpResponse:
         return redirect("login")
 
     ss = _sitesettings()
-    employer = request.user.employer
+    employer = Employer.objects.select_for_update().get(pk=request.user.employer.pk)
 
     posting_date = timezone.localdate()
     max_expiry = _max_expiry_date(posting_date)
@@ -809,6 +822,7 @@ def job_create(request: HttpRequest) -> HttpResponse:
 
 
 @login_required
+@transaction.atomic
 def job_edit(request: HttpRequest, job_id: int) -> HttpResponse:
     if not hasattr(request.user, "employer"):
         raise PermissionDenied
@@ -817,8 +831,8 @@ def job_edit(request: HttpRequest, job_id: int) -> HttpResponse:
         return redirect("login")
 
     ss = _sitesettings()
-    employer = request.user.employer
-    job = get_object_or_404(Job, id=job_id, employer=employer)
+    employer = Employer.objects.select_for_update().get(pk=request.user.employer.pk)
+    job = get_object_or_404(Job.objects.select_for_update(), id=job_id, employer=employer)
 
     was_inactive = not job.is_active
     existing_posting_date = job.posting_date or timezone.localdate()
@@ -844,6 +858,8 @@ def job_edit(request: HttpRequest, job_id: int) -> HttpResponse:
         updated.posting_date = posting_date
         updated.expiry_date = _clamp_expiry(posting_date, getattr(updated, "expiry_date", None))
         updated.is_active = bool(publish)
+        if publish and was_inactive:
+            updated.expiry_email_sent = False
 
         if publish and was_inactive:
             ok = _consume_employer_credit(employer)
@@ -899,6 +915,7 @@ def job_edit(request: HttpRequest, job_id: int) -> HttpResponse:
 
 
 @login_required
+@transaction.atomic
 def job_duplicate(request: HttpRequest, job_id: int) -> HttpResponse:
     """
     Employer duplicate:
@@ -913,8 +930,8 @@ def job_duplicate(request: HttpRequest, job_id: int) -> HttpResponse:
         return redirect("login")
 
     ss = _sitesettings()
-    employer = request.user.employer
-    original = get_object_or_404(Job, id=job_id, employer=employer)
+    employer = Employer.objects.select_for_update().get(pk=request.user.employer.pk)
+    original = get_object_or_404(Job.objects.select_for_update(), id=job_id, employer=employer)
 
     posting_date = timezone.localdate()
     max_expiry = _max_expiry_date(posting_date)
@@ -1028,7 +1045,10 @@ def job_apply(request: HttpRequest, job_id: int) -> HttpResponse:
     form = JobApplicationForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         resume_id = (request.POST.get("resume_id") or "").strip()
-        resume_obj = resumes.filter(id=resume_id).first() if resume_id else None
+        try:
+            resume_obj = resumes.filter(id=int(resume_id)).first() if resume_id else None
+        except (ValueError, TypeError, OverflowError):
+            resume_obj = None
 
         if resume_obj is None:
             messages.error(request, "Please select a resume to attach.")
@@ -1620,6 +1640,11 @@ def checkout_start(request: HttpRequest, package_id: int) -> HttpResponse:
                     "employer_id": str(request.user.employer.id),
                     "package_id": str(package.id),
                     "discount_code": dc.code if dc else "",
+                    "credits": str(package.credits),
+                    "duration_days": str(package.duration_days),
+                    "package_expires_days": str(package.package_expires_days),
+                    "amount_cents": str(amount_cents),
+                    "terms_version": "1",
                 },
             )
         except Exception:
@@ -1628,21 +1653,8 @@ def checkout_start(request: HttpRequest, package_id: int) -> HttpResponse:
 
         return redirect(session.url)
 
-    if payment_method == "paypal":
-        # Contract requirement: PayPal only if configured in admin
-        if not gw.get("use_paypal"):
-            messages.error(request, "PayPal is not configured.")
-            return redirect("checkout_select", package_id=package_id)
-
-    ctx = {
-        "sitesettings": _sitesettings(),
-        "package": package,
-        "payment_method": payment_method,
-        "discount_code": discount_code,
-        "final_amount": final_amount,
-    }
-    ctx.update(gw)
-    return render(request, "checkout/checkout.html", ctx)
+    messages.error(request, "This payment method is unavailable. Please choose card payment.")
+    return redirect("checkout_select", package_id=package_id)
 
 
 @login_required
@@ -1686,77 +1698,12 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
         messages.error(request, "This payment session does not belong to your employer account.")
         return redirect("package_list")
 
+    from .payments import fulfill_checkout, InvalidCheckout
     try:
-        pkg_id = int(md.get("package_id") or 0)
-    except Exception:
-        pkg_id = 0
-
-    package = get_object_or_404(PostingPackage, id=pkg_id, is_active=True)
-
-    with transaction.atomic():
-        Employer.objects.select_for_update().get(pk=employer.pk)
-        existing = Invoice.objects.filter(
-            processor="stripe",
-            processor_reference=session_id
-        ).first()
-
-        created = existing is None
-        if created:
-            amount_cents = int(getattr(session, "amount_total", None) or (package.price_cents or 0))
-            used_code = (md.get("discount_code") or "").strip() or ""
-
-            invoice = Invoice.objects.create(
-                employer=employer,
-                amount=amount_cents,
-                currency="CAD",
-                processor="stripe",
-                status="paid",
-                processor_reference=session_id,
-                discount_code=used_code
-            )
-
-            pp_kwargs = dict(
-                employer=employer,
-                package=package,
-                credits_granted=int(package.credits),
-                credits_remaining=int(package.credits),
-                source="stripe",
-            )
-
-            try:
-                if any(f.name == "duration_days" for f in PurchasedPackage._meta.get_fields()):
-                    pp_kwargs["duration_days"] = int(package.duration_days)
-            except Exception:
-                pass
-
-            PurchasedPackage.objects.create(**pp_kwargs)
-
-        else:
-            invoice = existing
-
-        _sync_employer_credits(employer)
-
-    if created:
-        def notify_order():
-            send_templated_email(
-                "admin_new_order",
-                _admin_emails(),
-                {
-                    "package_name": package.name,
-                    "employer_email": employer.email,
-                    "invoice_id": invoice.id,
-                },
-            )
-            send_templated_email(
-                "order_confirmation",
-                [(employer.email or request.user.email or "").strip()],
-                {
-                    "email": (employer.email or request.user.email or "").strip(),
-                    "package_name": package.name,
-                },
-            )
-
-        transaction.on_commit(notify_order)
+        invoice, package, created = fulfill_checkout(session, session_id=session_id, expected_employer_id=employer.pk)
+    except InvalidCheckout:
+        messages.error(request, "Unable to apply this payment. Please contact support with your payment reference.")
+        return redirect("package_list")
 
     pending_job = None
     for pending_key in (
@@ -1795,13 +1742,8 @@ def paypal_success(request: HttpRequest) -> HttpResponse:
     if not _enforce_approval_or_logout(request):
         return redirect("login")
 
-    # NOTE: PayPal success remains “soft” (your integration may confirm server-side elsewhere).
-    messages.success(request, "Purchase successful. Credits will be applied if configured.")
-    return render(
-        request,
-        "checkout/checkout_success.html",
-        {"sitesettings": _sitesettings(), "package": None},
-    )
+    messages.error(request, "No PayPal payment has been verified. Please use card checkout.")
+    return redirect("package_list")
 
 
 @require_POST
@@ -1851,6 +1793,11 @@ def stripe_create_session(request: HttpRequest, package_id: int) -> JsonResponse
                 "employer_id": str(employer.id),
                 "package_id": str(package.id),
                 "discount_code": dc.code if dc else "",
+                    "credits": str(package.credits),
+                    "duration_days": str(package.duration_days),
+                    "package_expires_days": str(package.package_expires_days),
+                    "amount_cents": str(amount_cents),
+                    "terms_version": "1",
             },
         )
     except Exception:
@@ -1949,3 +1896,48 @@ def admin_dashboard(request: HttpRequest) -> HttpResponse:
         "recent_paid_invoices": Invoice.objects.filter(status="paid").select_related("employer").order_by("-order_date", "-id")[:10],
     }
     return render(request, "admin/dashboard.html", context)
+
+
+@csrf_exempt
+@require_POST
+def stripe_webhook(request):
+    import logging
+    import stripe
+    from .payments import fulfill_checkout, InvalidCheckout
+    secret = getattr(settings, "STRIPE_WEBHOOK_SECRET", "")
+    if not secret:
+        return HttpResponse(status=503)
+    try:
+        event = stripe.Webhook.construct_event(request.body, request.headers.get("Stripe-Signature", ""), secret)
+    except (ValueError, stripe.error.SignatureVerificationError):
+        return HttpResponse(status=400)
+    if event["type"] not in ("checkout.session.completed", "checkout.session.async_payment_succeeded"):
+        return HttpResponse(status=200)
+    session = event["data"]["object"]
+    if session.get("payment_status") != "paid":
+        return HttpResponse(status=200)
+    metadata = session.get("metadata") or {}
+    if not metadata.get("employer_id") or not metadata.get("package_id"):
+        return HttpResponse(status=200)  # Other products in the same Stripe account.
+    try:
+        fulfill_checkout(session)
+    except Exception:
+        logging.getLogger(__name__).exception("Stripe fulfilment failed; webhook should retry")
+        return HttpResponse(status=500)
+    return HttpResponse(status=200)
+
+
+def job_alert_unsubscribe(request, token):
+    from django.core import signing
+    from django.http import Http404
+    try:
+        data = signing.loads(token, salt='board.job-alert-unsubscribe')
+        alert = get_object_or_404(JobAlert, pk=data['id'], email=data['email'])
+    except (signing.BadSignature, KeyError, TypeError, ValueError):
+        raise Http404
+    if request.method == 'POST':
+        JobAlert.objects.filter(email=alert.email).update(active=False)
+        return render(request, 'board/job_alert_unsubscribe.html', {'unsubscribed': True})
+    if request.method != 'GET':
+        return HttpResponse(status=405)
+    return render(request, 'board/job_alert_unsubscribe.html', {'alert': alert})

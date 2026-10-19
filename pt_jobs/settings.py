@@ -241,3 +241,6 @@ EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD") or os.environ.get("S
 if not EMAIL_HOST_PASSWORD and not DEBUG:
     raise ImproperlyConfigured("Missing EMAIL_HOST_PASSWORD / SENDGRID_API_KEY for email")
 
+
+# Stripe endpoint signing secret; configure separately from the API key.
+STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "").strip()

@@ -118,7 +118,9 @@
               {% for app in applications %}
               <tr>
                 <td>{{ app.job.title }}</td>
-                <td>{{ app.jobseeker.first_name }} {{ app.jobseeker.last_name }}</td>
+                <td>{{ app.jobseeker.first_name }} {{ app.jobseeker.last_name }}
+                  {% if app.cover_letter %}<details><summary>Cover letter</summary>{{ app.cover_letter|linebreaksbr }}</details>{% endif %}
+                  {% if app.resume_selected and app.resume_selected.file %}<br><a href="{{ app.resume_selected.file.url }}" target="_blank" rel="noopener">Open attached resume</a>{% elif app.resume %}<br><a href="{{ app.resume.url }}" target="_blank" rel="noopener">Open attached resume</a>{% endif %}</td>
                 <td>{{ app.created_at|date:"M j, Y H:i" }}</td>
               </tr>
               {% empty %}

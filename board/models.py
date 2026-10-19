@@ -656,3 +656,12 @@ class CareerFitLead(models.Model):
 
     def __str__(self):
         return f"CareerFitLead({self.email})"
+
+class JobAlertDelivery(models.Model):
+    """Jobs already included in a successful alert email."""
+    alert = models.ForeignKey(JobAlert, on_delete=models.CASCADE, related_name='deliveries')
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
+    sent_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['alert', 'job'], name='unique_job_alert_delivery')]
