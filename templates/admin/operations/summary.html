@@ -1,0 +1,2 @@
+<div class="ops-grid">{% for card in ops_cards %}<a class="ops-card" href="{{ card.url }}"><span>{{ card.label }}</span><strong>{{ card.value }}</strong></a>{% endfor %}</div>
+<nav class="ops-nav" aria-label="Operations records">{% for item in ops_nav %}<a href="{{ item.url }}">{{ item.label }} <small>({{ item.count }})</small></a>{% endfor %}</nav>

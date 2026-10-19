@@ -8,6 +8,7 @@
 
 {% block extrastyle %}
   {{ block.super }}
+  <link rel="stylesheet" href="{% static 'board/admin-workspace.css' %}">
   <style>
     /* Remove sticky modals/backdrops */
     .modal-backdrop,
@@ -40,3 +41,5 @@
     })();
   </script>
 {% endblock %}
+
+{% block nav-global %}{{ block.super }}{% if user.is_staff %}<nav class="ops-admin-nav" aria-label="PT Jobs admin shortcuts" ><a href="{% url 'admin:operations' %}">Operations</a><a href="{% url 'admin:operations_search' %}">Search</a><a href="{% url 'admin:operations_duplicates' %}">Duplicate review</a><a href="{% url 'admin:index' %}#model-directory">All controls</a><a href="{% url 'admin:marketing_generator' %}">Marketing graphics</a><a href="{% url 'home' %}">View site</a></nav>{% endif %}{% endblock %}

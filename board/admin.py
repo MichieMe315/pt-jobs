@@ -3,12 +3,15 @@ from __future__ import annotations
 
 from datetime import timedelta
 from decimal import Decimal
+from urllib.parse import urlencode
 
 from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.core.mail import send_mail
+from django.core.exceptions import PermissionDenied
+from django.template.response import TemplateResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import path, reverse, NoReverseMatch
 from django.utils import timezone
@@ -245,8 +248,31 @@ approve_selected_jobseekers.short_description = "Approve selected job seekers (a
 # Employer / JobSeeker admins
 # ---------------------------
 
+
+
+class RecordSearchMixin:
+    """Extend normal admin search with exact numeric record IDs."""
+    list_per_page = 50
+    show_full_result_count = False
+    actions_on_bottom = True
+    search_help_text = 'Search by name, email or location. Use #123 for an exact record ID.'
+
+    def get_search_results(self, request, queryset, search_term):
+        raw = (search_term or '').strip()
+        numeric = raw.lstrip('#')
+        if raw.startswith('#') and numeric.isascii() and numeric.isdigit():
+            return (queryset.filter(pk=int(numeric)) if len(numeric)<19 else queryset.none()), False
+        results, duplicates = super().get_search_results(request, queryset, search_term)
+        if raw.isascii() and raw.isdigit() and len(raw)<19:
+            results = results | queryset.filter(pk=int(raw))
+        return results, duplicates
+
+
 @admin.register(Employer)
-class EmployerAdmin(admin.ModelAdmin):
+class EmployerAdmin(RecordSearchMixin, admin.ModelAdmin):
+    list_select_related = ('user',)
+    date_hierarchy = "created_at"
+
     inlines = [PurchasedPackageInline]
     actions = [approve_selected_employers]
 
@@ -256,25 +282,40 @@ class EmployerAdmin(admin.ModelAdmin):
         "email",
         "location",
         "credits",
+        "profile_completeness",
         "is_approved",
         "login_active",
         "created_at",
     )
     list_display_links = ("id", "company_name", "email")
-    search_fields = ("company_name", "name", "email", "location")
+    search_fields = ("company_name", "name", "email", "phone", "website", "location", "user__username")
     list_filter = ("is_approved", "login_active")
     # Employers needing approval/reapproval first; newest profile changes first.
     ordering = ("is_approved", "-updated_at", "-id")
 
     # Buttons
-    readonly_fields = ("view_employer_jobs", "view_employer_packages")
+    readonly_fields = ("view_employer_jobs", "view_employer_packages", "review_possible_duplicates")
 
     def get_fieldsets(self, request, obj=None):
         base = list(super().get_fieldsets(request, obj))
-        quick = ("Quick Actions", {"fields": ("view_employer_jobs", "view_employer_packages")})
+        quick = ("Quick Actions", {"fields": ("view_employer_jobs", "view_employer_packages", "review_possible_duplicates")})
         if base and base[0][0] == "Quick Actions":
             return tuple(base)
-        return tuple([quick] + base)
+        # Django appends readonly fields to the default fieldset; show shortcuts once.
+        shortcuts = set(quick[1]['fields'])
+        cleaned = []
+        for title, options in base:
+            options = dict(options)
+            fields = []
+            for field in options.get('fields', ()):
+                if isinstance(field, (list, tuple)):
+                    remaining = tuple(name for name in field if name not in shortcuts)
+                    if remaining: fields.append(remaining)
+                elif field not in shortcuts:
+                    fields.append(field)
+            options['fields'] = fields
+            cleaned.append((title, options))
+        return tuple([quick] + cleaned)
 
     def view_employer_jobs(self, obj):
         if not obj or not obj.pk:
@@ -305,6 +346,24 @@ class EmployerAdmin(admin.ModelAdmin):
         )
 
     view_employer_packages.short_description = "Packages"
+
+    @admin.display(description='Profile')
+    def profile_completeness(self, obj):
+        missing=[]
+        if not obj.logo:missing.append('logo')
+        if not ((obj.company_description or '').strip() or (obj.description or '').strip()):missing.append('description')
+        if not (obj.email or '').strip():missing.append('email')
+        if not (obj.location or '').strip():missing.append('location')
+        return 'Complete' if not missing else 'Missing ' + ', '.join(missing)
+
+    @admin.display(description='Duplicate review')
+    def review_possible_duplicates(self, obj):
+        if not obj or not obj.pk:return 'Save the profile to review matching records.'
+        kind='employer-email' if (obj.email or '').strip() else 'employer-name'
+        value=obj.email if kind=='employer-email' else obj.company_name
+        if not (value or '').strip():return 'Add an email or company name to review matches.'
+        url=reverse('admin:operations_duplicates')+'?'+urlencode({'kind':kind,'q':value.strip().lower()})
+        return format_html('<a class="button" href="{}">Review matching profiles</a>',url)
 
     def save_model(self, request, obj, form, change):
         """
@@ -340,7 +399,12 @@ class EmployerAdmin(admin.ModelAdmin):
 
 
 @admin.register(JobSeeker)
-class JobSeekerAdmin(admin.ModelAdmin):
+class JobSeekerAdmin(RecordSearchMixin, admin.ModelAdmin):
+    readonly_fields = ("review_possible_duplicates",)
+
+    list_select_related = ('user',)
+    date_hierarchy = "created_at"
+
     actions = [approve_selected_jobseekers]
 
     list_display = (
@@ -361,6 +425,12 @@ class JobSeekerAdmin(admin.ModelAdmin):
     list_filter = ("registered_in_canada", "require_sponsorship", "is_approved", "login_active")
     # Newest signups first; unapproved records win only when timestamps match.
     ordering = ("-created_at", "is_approved", "-id")
+
+    @admin.display(description='Duplicate review')
+    def review_possible_duplicates(self, obj):
+        if not obj or not obj.pk or not (obj.email or '').strip():return 'Add an email to review matching profiles.'
+        url=reverse('admin:operations_duplicates')+'?'+urlencode({'kind':'candidate-email','q':obj.email.strip().lower()})
+        return format_html('<a class="button" href="{}">Review matching profiles</a>',url)
 
     def save_model(self, request, obj, form, change):
         """
@@ -400,6 +470,8 @@ class JobSeekerAdmin(admin.ModelAdmin):
 # ---------------------------
 
 def duplicate_selected_jobs(modeladmin, request, queryset):
+    if not (modeladmin.has_add_permission(request) and modeladmin.has_change_permission(request)):
+        raise PermissionDenied
     today = timezone.localdate()
     count = 0
 
@@ -407,6 +479,7 @@ def duplicate_selected_jobs(modeladmin, request, queryset):
         job.pk = None
         job.posting_date = today
         job.is_active = False  # duplicate starts as draft/inactive
+        job.expiry_email_sent = False
 
         if hasattr(job, "views_count"):
             job.views_count = 0
@@ -422,7 +495,10 @@ duplicate_selected_jobs.short_description = "Duplicate selected jobs"
 
 
 @admin.register(Job)
-class JobAdmin(admin.ModelAdmin):
+class JobAdmin(RecordSearchMixin, admin.ModelAdmin):
+    list_select_related = ('employer',)
+    date_hierarchy = "posting_date"
+
     actions = [duplicate_selected_jobs]
 
     list_display = (
@@ -436,7 +512,7 @@ class JobAdmin(admin.ModelAdmin):
         "source",
     )
     list_display_links = ("id", "title")
-    search_fields = ("title", "employer__company_name", "employer__name", "location")
+    search_fields = ("title", "employer__company_name", "employer__name", "employer__email", "location")
     list_filter = ("is_active", "job_type", "compensation_type", "source")
     ordering = ("-posting_date", "-id")
 
@@ -479,21 +555,27 @@ class JobAdmin(admin.ModelAdmin):
         return custom + urls
 
     def duplicate_job_view(self, request, object_id):
-        today = timezone.localdate()
-        original = get_object_or_404(Job, pk=object_id)
-
+        original = get_object_or_404(self.get_queryset(request), pk=object_id)
+        if not (self.has_add_permission(request) and self.has_change_permission(request, original)):
+            raise PermissionDenied
+        if request.method == 'GET':
+            return TemplateResponse(request, 'admin/operations/confirm_duplicate_job.html', {
+                **self.admin_site.each_context(request), 'title': 'Duplicate job as a draft',
+                'original': original, 'opts': self.model._meta,
+            })
+        if request.method != 'POST':
+            from django.http import HttpResponseNotAllowed
+            return HttpResponseNotAllowed(['GET', 'POST'])
         original.pk = None
-        original.posting_date = today
+        original.posting_date = timezone.localdate()
         original.is_active = False
-
-        if hasattr(original, "views_count"):
-            original.views_count = 0
-
-        _set_duplicate_expiry(original, today)
+        original.views_count = 0
+        original.expiry_email_sent = False
+        _set_duplicate_expiry(original, original.posting_date)
         original.save()
-
-        self.message_user(request, "Job duplicated (new draft created).", level=messages.SUCCESS)
-        return redirect("admin:board_job_change", original.pk)
+        self.log_addition(request, original, 'Duplicated as an unpublished draft')
+        self.message_user(request, 'Job duplicated (new draft created).', level=messages.SUCCESS)
+        return redirect('admin:board_job_change', original.pk)
 
 
 # ---------------------------
@@ -501,7 +583,10 @@ class JobAdmin(admin.ModelAdmin):
 # ---------------------------
 
 @admin.register(Application)
-class ApplicationAdmin(admin.ModelAdmin):
+class ApplicationAdmin(RecordSearchMixin, admin.ModelAdmin):
+    list_select_related = ('job', 'jobseeker')
+    date_hierarchy = "created_at"
+
     list_display = ("id", "job", "jobseeker", "created_at")
     list_display_links = ("id", "job")
     search_fields = ("job__title", "jobseeker__email", "jobseeker__first_name", "jobseeker__last_name")
@@ -510,7 +595,10 @@ class ApplicationAdmin(admin.ModelAdmin):
 
 
 @admin.register(Resume)
-class ResumeAdmin(admin.ModelAdmin):
+class ResumeAdmin(RecordSearchMixin, admin.ModelAdmin):
+    list_select_related = ('jobseeker',)
+    date_hierarchy = "created_at"
+
     list_display = ("id", "jobseeker", "title", "created_at")
     list_display_links = ("id", "jobseeker", "title")
     search_fields = ("jobseeker__email", "title")
@@ -518,7 +606,7 @@ class ResumeAdmin(admin.ModelAdmin):
 
 
 @admin.register(PostingPackage)
-class PostingPackageAdmin(admin.ModelAdmin):
+class PostingPackageAdmin(RecordSearchMixin, admin.ModelAdmin):
 
     def get_list_display(self, request):
         base = [
@@ -546,7 +634,10 @@ class PostingPackageAdmin(admin.ModelAdmin):
 
 
 @admin.register(PurchasedPackage)
-class PurchasedPackageAdmin(admin.ModelAdmin):
+class PurchasedPackageAdmin(RecordSearchMixin, admin.ModelAdmin):
+    list_select_related = ('employer', 'package')
+    date_hierarchy = "purchased_at"
+
     def get_list_display(self, request):
         base = ["id", "employer", "package", "credits_granted", "credits_remaining", "purchased_at"]
         if _model_has_field(PurchasedPackage, "expires_at"):
@@ -556,16 +647,19 @@ class PurchasedPackageAdmin(admin.ModelAdmin):
         return tuple(base)
 
     list_display_links = ("id", "employer", "package")
-    search_fields = ("employer__company_name", "package__name")
+    search_fields = ("employer__company_name", "employer__email", "package__name")
     list_filter = ("package", "purchased_at")
     ordering = ("-purchased_at", "-id")
 
 
 @admin.register(Invoice)
-class InvoiceAdmin(admin.ModelAdmin):
+class InvoiceAdmin(RecordSearchMixin, admin.ModelAdmin):
+    list_select_related = ('employer',)
+    date_hierarchy = "order_date"
+
     list_display = ("id", "employer_link", "amount_display", "currency", "processor", "status", "order_date", "discount_code")
     list_display_links = ("id", "employer_link")
-    search_fields = ("employer__company_name", "processor_reference", "discount_code")
+    search_fields = ("employer__company_name", "employer__email", "processor_reference", "discount_code")
     list_filter = ("status", "processor", "currency")
     ordering = ("-order_date", "-id")
 
@@ -648,7 +742,7 @@ class WidgetTemplateAdmin(admin.ModelAdmin):
 
 
 @admin.register(JobAlert)
-class JobAlertAdmin(admin.ModelAdmin):
+class JobAlertAdmin(RecordSearchMixin, admin.ModelAdmin):
     list_display = ("id", "email", "q", "location", "active", "created_at")
     list_display_links = ("id", "email")
     search_fields = ("email", "q", "location")
@@ -702,3 +796,7 @@ class UserAdmin(DjangoUserAdmin):
 # Admin-only social graphic generator. No models or migrations are added.
 from .marketing.admin_views import install_marketing_admin_urls
 install_marketing_admin_urls()
+
+# Additive workspace; retain all existing model admins and actions.
+from .operations import install_operations_urls
+install_operations_urls()

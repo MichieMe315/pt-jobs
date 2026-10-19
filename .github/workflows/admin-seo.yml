@@ -1,0 +1,38 @@
+name: Admin and SEO release checks
+on:
+  push:
+    branches: [admin-seo-20261019]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: ci-only
+        ports: [5432:5432]
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      DJANGO_DEBUG: '1'
+      USE_R2_MEDIA: '0'
+      DATABASE_URL: postgresql://postgres:ci-only@localhost:5432/postgres
+      EMAIL_BACKEND: django.core.mail.backends.locmem.EmailBackend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements.txt
+      - run: python manage.py check
+      - run: python manage.py makemigrations --check --dry-run
+      - run: python manage.py check_repair_readiness
+      - run: python manage.py migrate --noinput
+      - run: python manage.py collectstatic --noinput
+      - name: Run admin, SEO, payment and existing regression tests on PostgreSQL
+        run: python manage.py test --noinput --verbosity 2

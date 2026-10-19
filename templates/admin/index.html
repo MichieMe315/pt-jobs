@@ -1,32 +1,6 @@
-{% extends "admin/base_site.html" %}
-{% load i18n static %}
-
-{% block title %}PT Jobs Admin{% endblock %}
-
-{% block content %}
-
-<div class="dashboard-wrapper" style="margin-bottom: 2rem;">
-  <h1 class="title">{% trans 'Admin Dashboard' %}</h1>
-  <p class="help">
-    Embedded business metrics for PT Jobs Canada.
-  </p>
-
-  <iframe
-    src="{% url 'admin_dashboard' %}?period=today&embed=1"
-    style="width:100%; min-height:600px; border:none; background:transparent;">
-  </iframe>
-</div>
-
-<div class="module" style="margin-bottom: 2rem; max-width: 600px;">
-  <table>
-    <caption><a href="{% url 'admin:marketing_generator' %}" class="section">Marketing</a></caption>
-    <tr>
-      <th scope="row"><a href="{% url 'admin:marketing_generator' %}">Marketing Generator</a></th>
-      <td>Create current employer logo graphics for social media.</td>
-    </tr>
-  </table>
-</div>
-
-{{ block.super }}
-
-{% endblock %}
+{% extends 'admin/base_site.html' %}{% load static operations_ui %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'board/admin-workspace.css' %}">{% endblock %}
+{% block content %}<div class="ops-shell"><header class="ops-hero"><div><div class="ops-kicker">Physiotherapy Jobs Canada</div><h1>Admin workspace</h1><p>Find records, review accounts and keep your existing workflows close.</p></div><a class="ops-button" href="{% url 'admin:operations' %}">Open operations</a></header>
+<form class="ops-global-search ops-panel" method="get" action="{% url 'admin:operations_search' %}"><label for="admin-global-search">Search all records</label><div><input id="admin-global-search" name="q" type="search" maxlength="200" placeholder="Company, email, location, reference or #ID"><button class="ops-button ops-primary" type="submit">Search</button></div></form>
+{% operations_overview %}<div class="ops-toolbar">{% if perms.board.view_employer or perms.board.change_employer or perms.board.view_jobseeker or perms.board.change_jobseeker or perms.board.view_invoice or perms.board.change_invoice or perms.board.view_job or perms.board.change_job %}<a class="ops-button" href="{% url 'admin:operations_duplicates' %}">Duplicate review</a>{% endif %}<a class="ops-button" href="{% url 'admin_dashboard' %}">Date-based business report</a><a class="ops-button" href="{% url 'admin:marketing_generator' %}">Marketing graphics</a></div>
+<h2 id="model-directory">All admin controls</h2>{% include 'admin/app_list.html' with app_list=app_list show_changelinks=True %}</div>{% endblock %}
