@@ -3,8 +3,11 @@ from django.contrib.auth import views as auth_views
 from django.urls import path
 
 from . import views as v
+from .seo_pages import career_hub, career_landing
 
 urlpatterns = [
+    path("physiotherapy-careers/", career_hub, name="career_hub"),
+    path("physiotherapy-careers/<slug:slug>/", career_landing, name="career_landing"),
     path("job-alerts/unsubscribe/<str:token>/", v.job_alert_unsubscribe, name="job_alert_unsubscribe"),
     path("stripe/webhook/", v.stripe_webhook, name="stripe_webhook"),
     # Public
@@ -56,6 +59,7 @@ urlpatterns = [
     path("employers/", v.employer_list, name="employer_list"),
     path("employers/signup/", v.employer_signup, name="employer_signup"),
     path("employers/<int:employer_id>/", v.employer_detail, name="employer_detail"),
+    path("employers/<int:employer_id>/", v.employer_detail, name="employer_public_profile"),
     path("employer/dashboard/", v.employer_dashboard, name="employer_dashboard"),
     path("employer/profile/", v.employer_profile_edit, name="employer_profile_edit"),
 

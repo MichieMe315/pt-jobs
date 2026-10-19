@@ -3,20 +3,35 @@ from django.urls import reverse
 from .models import Job
 from django.db.models import Q
 from django.utils import timezone
+from types import SimpleNamespace
+from urllib.parse import urlsplit
+from .seo_config import SITE
 
 
-class StaticViewSitemap(Sitemap):
+class CanonicalSitemap(Sitemap):
+    protocol = "https"
+
+    def get_urls(self, page=1, site=None, protocol=None):
+        canonical_site = SimpleNamespace(domain=urlsplit(SITE).netloc, name="Physiotherapy Jobs Canada")
+        return super().get_urls(page=page, site=canonical_site, protocol="https")
+
+
+class StaticViewSitemap(CanonicalSitemap):
+    protocol = "https"
     priority = 0.8
     changefreq = "weekly"
 
     def items(self):
-        return ["home", "job_list"]
+        from .seo_pages import PAGES
+        return ["home", "job_list", "career_hub"] + list(PAGES)
 
     def location(self, item):
-        return reverse(item)
+        from .seo_pages import PAGES
+        return reverse("career_landing", args=[item]) if item in PAGES else reverse(item)
 
 
-class ProvinceSitemap(Sitemap):
+class ProvinceSitemap(CanonicalSitemap):
+    protocol = "https"
     changefreq = "weekly"
     priority = 0.8
 
@@ -38,7 +53,8 @@ class ProvinceSitemap(Sitemap):
         return reverse(item)
 
 
-class JobSitemap(Sitemap):
+class JobSitemap(CanonicalSitemap):
+    protocol = "https"
     changefreq = "daily"
     priority = 0.9
 

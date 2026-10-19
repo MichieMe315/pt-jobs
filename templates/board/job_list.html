@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}All Jobs{% endblock %}
+{% block title %}Physiotherapy & Allied Health Jobs in Canada | PT Jobs Canada{% endblock %}
 
 {% block content %}
 <div class="container py-4">
 
- <h1 class="h4 fw-bold mb-3">All Jobs</h1>
+ <h1 class="h4 fw-bold mb-3">Physiotherapy &amp; allied health jobs in Canada</h1>
+<p>Explore current physiotherapist and rehabilitation opportunities across Canada. Compare location, compensation, caseload and the support each employer offers.</p><p><a class="link-light" href="{% url 'career_hub' %}">Explore jobs by city and practice setting →</a></p>
 
  <!-- SEARCH (RESTORED) -->
  <form method="get" action="{% url 'job_list' %}" class="row g-2 mb-4">

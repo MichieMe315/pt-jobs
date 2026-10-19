@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load currency %}
-{% block title %}{{ job.title }} – {{ job.employer.company_name }}{% endblock %}
+{% block title %}{{ job.title }} – {{ job.location }} | {{ job.employer.company_name }}{% endblock %}
 
 {% block content %}
 <div class="container my-4">

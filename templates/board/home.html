@@ -2,7 +2,9 @@
 {% load static %}
 
 {% block title %}
- {% if sitesettings and sitesettings.hero_title %}
+ {% if sitesettings and sitesettings.seo_meta_title %}
+ {{ sitesettings.seo_meta_title }}
+ {% elif sitesettings and sitesettings.hero_title %}
  {{ sitesettings.hero_title }}
  {% elif sitesettings and sitesettings.home_hero_title %}
  {{ sitesettings.home_hero_title }}
@@ -10,7 +12,7 @@
 {% endblock %}
 
 {% block extra_head %}
-<meta name="description" content="Browse physiotherapy and allied health jobs across Canada including Ontario, British Columbia, Alberta, Saskatchewan, Manitoba, Nova Scotia and more. Find clinic, rehabilitation, home care, community care and private practice physiotherapy roles.">
+<meta name="description" content="{% if sitesettings and sitesettings.seo_meta_description %}{{ sitesettings.seo_meta_description }}{% else %}Browse physiotherapy and allied health jobs across Canada including Ontario, British Columbia, Alberta, Saskatchewan, Manitoba, Nova Scotia and more. Find clinic, rehabilitation, home care, community care and private practice physiotherapy roles.{% endif %}">
 {% endblock %}
 
 {% block content %}
