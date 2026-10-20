@@ -74,6 +74,7 @@ INSTALLED_APPS = [
     "marketplace",
     "international_candidates",
     "province_pages",
+    "career_mobility",
 ]
 
 
@@ -244,3 +245,6 @@ if not EMAIL_HOST_PASSWORD and not DEBUG:
 
 # Stripe endpoint signing secret; configure separately from the API key.
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "").strip()
+
+# Unfinished career planners/shop are local-only unless explicitly enabled.
+CAREER_TOOLS_PREVIEW = env_bool("CAREER_TOOLS_PREVIEW", "1" if DEBUG else "0")

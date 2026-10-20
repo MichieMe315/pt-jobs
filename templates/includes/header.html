@@ -1,7 +1,8 @@
 {% load static %}
+<link rel="stylesheet" href="{% static 'css/site-navigation.css' %}">
 
-<header class="bg-dark border-bottom">
-  <nav class="navbar navbar-expand-lg navbar-dark container">
+<header class="bg-dark border-bottom ptjc-site-header">
+  <nav class="navbar navbar-expand-xl navbar-dark container">
 
     <!-- Brand -->
     <a class="navbar-brand fw-bold d-flex align-items-center gap-2"
@@ -45,14 +46,8 @@
             Job Posting Packages
           </a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link"
-             href="https://www.therapistlookup.com/?utm_source=physiotherapyjobscanada&utm_medium=referral&utm_campaign=accepting_new_patients&utm_content=header"
-             target="_blank"
-             rel="noopener noreferrer">
-            Accepting New Patients?
-          </a>
-        </li>
+
+        <li class="nav-item dropdown career-nav-dropdown"><button class="nav-link dropdown-toggle" id="careerResourcesMenu" type="button" data-bs-toggle="dropdown" aria-expanded="false">Career Resources</button><ul class="dropdown-menu" aria-labelledby="careerResourcesMenu"><li><a class="dropdown-item" href="{% url 'mobility_home' %}">All career resources</a></li><li><a class="dropdown-item" href="{% url 'mobility_salary_comparison' %}">Salary vs. Split Calculator</a></li><li><hr class="dropdown-divider"></li><li><span class="dropdown-item-text career-menu-label">In development</span></li><li><span class="dropdown-item-text career-menu-upcoming">Canadian relocation <small>Coming soon</small></span></li><li><span class="dropdown-item-text career-menu-upcoming">International PT planner <small>Coming soon</small></span></li><li><span class="dropdown-item-text career-menu-upcoming">Job offer checklist <small>Coming soon</small></span></li><li><span class="dropdown-item-text career-menu-upcoming">Career guides &amp; templates <small>Coming soon</small></span></li></ul></li>
       </ul>
 
       <!-- Right side buttons -->
