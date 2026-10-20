@@ -1,0 +1,592 @@
+[
+  {
+    "city": "St. John's",
+    "province": "Newfoundland and Labrador",
+    "aliases": [
+      "St. John's"
+    ],
+    "rent": 1530,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Halifax",
+    "province": "Nova Scotia",
+    "aliases": [
+      "Halifax"
+    ],
+    "rent": 2400,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Fredericton",
+    "province": "New Brunswick",
+    "aliases": [
+      "Fredericton"
+    ],
+    "rent": 1670,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Moncton",
+    "province": "New Brunswick",
+    "aliases": [
+      "Moncton"
+    ],
+    "rent": 1460,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Saint John",
+    "province": "New Brunswick",
+    "aliases": [
+      "Saint John"
+    ],
+    "rent": 1530,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Drummondville",
+    "province": "Quebec",
+    "aliases": [
+      "Drummondville"
+    ],
+    "rent": 1200,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Montréal",
+    "province": "Quebec",
+    "aliases": [
+      "Montreal"
+    ],
+    "rent": 1820,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Ottawa - Gatineau (Quebec part)",
+    "province": "Quebec",
+    "aliases": [
+      "Gatineau"
+    ],
+    "rent": 1700,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Québec",
+    "province": "Quebec",
+    "aliases": [
+      "Quebec City"
+    ],
+    "rent": 1460,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Saguenay",
+    "province": "Quebec",
+    "aliases": [
+      "Saguenay"
+    ],
+    "rent": null,
+    "status": "..",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Sherbrooke",
+    "province": "Quebec",
+    "aliases": [
+      "Sherbrooke"
+    ],
+    "rent": 1300,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Trois-Rivières",
+    "province": "Quebec",
+    "aliases": [
+      "Trois-Rivières"
+    ],
+    "rent": null,
+    "status": "..",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Barrie",
+    "province": "Ontario",
+    "aliases": [
+      "Barrie"
+    ],
+    "rent": 2100,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Belleville - Quinte West",
+    "province": "Ontario",
+    "aliases": [
+      "Belleville - Quinte West"
+    ],
+    "rent": 1900,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Brantford",
+    "province": "Ontario",
+    "aliases": [
+      "Brantford"
+    ],
+    "rent": 1890,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Greater Sudbury",
+    "province": "Ontario",
+    "aliases": [
+      "Sudbury"
+    ],
+    "rent": 1940,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Guelph",
+    "province": "Ontario",
+    "aliases": [
+      "Guelph"
+    ],
+    "rent": 2190,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Hamilton",
+    "province": "Ontario",
+    "aliases": [
+      "Hamilton"
+    ],
+    "rent": 2150,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Kingston",
+    "province": "Ontario",
+    "aliases": [
+      "Kingston"
+    ],
+    "rent": 1940,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Kitchener - Cambridge - Waterloo",
+    "province": "Ontario",
+    "aliases": [
+      "Kitchener",
+      "Cambridge",
+      "Waterloo"
+    ],
+    "rent": 2120,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "London",
+    "province": "Ontario",
+    "aliases": [
+      "London"
+    ],
+    "rent": 1920,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Oshawa",
+    "province": "Ontario",
+    "aliases": [
+      "Oshawa"
+    ],
+    "rent": 2000,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Ottawa - Gatineau (Ontario part)",
+    "province": "Ontario",
+    "aliases": [
+      "Ottawa"
+    ],
+    "rent": 2360,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Peterborough",
+    "province": "Ontario",
+    "aliases": [
+      "Peterborough"
+    ],
+    "rent": 1920,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "St. Catharines - Niagara",
+    "province": "Ontario",
+    "aliases": [
+      "St. Catharines"
+    ],
+    "rent": 1900,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Thunder Bay",
+    "province": "Ontario",
+    "aliases": [
+      "Thunder Bay"
+    ],
+    "rent": 1980,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Toronto",
+    "province": "Ontario",
+    "aliases": [
+      "Toronto"
+    ],
+    "rent": 2650,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Windsor",
+    "province": "Ontario",
+    "aliases": [
+      "Windsor"
+    ],
+    "rent": 1850,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Winnipeg",
+    "province": "Manitoba",
+    "aliases": [
+      "Winnipeg"
+    ],
+    "rent": 1660,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Regina",
+    "province": "Saskatchewan",
+    "aliases": [
+      "Regina"
+    ],
+    "rent": 1480,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Saskatoon",
+    "province": "Saskatchewan",
+    "aliases": [
+      "Saskatoon"
+    ],
+    "rent": 1620,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Calgary",
+    "province": "Alberta",
+    "aliases": [
+      "Calgary"
+    ],
+    "rent": 1890,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Edmonton",
+    "province": "Alberta",
+    "aliases": [
+      "Edmonton"
+    ],
+    "rent": 1570,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Lethbridge",
+    "province": "Alberta",
+    "aliases": [
+      "Lethbridge"
+    ],
+    "rent": 1480,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Red Deer",
+    "province": "Alberta",
+    "aliases": [
+      "Red Deer"
+    ],
+    "rent": 1410,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Abbotsford - Mission",
+    "province": "British Columbia",
+    "aliases": [
+      "Abbotsford - Mission"
+    ],
+    "rent": 1890,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Chilliwack",
+    "province": "British Columbia",
+    "aliases": [
+      "Chilliwack"
+    ],
+    "rent": 1760,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Kamloops",
+    "province": "British Columbia",
+    "aliases": [
+      "Kamloops"
+    ],
+    "rent": 1960,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Kelowna",
+    "province": "British Columbia",
+    "aliases": [
+      "Kelowna"
+    ],
+    "rent": 2330,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Nanaimo",
+    "province": "British Columbia",
+    "aliases": [
+      "Nanaimo"
+    ],
+    "rent": 2080,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Vancouver",
+    "province": "British Columbia",
+    "aliases": [
+      "Vancouver"
+    ],
+    "rent": 3030,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  },
+  {
+    "city": "Victoria",
+    "province": "British Columbia",
+    "aliases": [
+      "Victoria"
+    ],
+    "rent": 2640,
+    "status": "",
+    "reference_period": "2026 Q2",
+    "basis": "Average asking rent · two-bedroom apartment · metropolitan area",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=4610009201",
+    "released_on": "2026-09-09",
+    "verified_on": "2026-10-19"
+  }
+]

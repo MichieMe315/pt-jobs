@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="container ptjc-career-shell ptjc-slate">
+{% if '/international/' in request.path %}<nav class="career-subnav" aria-label="International planning"><a href="{% url 'mobility_international' %}">Registration planner</a>{% if user.is_authenticated and user.international_pt_profile %}<a href="{% url 'mobility_international_dashboard' %}">My international account</a>{% else %}<a href="{% url 'mobility_international_signup' %}">Create international account</a>{% endif %}<a href="{% url 'mobility_shop' %}">Resources</a></nav>{% endif %}
+  {% block tool_content %}{% endblock %}
+</div>
+{% include "career_mobility/place_lookup.html" %}
+<link rel="stylesheet" href="{% static 'career_mobility/ptjc-design-system-v18.css' %}">
+<link rel="stylesheet" href="{% static 'career_mobility/career-refinement.css' %}">
+<link rel="stylesheet" href="{% static 'career_mobility/pt-jobs-slate.css' %}">
+{% endblock %}

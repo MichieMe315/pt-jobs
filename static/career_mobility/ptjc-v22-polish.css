@@ -1,0 +1,12 @@
+/* PTJC career tools: restrained typography and functional emphasis */
+.salary-app,.mob-hero,.mob-panel{font-family:inherit!important}
+.salary-help{color:#087c8b;font-weight:700;cursor:help;border-bottom:1px dotted currentColor}
+.salary-upgrade{background:#153e55!important;color:#fff!important;border-radius:16px;padding:30px!important}
+.salary-upgrade h2,.salary-upgrade strong,.salary-upgrade p,.salary-upgrade .salary-features span{color:#fff!important}
+.salary-upgrade a{color:#fff!important;text-decoration:underline!important}
+.salary-upgrade .salary-step{color:#8ee2db!important}
+.mob-hero{background:#123d55!important;color:#fff!important}
+.mob-hero h1,.mob-hero p{color:#fff!important}
+.mob-panel{border:1px solid #dbe6ec!important;box-shadow:0 3px 14px rgba(14,49,71,.04)!important}
+.mob-panel .form-label{color:#153e55;font-weight:650}
+@media(max-width:700px){.salary-upgrade{padding:22px!important}}

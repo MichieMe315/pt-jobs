@@ -1,0 +1,5 @@
+{% extends "career_mobility/standalone.html" %}
+{% block title %}Switch account | PTJC{% endblock %}
+{% block tool_content %}
+<section style="max-width:650px;margin:3rem auto;padding:2rem;border:1px solid #d9e2e8;border-radius:12px"><h1>You're signed in to a different PTJC account</h1><p>International PT planning uses a separate account from the Canadian job seeker system. Sign out of your current account before registering.</p><p>We won't change or convert your existing account.</p><a class="btn btn-primary" href="{% url 'logout' %}">Go to sign out</a> <a class="btn btn-outline-secondary" href="{% url 'mobility_international' %}">Return to pathway guide</a></section>
+{% endblock %}

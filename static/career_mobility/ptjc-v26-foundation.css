@@ -1,0 +1,31 @@
+/* PTJC Career Tools v26 — accessible visual foundation */
+:root{--pt-ink:#132c3b;--pt-sub:#425968;--pt-blue:#176b8d;--pt-teal:#087d77;--pt-bg:#f5f8fa;--pt-line:#d6e1e7}
+html{color-scheme:light}body{background:var(--pt-bg)!important;color:var(--pt-ink)!important;font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif!important;line-height:1.55}
+.iept-standalone *{box-sizing:border-box}.iept-standalone{color:var(--pt-ink);background:var(--pt-bg);min-height:100vh}
+.iept-topbar{background:#fff;border-bottom:1px solid var(--pt-line);padding:15px max(20px,calc((100vw - 1160px)/2));display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.iept-brand{font-weight:800;letter-spacing:-.035em;font-size:20px;color:#103f58;text-decoration:none}.iept-brand small{display:block;font-size:11px;letter-spacing:.13em;color:var(--pt-teal);font-weight:750}
+.iept-nav{display:flex;flex-wrap:wrap;gap:10px}.iept-nav a{color:#23495c;text-decoration:none;font-size:14px;font-weight:650;padding:9px 12px;border-radius:7px}.iept-nav a:hover,.iept-nav a:focus-visible{background:#e8f4f6;color:#075e69}
+.iept-page{max-width:1160px;margin:0 auto;padding:34px 22px 90px}.iept-page h1,.iept-page h2,.iept-page h3{color:#112f40!important;letter-spacing:-.035em;line-height:1.15}.iept-page h1{font-size:clamp(30px,4vw,49px);font-weight:800}.iept-page h2{font-size:clamp(21px,2.4vw,29px);font-weight:750}
+.iept-page p,.iept-page label,.iept-page small,.iept-page li{color:#365363}.iept-page label{font-weight:650}
+.iept-page input:not([type=checkbox]):not([type=radio]),.iept-page select,.iept-page textarea,.salary-app input,.salary-app select,.mob-panel input,.mob-panel select{background:#fff!important;color:#172e3c!important;-webkit-text-fill-color:#172e3c!important;border:1px solid #a9bfcb!important;box-shadow:none!important;border-radius:9px!important;min-height:45px}
+.iept-page input::placeholder,.salary-app input::placeholder,.mob-panel input::placeholder{color:#667c89!important;opacity:1}
+.iept-page input:focus,.iept-page select:focus,.salary-app input:focus,.mob-panel input:focus{outline:3px solid #a8e0e4!important;outline-offset:1px;border-color:#0c7889!important}
+.iept-page button,.iept-page a,.salary-app button{transition:background-color .15s,border-color .15s}.iept-page .btn-primary,.iept-page .path-submit{background:#0b637e!important;color:#fff!important;border-color:#0b637e!important}
+.iept-page .mob-panel,.iept-page .path-section,.iept-page .iept-panel,.iept-page .salary-panel,.iept-page .path-aside,.iept-page .path-help{background:#fff!important;color:#173344!important;border:1px solid var(--pt-line)!important;box-shadow:0 6px 22px rgba(13,50,67,.045)!important}
+.iept-page .mob-hero,.iept-page .salary-hero,.iept-page .path-intro,.iept-page .iept-head{background:#e9f3f6!important;color:#173344!important;border-radius:16px;padding:25px}
+.iept-page .mob-hero *, .iept-page .salary-hero *, .iept-page .path-intro *, .iept-page .iept-head *{color:#163d51!important}
+.iept-page .path-kicker,.iept-page .mob-section-kicker,.iept-page .iept-eyebrow{color:#086d78!important;font-weight:800}
+.iept-page .path-route i{background:#168b8e}.iept-page .path-step{color:#fff!important;background:#0b6b81!important}
+.iept-page .path-privacy,.iept-page .mob-small,.iept-page .form-text,.iept-page .iept-muted{color:#435e6d!important}
+.iept-page .salary-upgrade{background:#e5f2f4!important;color:#153848!important}.iept-page .salary-upgrade *{color:#173e4f!important}
+.iept-page .salary-upgrade a,.iept-page .salary-upgrade button{background:#0a667f!important;color:#fff!important}
+.iept-page .salary-bar.employee{background:#168aab!important}.iept-page .salary-bar.contractor{background:#079b83!important}
+.iept-page .mob-track{background:#e2eaf0!important}.iept-page .mob-fill.current{background:#168aab!important}.iept-page .mob-fill.new{background:#079b83!important}
+.iept-page .mob-kpi,.iept-page .salary-metric,.iept-page .iept-metrics>div{background:#f1f8fa!important;color:#19394b!important;border:1px solid #d7e8ed!important}
+.iept-page .mob-kpi strong,.iept-page .salary-metric strong,.iept-page .iept-metrics strong{color:#104a62!important}
+.iept-page a:not(.btn):not(.path-submit){color:#075e82}.iept-page a:not(.btn):not(.path-submit):hover{text-decoration:underline}
+.iept-page .btn-outline-light,.iept-page .btn-outline-secondary{color:#0d5067!important;border-color:#95b5c3!important;background:#fff!important}
+.iept-page .btn-outline-light:hover,.iept-page .btn-outline-secondary:hover{background:#e7f4f7!important}
+.iept-page [hidden]{display:none!important}.iept-page .mob-cost-detail[hidden]{display:none!important}
+@media(max-width:760px){.iept-page{padding:20px 13px 60px}.iept-topbar{padding:12px 15px}.iept-page .mob-hero,.iept-page .salary-hero{padding:20px}.iept-page .path-intro{display:block}}
+@media print{.iept-topbar,.iept-nav,.iept-page button{display:none!important}.iept-page{max-width:100%;padding:0}.iept-page .mob-panel{break-inside:avoid}}

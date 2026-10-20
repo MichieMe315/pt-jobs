@@ -1,0 +1,49 @@
+/* PTJC Career Studio v18: typography inherited from the job board, not a competing font. */
+.ptjc-career-shell{--pt-ink:#172b3b;--pt-muted:#576b79;--pt-border:#dce4e8;--pt-accent:#2563eb;--pt-soft:#f5f8f9;max-width:1180px!important;margin-inline:auto;padding:40px 18px 88px!important;color:var(--pt-ink);font-family:inherit!important;font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.ptjc-career-shell :is(h1,h2,h3,h4,h5,h6,p,span,label,input,select,textarea,button,a,small,summary){font-family:inherit!important}
+.ptjc-career-shell :is(h1,h2,h3,h4){text-wrap:balance;letter-spacing:-.025em;line-height:1.19}
+.ptjc-career-shell :is(h1,h2,h3){font-weight:700}
+.ptjc-career-shell p{line-height:1.65}
+.ptjc-career-shell :is(.mob-hero,.salary-hero,.rw-hero,.shop-hero,.ptjc-home-hero){background:#152f40!important;color:#fff!important;border-radius:16px!important;box-shadow:none!important;border:1px solid #294858!important;padding:clamp(28px,4.5vw,54px)!important}
+.ptjc-career-shell :is(.mob-hero,.salary-hero,.rw-hero,.shop-hero,.ptjc-home-hero) h1{color:#fff!important;font-size:clamp(2.05rem,4.2vw,3.3rem)!important;font-weight:700!important;line-height:1.09!important;letter-spacing:-.04em!important;margin-bottom:15px!important}
+.ptjc-career-shell :is(.mob-hero,.salary-hero,.rw-hero,.shop-hero,.ptjc-home-hero) p{color:#d8e3e8!important;max-width:720px;font-size:1.04rem!important}
+.ptjc-career-shell :is(.mob-panel,.salary-panel,.rw-content,.shop-card,.ptjc-home-card){border:1px solid var(--pt-border)!important;border-radius:13px!important;background:#fff!important;box-shadow:none!important;padding:clamp(22px,2.6vw,32px)!important}
+.ptjc-career-shell :is(.mob-panel,.salary-panel,.shop-card,.ptjc-home-card) h2{font-size:clamp(1.28rem,2vw,1.62rem)!important;line-height:1.25!important;color:var(--pt-ink)!important;font-weight:700!important;letter-spacing:-.025em!important}
+.ptjc-career-shell :is(.mob-section-kicker,.salary-step,.salary-eyebrow,.rw-eyebrow,.shop-tag,.ptjc-home-eyebrow){font-size:.74rem!important;font-weight:700!important;letter-spacing:.085em!important;text-transform:uppercase;color:var(--pt-accent)}
+.ptjc-career-shell :is(.mob-hero,.salary-hero,.rw-hero,.shop-hero,.ptjc-home-hero) :is(.salary-eyebrow,.rw-eyebrow,.shop-tag,.ptjc-home-eyebrow){color:#b4dce0!important}
+.ptjc-career-shell :is(.mob-small,.salary-muted,.salary-footnote,.form-text,.rw-note,.ptjc-home-card p){color:var(--pt-muted);line-height:1.6}
+.ptjc-career-shell :is(input:not([type=checkbox]):not([type=radio]),select,textarea,.form-control,.form-select){font-family:inherit!important;font-size:1rem!important;line-height:1.4!important;min-height:48px;border:1px solid #bfcbd2!important;border-radius:8px!important;background:#fff!important;color:var(--pt-ink)!important;box-shadow:none!important}
+.ptjc-career-shell :is(input,select,textarea,.form-control,.form-select):focus-visible{outline:3px solid #b4dee0!important;outline-offset:1px;border-color:var(--pt-accent)!important}
+.ptjc-career-shell :is(label,.form-label,.salary-field label){font-size:.89rem!important;font-weight:650!important;color:#283e4b!important;margin-bottom:7px!important}
+.ptjc-career-shell :is(.btn,.salary-secondary,.rw-hero-cta,.ptjc-home-link){font-family:inherit!important;font-size:.9rem!important;font-weight:650!important;border-radius:8px!important;min-height:42px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 16px;text-decoration:none;line-height:1.25}
+.ptjc-career-shell :is(.btn-primary,.btn-info,.rw-hero-cta,.ptjc-home-link){background:#2563eb!important;color:#fff!important;border:1px solid #2563eb!important}
+.ptjc-career-shell :is(.btn-primary,.btn-info,.rw-hero-cta,.ptjc-home-link):hover{background:#1d4ed8!important;border-color:#1d4ed8!important;color:#fff!important}
+.ptjc-career-shell :is(.btn-outline-light,.btn-outline-secondary,.salary-secondary){background:#fff!important;color:#214351!important;border:1px solid #b7c8d0!important}
+.ptjc-career-shell :is(.btn,.salary-secondary,.rw-hero-cta,.ptjc-home-link):focus-visible{outline:3px solid #8bc9cd!important;outline-offset:2px}
+.ptjc-career-shell :is(.mob-kpi,.salary-metric,.salary-difference,.rw-summary>div){border-radius:10px!important;box-shadow:none!important;border:1px solid var(--pt-border)!important;background:var(--pt-soft)!important}
+.ptjc-career-shell :is(.mob-kpi strong,.salary-metric strong,.rw-summary strong){font-variant-numeric:tabular-nums;font-weight:700!important;letter-spacing:-.035em!important}
+.ptjc-career-shell .mob-badge{background:#e3f2f1!important;color:#175c60!important;font-weight:650!important;letter-spacing:0!important}
+.ptjc-career-shell .salary-layout{gap:18px!important}
+.ptjc-career-shell .salary-panel{padding:clamp(22px,2.7vw,34px)!important}
+.ptjc-career-shell .salary-upgrade{border-radius:13px!important;box-shadow:none!important;background:#152f40!important}
+.ptjc-career-shell .salary-insight{border-radius:10px!important;background:#f1f7f7!important}
+.ptjc-career-shell .rw-table-wrap{overflow-x:auto}
+.ptjc-career-shell .rw-table{font-size:.9rem}
+.ptjc-career-shell .shop-price{color:#175760!important;font-size:1.55rem!important;font-weight:700!important}
+.ptjc-career-shell .ptjc-home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:22px 0}
+.ptjc-career-shell .ptjc-home-card{display:flex;flex-direction:column;min-height:228px}
+.ptjc-career-shell .ptjc-home-card h2{margin:11px 0}
+.ptjc-career-shell .ptjc-home-card p{flex:1;margin:0 0 22px}
+.ptjc-career-shell .ptjc-home-card .ptjc-home-link{align-self:flex-start}
+.ptjc-career-shell .ptjc-home-note{border-top:1px solid var(--pt-border);padding-top:19px;color:var(--pt-muted);font-size:.89rem}
+@media(max-width:760px){.ptjc-career-shell{padding:24px 14px 60px!important}.ptjc-career-shell .ptjc-home-grid{grid-template-columns:1fr}.ptjc-career-shell :is(.mob-hero,.salary-hero,.rw-hero,.shop-hero,.ptjc-home-hero){padding:28px 22px!important}.ptjc-career-shell .salary-layout{grid-template-columns:1fr!important}.ptjc-career-shell .salary-results{position:static!important}}
+@media(prefers-reduced-motion:reduce){.ptjc-career-shell *{transition:none!important;scroll-behavior:auto!important}}
+@media print{.ptjc-career-shell{max-width:none!important;padding:0!important}.ptjc-career-shell :is(.mob-hero,.salary-hero,.rw-hero,.shop-hero){background:#fff!important;border:0!important;color:#111!important}.ptjc-career-shell :is(.mob-hero,.salary-hero,.rw-hero,.shop-hero) :is(h1,p){color:#111!important}.ptjc-career-shell :is(.mob-panel,.salary-panel){break-inside:avoid}}
+
+.ptjc-career-shell{background:#f8f9fa;border-radius:16px}
+.ptjc-career-shell :is(.offer-cta,.salary-secondary-accent){background:#2563eb!important;color:white!important;border-color:#2563eb!important}
+.ptjc-career-shell .offer-card{color:#172b3b}.ptjc-career-shell .offer-note{color:#172b3b;background:#eef3ff}
+.ptjc-career-shell .salary-bar.contractor{background:#2563eb}.ptjc-career-shell .salary-bar.employee{background:#64748b}
+.basic-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.basic-grid label{display:block}.basic-grid input{width:100%;padding:12px}.basic-results{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin:24px 0}.basic-results div{padding:20px;background:#eef3ff;border-radius:10px}.basic-results strong{display:block;font-size:1.7rem;color:#172b3b}.basic-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}
+@media(max-width:640px){.basic-grid,.basic-results{grid-template-columns:1fr}}
+@media print{body,main{background:white!important;color:#111!important}body>header,body>footer,.navbar,.basic-actions,.offer-print,.offer-cta{display:none!important}.offer-card{break-inside:avoid}.ptjc-career-shell{background:white!important}}

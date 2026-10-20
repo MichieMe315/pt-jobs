@@ -1,0 +1,14 @@
+const assert=require('node:assert/strict');
+const {calculate}=require('../static/career_mobility/salary-math.js');
+const input={employeeType:'hourly',employeePay:'50',employeeHours:'37.5',employeeWeeks:'48',billing:'100',split:'60',visits:'10',days:'5',weeks:'46'};
+const result=calculate(input);
+assert.equal(result.employee,90000);
+assert.equal(result.contractor,138000);
+assert.equal(result.perVisit,60);
+assert.ok(Math.abs(result.visitsNeeded-6.52173913)<0.00001);
+assert.equal(calculate({...input,employeeType:''}),null);
+assert.equal(calculate({...input,split:'101'}),null);
+assert.equal(calculate({...input,employeePay:''}),null);
+assert.equal(calculate({...input,employeeType:'annual',employeePay:'95000',employeeHours:'',employeeWeeks:''}).employee,95000);
+assert.equal(calculate({...input,billing:'0'}),null);
+console.log('Salary comparison calculations: 8 checks passed');

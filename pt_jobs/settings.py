@@ -74,6 +74,7 @@ INSTALLED_APPS = [
     "marketplace",
     "international_candidates",
     "province_pages",
+    "career_mobility",
 ]
 
 
@@ -241,3 +242,6 @@ EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD") or os.environ.get("S
 if not EMAIL_HOST_PASSWORD and not DEBUG:
     raise ImproperlyConfigured("Missing EMAIL_HOST_PASSWORD / SENDGRID_API_KEY for email")
 
+
+# Unfinished career planners/shop are local-only unless explicitly enabled.
+CAREER_TOOLS_PREVIEW = env_bool("CAREER_TOOLS_PREVIEW", "1" if DEBUG else "0")

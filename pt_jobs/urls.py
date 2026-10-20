@@ -24,6 +24,7 @@ urlpatterns = [
 
     # New apps (kept separate from board)
     path("marketplace/", include("marketplace.urls")),
+    path("career-resources/", include("career_mobility.urls" if settings.CAREER_TOOLS_PREVIEW else "career_mobility.release_urls")),
     path("sponsor-an-international-candidate/", include("international_candidates.urls")),
 
     # Sitemap and Robots
@@ -45,3 +46,10 @@ urlpatterns = [
 # Serve uploaded media in development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Keep all unfinished planners, shop routes and shop admin in the local preview.
+if settings.CAREER_TOOLS_PREVIEW:
+    from career_mobility.views import shop as ptjc_shop_view, shop_admin as ptjc_shop_admin_view
+    urlpatterns = [
+        path("admin/ptjc-shop/", ptjc_shop_admin_view, name="ptjc_shop_admin"),
+        path("shop/", ptjc_shop_view, name="ptjc_shop"),
+    ] + urlpatterns
