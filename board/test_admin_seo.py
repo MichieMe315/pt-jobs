@@ -35,7 +35,7 @@ class AdminWorkspaceTests(TestCase):
             response=self.client.get(url);self.assertEqual(response.status_code,200)
             for value in ['Search','Marketing graphics','Date-based business report']:
                 self.assertContains(response,value)
-        self.assertContains(self.client.get('/admin/'),'All admin controls')
+        self.assertContains(self.client.get('/admin/'),'Recent Job Postings')
     def test_all_record_lists_and_csv_render(self):
         for kind in RECORDS:
             with self.subTest(kind=kind):
@@ -128,7 +128,8 @@ class AdminWorkspaceTests(TestCase):
         response=self.client.get('/admin/operations/duplicates/?kind=employer-name')
         self.assertEqual(response.context['page_obj'].paginator.count,1)
         self.assertEqual(list(Employer.objects.values_list('pk','is_approved','credits')),before)
-        self.assertContains(response,'Nothing here merges records')
+        self.assertNotContains(response,'Compare possible duplicates without changing accounts, jobs or payments.')
+        self.assertEqual(Employer.objects.count(),2)
     def test_domain_duplicates_exclude_personal_mail_providers(self):
         self.make_employer('Business B','two@northclinic.test')
         self.make_employer('Gmail A','a@gmail.com');self.make_employer('Gmail B','b@gmail.com')
@@ -173,16 +174,14 @@ class AdminWorkspaceTests(TestCase):
     def test_anonymous_and_nonstaff_cannot_open_workspace(self):
         self.client.logout();self.assertEqual(self.client.get('/admin/operations/').status_code,302)
         self.client.force_login(self.employer.user);self.assertEqual(self.client.get('/admin/operations/').status_code,302)
-    def test_duplicate_job_get_confirms_post_creates_one_draft_without_credit_use(self):
-        self.job.expiry_email_sent=True;self.job.save()
+    def test_duplicate_job_opens_unsaved_copy_without_credit_use(self):
         before=self.employer.credits
-        path=reverse('admin:board_job_duplicate',args=[self.job.pk])
-        self.assertContains(self.client.get(path),'Create draft copy');self.assertEqual(Job.objects.count(),1)
-        response=self.client.post(path);self.assertEqual(response.status_code,302)
-        duplicate=Job.objects.exclude(pk=self.job.pk).get()
-        self.assertFalse(duplicate.is_active);self.assertFalse(duplicate.expiry_email_sent)
+        response=self.client.get(reverse('admin:board_job_duplicate',args=[self.job.pk]),follow=True)
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(Job.objects.count(),1)
+        self.assertTrue(response.context['adminform'].form.initial['is_active'])
+        self.assertIsNone(response.context['adminform'].form.instance.pk)
         self.employer.refresh_from_db();self.assertEqual(self.employer.credits,before)
-        self.job.refresh_from_db();self.assertTrue(self.job.is_active)
     def test_view_only_staff_cannot_duplicate_job(self):
         self.staff_with('view_job')
         path=reverse('admin:board_job_duplicate',args=[self.job.pk])

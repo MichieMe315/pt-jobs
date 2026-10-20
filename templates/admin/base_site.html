@@ -1,45 +1,6 @@
-{% extends "admin/base.html" %}
-{% load i18n static %}
-
-{% block title %}
-  {% if subtitle %}{{ subtitle }} | {% endif %}
-  {{ title }} | {% trans 'PT Jobs Admin' %}
-{% endblock %}
-
-{% block extrastyle %}
-  {{ block.super }}
-  <link rel="stylesheet" href="{% static 'board/admin-workspace.css' %}">
-  <style>
-    /* Remove sticky modals/backdrops */
-    .modal-backdrop,
-    .offcanvas-backdrop {
-      display: none !important;
-      opacity: 0 !important;
-      pointer-events: none !important;
-    }
-    body.modal-open,
-    body.offcanvas-open {
-      overflow: auto !important;
-      padding-right: 0 !important;
-    }
-  </style>
-{% endblock %}
-
-{% block extrahead %}
-  {{ block.super }}
-  <script>
-    (function(){
-      function killAdminOverlays() {
-        try { document.body.classList.remove('modal-open','offcanvas-open'); } catch(e){}
-        try {
-          document.querySelectorAll('.modal-backdrop,.offcanvas-backdrop')
-            .forEach(el=>el.remove());
-        } catch(e){}
-      }
-      document.addEventListener('DOMContentLoaded', killAdminOverlays);
-      window.addEventListener('load', killAdminOverlays);
-    })();
-  </script>
-{% endblock %}
-
-{% block nav-global %}{{ block.super }}{% if user.is_staff %}<nav class="ops-admin-nav" aria-label="PT Jobs admin shortcuts" ><a href="{% url 'admin:operations' %}">Operations</a><a href="{% url 'admin:operations_search' %}">Search</a><a href="{% url 'admin:operations_duplicates' %}">Duplicate review</a><a href="{% url 'admin:index' %}#model-directory">All controls</a><a href="{% url 'admin:marketing_generator' %}">Marketing graphics</a><a href="{% url 'home' %}">View site</a></nav>{% endif %}{% endblock %}
+{% extends "admin/base.html" %}{% load i18n static admin_workspace %}
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | PT Jobs Administration{% endblock %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'board/admin-workspace.css' %}"><link rel="stylesheet" href="{% static 'board/admin-shell.css' %}">{% endblock %}
+{% block branding %}<a class="pt-top-brand" href="{% url 'admin:index' %}">Physiotherapy Jobs Canada <span>Administration</span></a>{% endblock %}
+{% block nav-sidebar %}{% if user.is_active and user.is_staff %}{% workspace_navigation %}{% endif %}{% endblock %}
+{% block nav-global %}{% endblock %}

@@ -1,0 +1,7 @@
+<aside class="pt-sidebar" aria-label="Administration navigation">
+<a class="pt-brand" href="{% url 'admin:index' %}"><span class="pt-brand-badge">PT</span><span>Physiotherapy Jobs<small>Canada · Administration</small></span></a>
+<details class="pt-sidebar-menu" open><summary>Navigation</summary><nav>
+<a class="pt-overview{% if request.path == '/admin/' %} current{% endif %}" href="{% url 'admin:index' %}">Overview</a>
+{% for group in workspace_groups %}<section><h2>{{ group.title }}</h2>{% for item in group.items %}<a {% if item.active %}class="current" aria-current="page"{% endif %} href="{{ item.url }}">{{ item.label }}</a>{% endfor %}</section>{% endfor %}
+<section><h2>Operations</h2><a href="{% url 'admin:operations' %}">Search, filters &amp; exports</a><a href="{% url 'admin_dashboard' %}">Date-based business report</a><a href="{% url 'admin:marketing_generator' %}">Marketing graphics</a></section>
+</nav></details><div class="pt-sidebar-footer"><a href="{% url 'home' %}" target="_blank" rel="noopener">View website ↗</a></div></aside>

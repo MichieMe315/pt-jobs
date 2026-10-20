@@ -145,25 +145,18 @@ def _send_jobseeker_approved_email(js: JobSeeker) -> bool:
     return True
 
 
-def _set_duplicate_expiry(job: Job, today):
-    """
-    Duplicate job should have expiry recalculated safely.
-    Uses SiteSettings.posting_duration_days if available.
-    """
-    duration_days = None
-    ss = SiteSettings.objects.first()
-    if ss and getattr(ss, "posting_duration_days", None):
-        try:
-            duration_days = int(ss.posting_duration_days)
-        except Exception:
-            duration_days = None
+def _posting_duration_days(job=None):
+    if job and job.posting_date and job.expiry_date:
+        days = (job.expiry_date - job.posting_date).days
+        if days > 0:
+            return days
+    settings = SiteSettings.objects.first()
+    days = getattr(settings, 'posting_duration_days', 30) if settings else 30
+    return int(days) if days and int(days) > 0 else 30
 
-    if _model_has_field(Job, "expiry_date"):
-        if duration_days:
-            job.expiry_date = today + timedelta(days=duration_days)
-        else:
-            if getattr(job, "expiry_date", None) and job.expiry_date < today:
-                job.expiry_date = today
+
+def _set_duplicate_expiry(job, today, duration_days=None):
+    job.expiry_date = today + timedelta(days=duration_days or _posting_duration_days())
 
 
 # ---------------------------
@@ -472,23 +465,10 @@ class JobSeekerAdmin(RecordSearchMixin, admin.ModelAdmin):
 def duplicate_selected_jobs(modeladmin, request, queryset):
     if not (modeladmin.has_add_permission(request) and modeladmin.has_change_permission(request)):
         raise PermissionDenied
-    today = timezone.localdate()
-    count = 0
-
-    for job in queryset:
-        job.pk = None
-        job.posting_date = today
-        job.is_active = False  # duplicate starts as draft/inactive
-        job.expiry_email_sent = False
-
-        if hasattr(job, "views_count"):
-            job.views_count = 0
-
-        _set_duplicate_expiry(job, today)
-        job.save()
-        count += 1
-
-    modeladmin.message_user(request, f"Duplicated {count} job(s).", level=messages.SUCCESS)
+    if queryset.count() != 1:
+        modeladmin.message_user(request, 'Select one job to open an editable copy.', level=messages.WARNING)
+        return
+    return redirect('admin:board_job_duplicate', queryset.first().pk)
 
 
 duplicate_selected_jobs.short_description = "Duplicate selected jobs"
@@ -515,6 +495,53 @@ class JobAdmin(RecordSearchMixin, admin.ModelAdmin):
     search_fields = ("title", "employer__company_name", "employer__name", "employer__email", "location")
     list_filter = ("is_active", "job_type", "compensation_type", "source")
     ordering = ("-posting_date", "-id")
+
+    def _duplicate_source(self, request):
+        source_id = request.GET.get('duplicate_from')
+        if not source_id:
+            return None
+        try:
+            source_id = int(source_id)
+        except (TypeError, ValueError):
+            from django.http import Http404
+            raise Http404('Unknown source job')
+        source = get_object_or_404(self.get_queryset(request), pk=source_id)
+        if not (self.has_add_permission(request) and self.has_change_permission(request, source)):
+            raise PermissionDenied
+        return source
+
+    def get_changeform_initial_data(self, request):
+        initial = super().get_changeform_initial_data(request)
+        initial.pop('duplicate_from', None)
+        today = timezone.localdate()
+        source = self._duplicate_source(request)
+        if source:
+            from django.forms.models import model_to_dict
+            initial = model_to_dict(source, exclude=['id', 'created_at', 'updated_at'])
+            initial.update(posting_date=today, expiry_date=today + timedelta(days=_posting_duration_days(source)), is_active=True, views_count=0, expiry_email_sent=False)
+        else:
+            initial.setdefault('posting_date', today)
+            initial.setdefault('expiry_date', today + timedelta(days=_posting_duration_days()))
+        return initial
+
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        context = dict(extra_context or {})
+        obj = self.get_object(request, object_id) if object_id else None
+        source = self._duplicate_source(request) if not object_id else None
+        context['admin_posting_duration'] = _posting_duration_days(source or obj)
+        context['can_duplicate_job'] = bool(obj and self.has_add_permission(request) and self.has_change_permission(request, obj))
+        if source:
+            context['title'] = 'New copy of ' + source.title
+        return super().changeform_view(request, object_id, form_url, context)
+
+    def save_model(self, request, obj, form, change):
+        source = self._duplicate_source(request) if not change else None
+        if source:
+            # Keep legacy application/feature fields hidden by the existing form.
+            for name in self.get_exclude(request, obj=None) or ():
+                if _model_has_field(Job, name):
+                    setattr(obj, name, getattr(source, name))
+        super().save_model(request, obj, form, change)
 
     def employer_link(self, obj):
         if not getattr(obj, "employer_id", None):
@@ -558,24 +585,7 @@ class JobAdmin(RecordSearchMixin, admin.ModelAdmin):
         original = get_object_or_404(self.get_queryset(request), pk=object_id)
         if not (self.has_add_permission(request) and self.has_change_permission(request, original)):
             raise PermissionDenied
-        if request.method == 'GET':
-            return TemplateResponse(request, 'admin/operations/confirm_duplicate_job.html', {
-                **self.admin_site.each_context(request), 'title': 'Duplicate job as a draft',
-                'original': original, 'opts': self.model._meta,
-            })
-        if request.method != 'POST':
-            from django.http import HttpResponseNotAllowed
-            return HttpResponseNotAllowed(['GET', 'POST'])
-        original.pk = None
-        original.posting_date = timezone.localdate()
-        original.is_active = False
-        original.views_count = 0
-        original.expiry_email_sent = False
-        _set_duplicate_expiry(original, original.posting_date)
-        original.save()
-        self.log_addition(request, original, 'Duplicated as an unpublished draft')
-        self.message_user(request, 'Job duplicated (new draft created).', level=messages.SUCCESS)
-        return redirect('admin:board_job_change', original.pk)
+        return redirect(reverse('admin:board_job_add') + '?' + urlencode({'duplicate_from': original.pk}))
 
 
 # ---------------------------

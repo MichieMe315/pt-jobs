@@ -1,5 +1,5 @@
 {% extends 'admin/base_site.html' %}{% load static %}
-{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'board/admin-workspace.css' %}">{% endblock %}
+
 {% block content %}<div class="ops-shell">
 <header class="ops-hero"><div><div class="ops-kicker">Physiotherapy Jobs Canada / Operations</div><h1>{{ title }}</h1><p>{% block intro %}Find the record. Review the details. Use the existing controls to make changes.{% endblock %}</p></div><a class="ops-button" href="{% url 'admin:index' %}#model-directory">All admin controls</a></header>
 <nav class="ops-nav" aria-label="Operations navigation"><a href="{% url 'admin:operations' %}">Overview</a><a href="{% url 'admin:operations_search' %}">Search all records</a>{% if perms.board.view_employer or perms.board.change_employer or perms.board.view_jobseeker or perms.board.change_jobseeker or perms.board.view_invoice or perms.board.change_invoice or perms.board.view_job or perms.board.change_job %}<a href="{% url 'admin:operations_duplicates' %}">Duplicate review</a>{% endif %}{% for item in ops_nav %}<a {% if item.key == kind %}class="current" aria-current="page"{% endif %} href="{{ item.url }}">{{ item.label }}</a>{% endfor %}</nav>
