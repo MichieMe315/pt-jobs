@@ -214,12 +214,30 @@ def send_templated_email(key: str, to_emails: list[str], context: dict) -> bool:
 
     try:
         from django.core.mail import EmailMultiAlternatives
-        msg = EmailMultiAlternatives(subject, "", _default_from_email(), to_emails)
-        msg.attach_alternative(html_body, "text/html")
+        from .notification_mail import email_frame
+        from django.utils.html import escape, strip_tags
+        review_url = context.get('review_url')
+        if review_url:
+            html_body += f'<p><a href="{escape(review_url)}" style="display:inline-block;background:#b72d38;color:#fff;padding:12px 18px;text-decoration:none">Review in admin</a></p>'
+        text_body = strip_tags(html_body)
+        subject = ' '.join(subject.splitlines())
+        if not subject.startswith('[PTJC]'):
+            subject = '[PTJC] ' + subject
+        msg = EmailMultiAlternatives(subject, text_body, _default_from_email(), to_emails)
+        if key.startswith('admin_') and context.get('email'):
+            from django.core.validators import validate_email
+            from django.core.exceptions import ValidationError
+            try:
+                validate_email(context['email'])
+                msg.reply_to = [context['email']]
+            except ValidationError:
+                pass
+        msg.attach_alternative(email_frame(subject, html_body), "text/html")
         msg.send(fail_silently=False)
         return True
     except Exception:
         return False
+
 
 
 # ============================================================
@@ -427,27 +445,39 @@ def contact(request):
             "form_message": message,
         })
 
-        if name and email and message:
+        from django.core.validators import validate_email
+        from django.core.exceptions import ValidationError
+        try:
+            validate_email(email)
+            email_valid = not any(c in email for c in '\r\n')
+        except ValidationError:
+            email_valid = False
+        if name and email and message and email_valid and len(name) <= 150 and len(message) <= 12000 and not any(c in name for c in '\r\n'):
             try:
                 ss = _sitesettings()
                 to_email = getattr(ss, "contact_email", None) or settings.DEFAULT_FROM_EMAIL
 
-                send_mail(
-                    subject=f"Contact Form: {name}",
-                    message=f"From: {name} <{email}>\n\n{message}",
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[to_email],
-                    fail_silently=False,
+                from django.core.mail import EmailMultiAlternatives
+                from django.utils.html import escape
+                from .notification_mail import email_frame
+                text = f"Contact message from {name} <{email}>\n\n{message}\n\nReply to this email to answer {name}."
+                mail = EmailMultiAlternatives(
+                    subject=f"[PTJC] Contact: {name}", body=text,
+                    from_email=settings.DEFAULT_FROM_EMAIL, to=[to_email], reply_to=[email],
                 )
+                mail.attach_alternative(email_frame('Contact message',
+                    f'<p><strong>{escape(name)}</strong><br>{escape(email)}</p><div style="white-space:pre-wrap">{escape(message)}</div><p>Reply to this email to answer the sender.</p>'), 'text/html')
+                mail.send(fail_silently=False)
 
                 context["submitted"] = True
 
             except Exception:
                 context["error"] = "There was an error sending your message."
         else:
-            context["error"] = "All fields are required."
+            context["error"] = "Enter your name, a valid email address and a message (maximum 12,000 characters)."
 
     return render(request, "board/contact.html", context)
+
 
 
 def terms(request: HttpRequest) -> HttpResponse:
@@ -563,7 +593,8 @@ def employer_signup(request: HttpRequest) -> HttpResponse:
 
         # Admin notification + optional welcome (admin-controlled templates)
         admin_emails = _admin_emails()
-        send_templated_email("admin_new_employer", admin_emails, {"email": user.email})
+        send_templated_email("admin_new_employer", admin_emails, {"email": user.email,
+            "review_url": request.build_absolute_uri(reverse('admin:board_employer_change', args=[user.employer.pk]))})
         send_templated_email(
             "employer_welcome",
             [user.email],
@@ -577,6 +608,7 @@ def employer_signup(request: HttpRequest) -> HttpResponse:
         return redirect("login")
 
     return render(request, "board/employer_signup.html", {"sitesettings": ss, "form": form})
+
 
 
 def employer_list(request: HttpRequest) -> HttpResponse:
@@ -625,7 +657,8 @@ def jobseeker_signup(request: HttpRequest) -> HttpResponse:
             return render(request, "board/jobseeker_signup.html", {"sitesettings": ss, "form": form})
 
         admin_emails = _admin_emails()
-        send_templated_email("admin_new_jobseeker", admin_emails, {"email": user.email})
+        send_templated_email("admin_new_jobseeker", admin_emails, {"email": user.email,
+            "review_url": request.build_absolute_uri(reverse('admin:board_jobseeker_change', args=[user.jobseeker.pk]))})
         send_templated_email(
             "jobseeker_welcome",
             [user.email],
@@ -636,6 +669,7 @@ def jobseeker_signup(request: HttpRequest) -> HttpResponse:
         return redirect("login")
 
     return render(request, "board/jobseeker_signup.html", {"sitesettings": ss, "form": form})
+
 
 
 # ============================================================
@@ -1516,7 +1550,8 @@ def employer_profile_edit(request: HttpRequest) -> HttpResponse:
         updated.save()
 
         # Admin notification (admin-controlled)
-        send_templated_email("admin_new_employer", _admin_emails(), {"email": updated.email})
+        from .notification_mail import profile_review_email
+        profile_review_email(request, updated, _admin_emails())
 
         # Contract: login blocked until re-approved -> force logout
         logout(request)
@@ -1528,6 +1563,7 @@ def employer_profile_edit(request: HttpRequest) -> HttpResponse:
         "board/employer_profile_edit.html",
         {"sitesettings": ss, "form": form, "employer": employer},
     )
+
 
 
 @login_required

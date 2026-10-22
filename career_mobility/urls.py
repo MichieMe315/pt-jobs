@@ -1,9 +1,12 @@
+from .usage import record_usage
 from django.urls import path
 from django.views.generic import RedirectView
 from . import views
 from .relocation_pdf import relocation_comparison_pdf
 from .salary_save import save_salary_comparison, load_salary_comparison
 urlpatterns=[
+ path('salary-vs-split/usage/',record_usage,name='mobility_salary_usage'),
+
  path("salary-comparison/report.pdf",views.salary_comparison_pdf,name="mobility_salary_comparison_pdf"),
  path("",views.home,name="mobility_home"),
  path("shop/",views.shop,name="mobility_shop"),

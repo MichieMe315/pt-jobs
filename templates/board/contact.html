@@ -30,7 +30,7 @@
 
     <div class="mb-3">
       <label for="id_name" class="form-label">Name</label>
-      <input type="text" name="name" id="id_name" class="form-control" required
+      <input type="text" name="name" id="id_name" class="form-control" maxlength="150" required
              value="{{ form_name|default:'' }}">
     </div>
 
@@ -42,7 +42,7 @@
 
     <div class="mb-3">
       <label for="id_message" class="form-label">Message</label>
-      <textarea name="message" id="id_message" rows="5" class="form-control" required>{{ form_message|default:'' }}</textarea>
+      <textarea name="message" id="id_message" rows="7" class="form-control" maxlength="12000" required>{{ form_message|default:'' }}</textarea>
     </div>
 
     <button type="submit" class="btn btn-primary">Send message</button>

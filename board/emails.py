@@ -43,6 +43,10 @@ def send_templated_email(
 
     msg = EmailMultiAlternatives(subject=subject, body=text_body or "", from_email=from_email, to=to_list)
     if html_body:
-        msg.attach_alternative(html_body, "text/html")
+        from .notification_mail import email_frame
+        from django.utils.html import strip_tags
+        if not text_body:
+            msg.body = strip_tags(html_body)
+        msg.attach_alternative(email_frame(subject, html_body), "text/html")
     msg.send(fail_silently=False)
     return True

@@ -47,7 +47,7 @@
   <details><summary>Does this include income tax, CPP, benefits or vacation?</summary><p>No. This is a pre-tax comparison. Contractor earnings do not automatically include employee benefits or paid leave, and tax treatment depends on your circumstances. Use the results to ask better questions—not as a take-home-pay estimate.</p></details>
   <details><summary>How do I save or download my comparison?</summary><p>Save your comparison to revisit it later. Sign in or create a job seeker account; new accounts require administrator approval.</p></details>
 </section>
-{% csrf_token %}<script>window.ptSalaryLoadPrefix="{% url 'mobility_salary_comparison' %}saved/";window.ptSalarySaveUrl="{% url 'mobility_salary_save' %}";window.ptSalaryPdfUrl="{% url 'mobility_salary_comparison_pdf' %}";</script><script src="{% static 'career_mobility/salary-comparison.js' %}" defer></script>
+{% csrf_token %}<script>window.ptSalaryUsageUrl="{% url 'mobility_salary_usage' %}";window.ptSalaryLoadPrefix="{% url 'mobility_salary_comparison' %}saved/";window.ptSalarySaveUrl="{% url 'mobility_salary_save' %}";window.ptSalaryPdfUrl="{% url 'mobility_salary_comparison_pdf' %}";</script><script src="{% static 'career_mobility/salary-comparison.js' %}" defer></script>
 </main>
 </div>
 {% endblock %}

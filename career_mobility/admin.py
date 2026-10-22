@@ -162,3 +162,53 @@ if not settings.CAREER_TOOLS_PREVIEW:
     for model in tuple(admin.site._registry):
         if model._meta.app_label == 'career_mobility' and model is not SavedCareerPlan:
             admin.site.unregister(model)
+
+
+from .models import CalculatorUsageEvent
+
+@admin.register(CalculatorUsageEvent)
+class CalculatorUsageAdmin(admin.ModelAdmin):
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def changelist_view(self, request, extra_context=None):
+        from datetime import timedelta
+        from django.core.exceptions import PermissionDenied
+        from django.db.models import Count, Q
+        from django.db.models.functions import TruncDate
+        from django.template.response import TemplateResponse
+        from django.utils import timezone
+        if not self.has_view_permission(request):
+            raise PermissionDenied
+        try:
+            days = int(request.GET.get('days', '30'))
+        except (TypeError, ValueError):
+            days = 30
+        if days not in (1, 7, 30):
+            days = 30
+        today = timezone.localdate()
+        start = today - timedelta(days=days-1)
+        qs = CalculatorUsageEvent.objects.filter(created_at__date__gte=start, created_at__date__lte=today)
+        names = CalculatorUsageEvent.EVENTS
+        counts = {name: Count('pk', filter=Q(event=name)) for name, label in names}
+        totals = qs.aggregate(**counts, sessions=Count('session_hash', distinct=True))
+        by_day = {row['day']: row for row in qs.annotate(day=TruncDate('created_at')).values('day').annotate(**counts, sessions=Count('session_hash', distinct=True))}
+        rows = []
+        for offset in range(days):
+            day = today - timedelta(days=offset)
+            values = by_day.get(day, {})
+            rows.append({'day': day, 'values': [values.get(name, 0) for name, label in names], 'sessions': values.get('sessions', 0)})
+        first = CalculatorUsageEvent.objects.order_by('created_at').values_list('created_at', flat=True).first()
+        context = {**self.admin_site.each_context(request), 'title': 'Calculator usage',
+            'opts': self.model._meta, 'days': days, 'start': start, 'today': today,
+            'cards': [{'label': label, 'value': totals[name]} for name, label in names],
+            'sessions': totals['sessions'], 'rows': rows, 'first_event': first,
+            'countries': qs.values('country').annotate(sessions=Count('session_hash', distinct=True), events=Count('pk')).order_by('-sessions'),
+        }
+        return TemplateResponse(request, 'admin/career_mobility/calculator_usage.html', context)

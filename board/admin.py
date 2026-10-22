@@ -63,7 +63,12 @@ def _site_login_url() -> str:
 
 def _send_approval_email(to_email: str, subject: str, body: str) -> None:
     # Keep admin stable even if email sending fails
-    send_mail(subject, body, _default_from_email(), [to_email], fail_silently=True)
+    from django.core.mail import EmailMultiAlternatives
+    from django.utils.html import strip_tags
+    from .notification_mail import email_frame
+    msg = EmailMultiAlternatives(subject, strip_tags(body), _default_from_email(), [to_email])
+    msg.attach_alternative(email_frame(subject, body), 'text/html')
+    msg.send(fail_silently=True)
 
 
 def _render_email_template(key: str, context: dict) -> tuple[str, str] | None:
@@ -243,6 +248,41 @@ approve_selected_jobseekers.short_description = "Approve selected job seekers (a
 
 
 
+class ProfileApprovalMixin:
+    change_form_template='admin/board/account_change_form.html'
+    def get_urls(self):
+        from django.urls import path
+        return [path('<path:object_id>/approve-profile/',self.admin_site.admin_view(self.approve_profile),name=self.opts.app_label+'_'+self.opts.model_name+'_approve_profile')]+super().get_urls()
+    def approve_profile(self,request,object_id):
+        from django.core.exceptions import PermissionDenied
+        from django.http import HttpResponseNotAllowed,Http404,HttpResponseRedirect
+        from django.db import transaction
+        if request.method!='POST':return HttpResponseNotAllowed(['POST'])
+        obj=self.get_object(request,object_id)
+        if obj is None:raise Http404
+        if not self.has_change_permission(request,obj):raise PermissionDenied
+        with transaction.atomic():
+            obj=self.model.objects.select_for_update().get(pk=obj.pk)
+            if not obj.is_approved:
+                obj.is_approved=True;obj.login_active=True;obj.approved_at=timezone.now()
+                obj.save(update_fields=['is_approved','login_active','approved_at'])
+                sender=_send_employer_approved_email if self.model is Employer else _send_jobseeker_approved_email
+                transaction.on_commit(lambda:sender(obj))
+                self.log_change(request,obj,'Approved profile')
+        self.message_user(request,'Profile approved.',level=messages.SUCCESS)
+        return HttpResponseRedirect(reverse('admin:'+self.opts.app_label+'_'+self.opts.model_name+'_change',args=[obj.pk]))
+    def changeform_view(self,request,object_id=None,form_url='',extra_context=None):
+        extra_context=dict(extra_context or {})
+        obj=self.get_object(request,object_id) if object_id else None
+        if obj and self.has_change_permission(request,obj):
+            extra_context['profile_approve_url']=reverse('admin:'+self.opts.app_label+'_'+self.opts.model_name+'_approve_profile',args=[obj.pk])
+            extra_context['profile_needs_approval']=not obj.is_approved
+        return super().changeform_view(request,object_id,form_url,extra_context)
+    def save_form(self,request,form,change):
+        obj=super().save_form(request,form,change)
+        if '_saveapprove' in request.POST:obj.is_approved=True
+        return obj
+
 class RecordSearchMixin:
     """Extend normal admin search with exact numeric record IDs."""
     list_per_page = 50
@@ -262,7 +302,7 @@ class RecordSearchMixin:
 
 
 @admin.register(Employer)
-class EmployerAdmin(RecordSearchMixin, admin.ModelAdmin):
+class EmployerAdmin(ProfileApprovalMixin, RecordSearchMixin, admin.ModelAdmin):
     list_select_related = ('user',)
     date_hierarchy = "created_at"
 
@@ -392,7 +432,7 @@ class EmployerAdmin(RecordSearchMixin, admin.ModelAdmin):
 
 
 @admin.register(JobSeeker)
-class JobSeekerAdmin(RecordSearchMixin, admin.ModelAdmin):
+class JobSeekerAdmin(ProfileApprovalMixin, RecordSearchMixin, admin.ModelAdmin):
     readonly_fields = ("review_possible_duplicates",)
 
     list_select_related = ('user',)

@@ -1,3 +1,4 @@
+from career_mobility.usage import usage_report
 from django.contrib import admin
 from django.urls import include, path
 from django.conf import settings
@@ -14,6 +15,8 @@ sitemaps = {
 }
 
 urlpatterns = [
+    path('admin/calculator-usage/',admin.site.admin_view(usage_report),name='calculator_usage_report'),
+
     path("admin/dashboard/", admin_dashboard, name="admin_dashboard"),
     path("admin/", admin.site.urls),
 

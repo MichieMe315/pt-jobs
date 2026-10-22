@@ -1,3 +1,4 @@
+from .usage import record_usage
 """First public release: calculator, private salary records and resource index only."""
 from django.urls import path
 from django.views.generic import RedirectView
@@ -5,6 +6,8 @@ from . import views
 from .salary_save import save_salary_comparison, load_salary_comparison
 
 urlpatterns = [
+ path('salary-vs-split/usage/',record_usage,name='mobility_salary_usage'),
+
     path('', views.home, name='mobility_home'),
     path('salary-vs-split/', views.salary_comparison, name='mobility_salary_comparison'),
     path('salary-comparison/', RedirectView.as_view(pattern_name='mobility_salary_comparison', permanent=True)),

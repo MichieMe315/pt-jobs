@@ -172,3 +172,25 @@ class SalaryBenchmark(models.Model):
     is_published = models.BooleanField(default=False)
     def __str__(self):
         return self.region
+
+
+class CalculatorUsageEvent(models.Model):
+    """Anonymous calculator activity only; never store inputs, IPs or user IDs."""
+    EVENTS = [
+        ('salary_calculator_view', 'Views'),
+        ('salary_calculator_start', 'Starts'),
+        ('salary_comparison_complete', 'Completed comparisons'),
+        ('salary_pdf_download', 'PDF downloads'),
+        ('salary_comparison_saved', 'Saved comparisons'),
+    ]
+    country = models.CharField(max_length=100, blank=True, editable=False)
+    event_id = models.UUIDField(unique=True, editable=False)
+    page_id = models.UUIDField(editable=False)
+    session_hash = models.CharField(max_length=64, editable=False)
+    event = models.CharField(max_length=32, choices=EVENTS, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        verbose_name = 'calculator usage event'
+        verbose_name_plural = 'Calculator usage'
+        ordering = ['-created_at']

@@ -20,6 +20,35 @@
     set('contractor-cash',contractor===null?'Add contractor details':money(contractor));
     set('salary-chart-note',employee!==null&&contractor!==null?'Both offers entered. Chart updates automatically.':(employee!==null||contractor!==null?'One offer entered. Add the other to compare.':'Enter either offer to start the chart. It updates as you type.'));
   };
+  // Event names only: never send entered pay, expenses, saved IDs or account data.
+  const tracked = new Set();
+  const usageTracked = new Set();
+  const uuid = () => window.crypto?.randomUUID?.();
+  const pageId = uuid();
+  let usageQueue = Promise.resolve();
+  const recordUsage = (name, once) => {
+    if (!pageId || !window.ptSalaryUsageUrl || navigator.doNotTrack === '1' || navigator.globalPrivacyControl) return;
+    if (once && usageTracked.has(name)) return;
+    const eventId = uuid();
+    if (!eventId) return;
+    if (once) usageTracked.add(name);
+    // Serialize requests so the first response establishes the anonymous cookie.
+    usageQueue = usageQueue.catch(() => {}).then(() => fetch(window.ptSalaryUsageUrl, {
+      method:'POST', credentials:'same-origin', keepalive:true,
+      headers:{'Content-Type':'application/json', 'X-CSRFToken':document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''},
+      body:JSON.stringify({event:name, page_id:pageId, event_id:eventId})
+    })).catch(() => {});
+  };
+  const track = (name, once=false) => {
+    recordUsage(name, once);
+    if (once && tracked.has(name)) return;
+    if (typeof window.gtag !== 'function') return;
+    try {
+      window.gtag('event', name, {tool_name:'salary_vs_split'});
+      if (once) tracked.add(name);
+    } catch (_) { /* Analytics must never interrupt the calculator. */ }
+  };
+  track('salary_calculator_view', true);
   let last=null;
   function render() {
     const annual=$('employee-type').value==='annual';
@@ -64,8 +93,13 @@
     last.contractor_after_expenses=contractorNet;
     last.annual_difference_after_expenses=netDifference;
   }
-  fields.forEach(id=>$(id)?.addEventListener('input',render));
-  $('employee-type').addEventListener('change',render);
+  const onEdit = () => {
+    track('salary_calculator_start', true);
+    render();
+    if (last) track('salary_comparison_complete', true);
+  };
+  fields.forEach(id=>$(id)?.addEventListener('input',onEdit));
+  $('employee-type').addEventListener('change',onEdit);
   $('salary-clear').addEventListener('click',()=>{
     fields.forEach(id=>{$(id).value='';});
     set('save-status','');
@@ -82,6 +116,7 @@
       if(!response.ok)throw new Error('PDF could not be generated');
       const blob=await response.blob(),url=URL.createObjectURL(blob),link=document.createElement('a');
       link.href=url;link.download='ptjc-salary-vs-split.pdf';document.body.append(link);link.click();link.remove();
+      track('salary_pdf_download');
       setTimeout(()=>URL.revokeObjectURL(url),30000);
     }catch(err){set('input-hint','PDF unavailable. Please try again.');$('input-hint').hidden=false;}
     finally{button.disabled=false;button.textContent=label;}
@@ -96,6 +131,7 @@
       const contentType=response.headers.get('content-type')||'';
       const result=contentType.includes('application/json')?await response.json():{};
       if(!response.ok||!result.saved)throw new Error(result.error||`Unable to save (${response.status})`);
+      track('salary_comparison_saved');
       status.textContent='Saved to your job seeker dashboard. ';
       if(result.url){const a=document.createElement('a');a.href=result.url;a.textContent='Open job seeker dashboard';status.append(a);}
     }catch(err){status.textContent=err.message||'Unable to save. Please try again.';}
