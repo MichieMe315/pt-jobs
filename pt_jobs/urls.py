@@ -6,6 +6,7 @@ from django.conf.urls.static import static
 from django.contrib.sitemaps.views import sitemap
 from django.views.generic import TemplateView
 from board.views import admin_dashboard
+from board.posting_monitor import paid_postings
 from board.sitemaps import JobSitemap, ProvinceSitemap, StaticViewSitemap
 
 sitemaps = {
@@ -15,6 +16,7 @@ sitemaps = {
 }
 
 urlpatterns = [
+    path('admin/paid-postings/',paid_postings,name='paid_postings_report'),
     path('admin/calculator-usage/',admin.site.admin_view(usage_report),name='calculator_usage_report'),
 
     path("admin/dashboard/", admin_dashboard, name="admin_dashboard"),

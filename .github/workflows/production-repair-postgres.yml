@@ -1,7 +1,9 @@
 name: Repair database check
 on:
   push:
-    branches: [production-repairs-20261019]
+    branches: [production-repairs-20261019, "hotfix/paid-posting-*"]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read

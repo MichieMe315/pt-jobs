@@ -30,13 +30,20 @@ def notify_order(employer, package, invoice):
     # Notification failures must not turn a committed payment into a retry/500.
     from .views import send_templated_email, _admin_emails
     try:
-        send_templated_email('admin_new_order', _admin_emails(), {
-            'package_name': package.name, 'employer_email': employer.email, 'invoice_id': invoice.pk,
-        })
         email = (employer.email or employer.user.email or '').strip()
-        send_templated_email('order_confirmation', [email] if email else [], {
-            'email': email, 'package_name': package.name,
-        })
+        from django.conf import settings
+        from django.urls import reverse
+        from .models import JobPublicationRequest
+        intent=JobPublicationRequest.objects.filter(invoice=invoice).select_related('job').first()
+        base=getattr(settings,'SITE_URL','https://physiotherapyjobscanada.ca').rstrip('/')
+        if intent:
+            next_step=intent.last_error or 'Your posting credit is ready. Your job has not been published by this payment. Review your saved job and click Publish.'
+            next_url=base+reverse('job_edit',args=[intent.job_id])
+        else:
+            next_step='Your posting credit is ready. Create a job or review a saved job to publish it.'
+            next_url=base+reverse('employer_dashboard')
+        send_templated_email('admin_new_order',_admin_emails(),{'package_name':package.name,'employer_email':employer.email,'invoice_id':invoice.pk,'next_step':next_step,'next_step_url':base+reverse('paid_postings_report')})
+        send_templated_email('order_confirmation',[email] if email else [],{'email':email,'package_name':package.name,'next_step':next_step,'next_step_url':next_url})
     except Exception:
         logger.exception('Order notification failed for invoice %s', invoice.pk)
 
@@ -103,10 +110,13 @@ def fulfill_checkout(session, *, session_id=None, expected_employer_id=None):
         employer=employer, amount=amount, currency='CAD', processor='stripe', status='paid',
         processor_reference=reference, discount_code=(metadata.get('discount_code') or '')[:40],
     )
-    PurchasedPackage.objects.create(
+    purchase = PurchasedPackage.objects.create(
         employer=employer, package=package, credits_granted=credits, credits_remaining=credits,
         duration_days=duration, expires_at=timezone.now() + timedelta(days=expiry_days), source='stripe',
     )
     _sync_employer_credits(employer)
+    if metadata.get('publication_request_id'):
+        from .publication import mark_paid_request
+        mark_paid_request(metadata['publication_request_id'],employer.pk,purchase,invoice)
     transaction.on_commit(lambda: notify_order(employer, package, invoice))
     return invoice, package, True

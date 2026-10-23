@@ -219,6 +219,10 @@ def send_templated_email(key: str, to_emails: list[str], context: dict) -> bool:
         review_url = context.get('review_url')
         if review_url:
             html_body += f'<p><a href="{escape(review_url)}" style="display:inline-block;background:#b72d38;color:#fff;padding:12px 18px;text-decoration:none">Review in admin</a></p>'
+        if context.get('next_step'):
+            html_body += '<hr><p>'+str(escape(context['next_step']))+'</p>'
+            if context.get('next_step_url'):
+                html_body += '<p><a href="'+str(escape(context['next_step_url']))+'">Continue on PTJC</a></p>'
         text_body = strip_tags(html_body)
         subject = ' '.join(subject.splitlines())
         if not subject.startswith('[PTJC]'):
@@ -785,6 +789,9 @@ def job_create(request: HttpRequest) -> HttpResponse:
     max_expiry = _max_expiry_date(posting_date)
 
     active_package = _available_packages_qs(employer).order_by("expires_at", "id").first()
+    if active_package:
+        from .publication import duration_for
+        max_expiry=posting_date+timedelta(days=duration_for(active_package)-1)
     form = JobForm(request.POST or None, max_expiry_date=max_expiry)
 
     if request.method == "POST" and form.is_valid():
@@ -796,8 +803,11 @@ def job_create(request: HttpRequest) -> HttpResponse:
         # HARD expiry clamp server-side
         job.expiry_date = _clamp_expiry(posting_date, getattr(job, "expiry_date", None))
 
-        action = (request.POST.get("action") or "publish").strip().lower()
-        publish = action != "draft"
+        action = (request.POST.get("action") or "").strip().lower()
+        if action not in ('publish','draft'):
+            messages.error(request,'Choose Publish or Save Draft.')
+            return redirect(request.path)
+        publish = action == "publish"
         job.is_active = bool(publish)
 
         if publish:
@@ -806,6 +816,8 @@ def job_create(request: HttpRequest) -> HttpResponse:
                 job.is_active = False
                 job.save()
                 request.session["pending_create_job_id"] = job.id
+                from .publication import request_publication
+                request_publication(job,reuse=True)
                 messages.error(
                     request,
                     "No credits available. Your job was saved as a draft. Purchase credits to publish.",
@@ -813,31 +825,16 @@ def job_create(request: HttpRequest) -> HttpResponse:
                 return redirect("package_list")
 
         job.save()
+        from .publication import finish_direct,cancel_requests
+        if publish:finish_direct(job,active_package)
+        else:cancel_requests(job)
         _sync_employer_credits(employer)
 
         if publish:
-            request.session.pop("pending_create_job_id", None)
-            # Employer confirmation
-            send_templated_email(
-                "job_posting_confirmation",
-                [(employer.email or "").strip()],
-                {
-                    "job_title": job.title,
-                    "email": employer.email,
-                    "dashboard_url": request.build_absolute_uri(reverse("employer_dashboard")),
-                },
-            )
-
-            # Admin notification
-            send_templated_email(
-                "admin_job_posted",
-                _admin_emails(),
-                {
-                    "job_title": job.title,
-                    "employer_email": employer.email,
-                    "job_id": job.id,
-                },
-            )
+            from .publication import notify_publication
+            transaction.on_commit(lambda pk=job.pk:notify_publication(pk))
+            for key in ('pending_create_job_id','pending_publish_job_id','pending_duplicate_job_id'):
+                if request.session.get(key)==job.pk:request.session.pop(key,None)
 
         messages.success(request, "Job created.")
         return redirect("employer_dashboard")
@@ -870,11 +867,15 @@ def job_edit(request: HttpRequest, job_id: int) -> HttpResponse:
 
     was_inactive = not job.is_active
     existing_posting_date = job.posting_date or timezone.localdate()
+    existing_expiry_date = job.expiry_date
     form_posting_date = timezone.localdate() if was_inactive else existing_posting_date
     max_expiry = _max_expiry_date(form_posting_date)
+    if not was_inactive and existing_expiry_date:max_expiry=existing_expiry_date
 
     active_package = _available_packages_qs(employer).order_by("expires_at", "id").first()
-    form = JobForm(request.POST or None, instance=job, max_expiry_date=max_expiry)
+    from .publication import duration_for
+    if active_package:max_expiry=timezone.localdate()+timedelta(days=duration_for(active_package)-1) if was_inactive else max_expiry
+    form = JobForm(request.POST or None, instance=job, max_expiry_date=max_expiry,initial={'expiry_date':max_expiry} if was_inactive else None)
 
     if request.method == "POST" and form.is_valid():
         updated = form.save(commit=False)
@@ -882,15 +883,21 @@ def job_edit(request: HttpRequest, job_id: int) -> HttpResponse:
         if not updated.source:
             updated.source = "employer"
 
-        action = (request.POST.get("action") or "publish").strip().lower()
-        publish = action != "draft"
+        action = (request.POST.get("action") or "").strip().lower()
+        if action not in ('publish','draft'):
+            messages.error(request,'Choose Publish or Save Draft.')
+            return redirect(request.path)
+        publish = action == "publish"
 
         # A previously inactive job being published (including after a credit
         # purchase) starts a fresh posting window. Draft edits and edits to an
         # already-active job keep their existing posting window.
         posting_date = timezone.localdate() if (publish and was_inactive) else existing_posting_date
         updated.posting_date = posting_date
-        updated.expiry_date = _clamp_expiry(posting_date, getattr(updated, "expiry_date", None))
+        if publish and not was_inactive:
+            updated.expiry_date=min(updated.expiry_date or max_expiry,max_expiry)
+        else:
+            updated.expiry_date = _clamp_expiry(posting_date, getattr(updated, "expiry_date", None))
         updated.is_active = bool(publish)
         if publish and was_inactive:
             updated.expiry_email_sent = False
@@ -901,6 +908,8 @@ def job_edit(request: HttpRequest, job_id: int) -> HttpResponse:
                 updated.is_active = False
                 updated.save()
                 request.session["pending_publish_job_id"] = updated.id
+                from .publication import request_publication
+                request_publication(updated,reuse=True)
                 messages.error(
                     request,
                     "No credits available. This job remains a draft. Purchase credits to publish.",
@@ -908,6 +917,9 @@ def job_edit(request: HttpRequest, job_id: int) -> HttpResponse:
                 return redirect("package_list")
 
         updated.save()
+        from .publication import finish_direct,cancel_requests
+        if publish and was_inactive:finish_direct(updated,active_package)
+        elif not publish:cancel_requests(updated)
         _sync_employer_credits(employer)
 
         if publish and was_inactive:
@@ -921,15 +933,8 @@ def job_edit(request: HttpRequest, job_id: int) -> HttpResponse:
 
         # OPTIONAL: notify admin if a draft becomes published via edit
         if publish and was_inactive:
-            send_templated_email(
-                "admin_job_posted",
-                _admin_emails(),
-                {
-                    "job_title": updated.title,
-                    "employer_email": employer.email,
-                    "job_id": updated.id,
-                },
-            )
+            from .publication import notify_publication
+            transaction.on_commit(lambda pk=updated.pk:notify_publication(pk))
 
         messages.success(request, "Job updated.")
         return redirect("employer_dashboard")
@@ -971,6 +976,9 @@ def job_duplicate(request: HttpRequest, job_id: int) -> HttpResponse:
     max_expiry = _max_expiry_date(posting_date)
 
     active_package = _available_packages_qs(employer).order_by("expires_at", "id").first()
+    if active_package:
+        from .publication import duration_for
+        max_expiry=posting_date+timedelta(days=duration_for(active_package)-1)
 
     initial = {
         "title": original.title,
@@ -998,8 +1006,11 @@ def job_duplicate(request: HttpRequest, job_id: int) -> HttpResponse:
         # HARD expiry clamp server-side
         job.expiry_date = _clamp_expiry(posting_date, getattr(job, "expiry_date", None))
 
-        action = (request.POST.get("action") or "publish").strip().lower()
-        publish = action != "draft"
+        action = (request.POST.get("action") or "").strip().lower()
+        if action not in ('publish','draft'):
+            messages.error(request,'Choose Publish or Save Draft.')
+            return redirect(request.path)
+        publish = action == "publish"
         job.is_active = bool(publish)
 
         if publish:
@@ -1008,6 +1019,8 @@ def job_duplicate(request: HttpRequest, job_id: int) -> HttpResponse:
                 job.is_active = False
                 job.save()
                 request.session["pending_duplicate_job_id"] = job.id
+                from .publication import request_publication
+                request_publication(job,reuse=True)
                 messages.error(
                     request,
                     "No credits available. Your duplicated job was saved as a draft. Purchase credits to publish.",
@@ -1015,30 +1028,16 @@ def job_duplicate(request: HttpRequest, job_id: int) -> HttpResponse:
                 return redirect("package_list")
 
         job.save()
+        from .publication import finish_direct,cancel_requests
+        if publish:finish_direct(job,active_package)
+        else:cancel_requests(job)
         _sync_employer_credits(employer)
 
         if publish:
-            # Employer confirmation
-            send_templated_email(
-                "job_posting_confirmation",
-                [(employer.email or "").strip()],
-                {
-                    "job_title": job.title,
-                    "email": employer.email,
-                    "dashboard_url": request.build_absolute_uri(reverse("employer_dashboard")),
-                },
-            )
-
-            # Admin notification
-            send_templated_email(
-                "admin_job_posted",
-                _admin_emails(),
-                {
-                    "job_title": job.title,
-                    "employer_email": employer.email,
-                    "job_id": job.id,
-                },
-            )
+            from .publication import notify_publication
+            transaction.on_commit(lambda pk=job.pk:notify_publication(pk))
+            for key in ('pending_create_job_id','pending_publish_job_id','pending_duplicate_job_id'):
+                if request.session.get(key)==job.pk:request.session.pop(key,None)
 
 
         messages.success(request, "Job duplicated.")
@@ -1411,6 +1410,7 @@ def employer_dashboard(request: HttpRequest) -> HttpResponse:
     employer = request.user.employer
     _sync_employer_credits(employer)
 
+    from .models import JobPublicationRequest
     jobs = Job.objects.filter(employer=employer).order_by("-posting_date", "-id")
     applications = (
         Application.objects.filter(job__employer=employer)
@@ -1429,6 +1429,8 @@ def employer_dashboard(request: HttpRequest) -> HttpResponse:
             "sitesettings": ss,
             "employer": employer,
             "jobs": jobs,
+            "publication_requests": JobPublicationRequest.objects.filter(employer=employer,status__in=['waiting','ready','review']).select_related('job'),
+            "saved_jobs": jobs.filter(is_active=False),
             "applications": applications,
             "invoices": invoices,
             "packages": packages,
@@ -1617,7 +1619,9 @@ def checkout_select(request: HttpRequest, package_id: int) -> HttpResponse:
         return redirect("login")
 
     package = get_object_or_404(PostingPackage, id=package_id, is_active=True)
-    ctx = {"sitesettings": _sitesettings(), "package": package}
+    from .publication import pending_for
+    intent=pending_for(request.user.employer,request.GET.get('publication'))
+    ctx = {"sitesettings": _sitesettings(), "package": package,"publication":intent,"saved_jobs":Job.objects.filter(employer=request.user.employer,is_active=False).order_by('-posting_date','-id')}
     ctx.update(_gateway_context())
     return render(request, "checkout/checkout_select.html", ctx)
 
@@ -1654,10 +1658,20 @@ def checkout_start(request: HttpRequest, package_id: int) -> HttpResponse:
         import stripe
         stripe.api_key = secret
 
+        from .publication import checkout_request,checkout_idempotency_key
+        try:
+            publication=checkout_request(request,request.user.employer)
+        except ValueError as exc:
+            messages.error(request,str(exc))
+            return redirect('checkout_select',package_id=package.pk)
+        if publication and _available_credits(request.user.employer)>0:
+            messages.info(request,'You already have a posting credit. Review this job and select Publish; no further payment is needed.')
+            return redirect('job_edit',job_id=publication.job_id)
         amount_cents = int(round(final_amount * 100))
 
         try:
             session = stripe.checkout.Session.create(
+                idempotency_key=checkout_idempotency_key(request,package,amount_cents,publication,dc.code if dc else ""),
                 mode="payment",
                 payment_method_types=["card"],
                 line_items=[
@@ -1671,7 +1685,7 @@ def checkout_start(request: HttpRequest, package_id: int) -> HttpResponse:
                     }
                 ],
                 success_url=request.build_absolute_uri(reverse("checkout_success")) + "?session_id={CHECKOUT_SESSION_ID}",
-                cancel_url=request.build_absolute_uri(reverse("checkout_select", args=[package.id])),
+                cancel_url=request.build_absolute_uri(reverse("checkout_select", args=[package.id]))+("?publication="+str(publication.pk) if publication else ""),
                 metadata={
                     "employer_id": str(request.user.employer.id),
                     "package_id": str(package.id),
@@ -1681,12 +1695,16 @@ def checkout_start(request: HttpRequest, package_id: int) -> HttpResponse:
                     "package_expires_days": str(package.package_expires_days),
                     "amount_cents": str(amount_cents),
                     "terms_version": "1",
+                    "publication_request_id": str(publication.pk) if publication else "",
                 },
             )
         except Exception:
             messages.error(request, "Unable to start Stripe checkout.")
             return redirect("checkout_select", package_id=package_id)
 
+        if publication:
+            from .models import JobPublicationRequest
+            JobPublicationRequest.objects.filter(pk=publication.pk).update(checkout_session_id=session.id)
         return redirect(session.url)
 
     messages.error(request, "This payment method is unavailable. Please choose card payment.")
@@ -1741,33 +1759,17 @@ def checkout_success(request: HttpRequest) -> HttpResponse:
         messages.error(request, "Unable to apply this payment. Please contact support with your payment reference.")
         return redirect("package_list")
 
-    pending_job = None
-    for pending_key in (
-        "pending_create_job_id",
-        "pending_publish_job_id",
-        "pending_duplicate_job_id",
-    ):
-        pending_job_id = request.session.get(pending_key)
-        if not pending_job_id:
-            continue
-        pending_job = Job.objects.filter(
-            id=pending_job_id,
-            employer=employer,
-            is_active=False,
-        ).first()
-        if pending_job:
-            break
-        request.session.pop(pending_key, None)
+    request.session.pop('credit_checkout_token',None)
+    from .models import JobPublicationRequest
+    publication=JobPublicationRequest.objects.filter(invoice=invoice,employer=employer).select_related('job').first()
+    saved_jobs=Job.objects.filter(employer=employer,is_active=False).order_by('-posting_date','-id')
+    published_job=publication.job if publication and publication.status=='published' else None
+    pending_job=publication.job if publication and publication.status in ('ready','review') else None
+    return render(request,'checkout/checkout_success.html',{
+        'sitesettings':_sitesettings(),'package':package,'published_job':published_job,'publication':publication,
+        'pending_job':pending_job,'saved_jobs':saved_jobs,'credits_available':_available_credits(employer),
+    })
 
-    return render(
-        request,
-        "checkout/checkout_success.html",
-        {
-            "sitesettings": _sitesettings(),
-            "package": package,
-            "pending_job": pending_job,
-        },
-    )
 
 
 @login_required
@@ -1807,10 +1809,17 @@ def stripe_create_session(request: HttpRequest, package_id: int) -> JsonResponse
     import stripe
     stripe.api_key = secret
 
+    from .publication import checkout_request,checkout_idempotency_key
+    try:publication=checkout_request(request,request.user.employer)
+    except ValueError as exc:
+        return JsonResponse({'error':str(exc)},status=400)
+    if publication and _available_credits(request.user.employer)>0:
+        return JsonResponse({'error':'A posting credit is already available. Publish your saved job without another payment.','job_url':reverse('job_edit',args=[publication.job_id])},status=409)
     amount_cents = int(round(final_amount * 100))
 
     try:
         session = stripe.checkout.Session.create(
+            idempotency_key=checkout_idempotency_key(request,package,amount_cents,publication,dc.code if dc else ""),
             mode="payment",
             payment_method_types=["card"],
             line_items=[
@@ -1824,7 +1833,7 @@ def stripe_create_session(request: HttpRequest, package_id: int) -> JsonResponse
                 }
             ],
             success_url=request.build_absolute_uri(reverse("checkout_success")) + "?session_id={CHECKOUT_SESSION_ID}",
-            cancel_url=request.build_absolute_uri(reverse("checkout_select", args=[package.id])),
+            cancel_url=request.build_absolute_uri(reverse("checkout_select", args=[package.id]))+("?publication="+str(publication.pk) if publication else ""),
             metadata={
                 "employer_id": str(employer.id),
                 "package_id": str(package.id),
@@ -1834,11 +1843,15 @@ def stripe_create_session(request: HttpRequest, package_id: int) -> JsonResponse
                     "package_expires_days": str(package.package_expires_days),
                     "amount_cents": str(amount_cents),
                     "terms_version": "1",
+                    "publication_request_id": str(publication.pk) if publication else "",
             },
         )
     except Exception:
         return JsonResponse({"error": "Unable to start Stripe checkout."}, status=500)
 
+    if publication:
+        from .models import JobPublicationRequest
+        JobPublicationRequest.objects.filter(pk=publication.pk).update(checkout_session_id=session.id)
     return JsonResponse({"id": session.id})
 
 

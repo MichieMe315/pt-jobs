@@ -17,6 +17,16 @@
 
   <form method="post" action="{% url 'checkout_start' package.id %}">
     {% csrf_token %}
+    <section class="border border-secondary rounded p-3 mb-4" aria-label="What happens after payment">
+      <h2 class="h5">What happens after payment</h2>
+      <label class="form-label" for="publish_job_id">Use this purchase for</label>
+      <select class="form-select" id="publish_job_id" name="publish_job_id">
+        <option value=""{% if not publication %} selected{% endif %}>Posting credits only - I will create or publish a job later</option>
+        {% for saved in saved_jobs %}<option value="{{ saved.pk }}"{% if publication.job_id == saved.pk %} selected{% endif %}>Review after payment: {{ saved.title }} - {{ saved.location }} (saved {{ saved.posting_date }})</option>{% endfor %}
+      </select>
+      <p class="mt-2 mb-0">Payment adds posting credits to your account. It does not publish a job. After payment, review your saved job and click Publish. Your posting period starts when you publish.</p>
+      {% if publication %}<p class="mt-2 mb-0"><a href="{% url 'job_edit' publication.job_id %}">Review {{ publication.job.title }} before checkout</a></p>{% endif %}
+    </section>
 
     <div class="mb-3">
       <label for="discount_code" class="form-label">Discount code (optional)</label>

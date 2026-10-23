@@ -665,3 +665,23 @@ class JobAlertDelivery(models.Model):
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=['alert', 'job'], name='unique_job_alert_delivery')]
+
+
+class JobPublicationRequest(models.Model):
+    """The employer's explicit Publish instruction, durable across payment/session loss."""
+    import uuid
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    employer = models.ForeignKey(Employer, on_delete=models.CASCADE, related_name='publication_requests')
+    job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='publication_requests')
+    fingerprint = models.CharField(max_length=64)
+    status = models.CharField(max_length=16, default='waiting', choices=[('waiting','Waiting for payment'),('ready','Ready to review'),('published','Published'),('review','Needs review'),('cancelled','Cancelled')], db_index=True)
+    requested_at = models.DateTimeField(auto_now_add=True)
+    published_at = models.DateTimeField(null=True, blank=True)
+    invoice = models.ForeignKey(Invoice, null=True, blank=True, on_delete=models.SET_NULL)
+    purchased_package = models.ForeignKey(PurchasedPackage, null=True, blank=True, on_delete=models.SET_NULL)
+    checkout_session_id = models.CharField(max_length=120, blank=True)
+    last_error = models.CharField(max_length=240, blank=True)
+    class Meta:
+        ordering = ['-requested_at']
+    def __str__(self):
+        return f'{self.job_id}: {self.get_status_display()}'
