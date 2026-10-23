@@ -36,7 +36,10 @@ def notify_order(employer, package, invoice):
         from .models import JobPublicationRequest
         intent=JobPublicationRequest.objects.filter(invoice=invoice).select_related('job').first()
         base=getattr(settings,'SITE_URL','https://physiotherapyjobscanada.ca').rstrip('/')
-        if intent:
+        if intent and intent.status == 'published':
+            next_step='Your job "'+intent.job.title+'" is published.'
+            next_url=base+reverse('job_detail',args=[intent.job_id])
+        elif intent:
             next_step=intent.last_error or 'Your posting credit is ready. Your job has not been published by this payment. Review your saved job and click Publish.'
             next_url=base+reverse('job_edit',args=[intent.job_id])
         else:
@@ -115,8 +118,8 @@ def fulfill_checkout(session, *, session_id=None, expected_employer_id=None):
         duration_days=duration, expires_at=timezone.now() + timedelta(days=expiry_days), source='stripe',
     )
     _sync_employer_credits(employer)
-    if metadata.get('publication_request_id'):
-        from .publication import mark_paid_request
-        mark_paid_request(metadata['publication_request_id'],employer.pk,purchase,invoice)
+    if metadata.get('publication_request_id') and metadata.get('publish_after_payment') == '1':
+        from .publication import publish_paid_request
+        publish_paid_request(metadata['publication_request_id'],employer.pk,purchase,invoice)
     transaction.on_commit(lambda: notify_order(employer, package, invoice))
     return invoice, package, True

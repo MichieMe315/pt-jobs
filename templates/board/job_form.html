@@ -108,7 +108,7 @@
  </div>
 
  <div class="d-flex gap-2">
- <button class="btn btn-primary" type="submit" name="action" value="publish">{% if active_package or employer.credits %}Publish job{% else %}Save job and continue to payment{% endif %}</button>
+ <button class="btn btn-primary" type="submit" name="action" value="publish">{% if active_package or employer.credits %}Publish job{% else %}Publish job — continue to payment{% endif %}</button>
  <button class="btn btn-outline-secondary" type="submit" name="action" value="draft">Save Draft</button>
  <a class="btn btn-light ms-auto" href="{% url 'employer_dashboard' %}">Cancel</a>
  </div>

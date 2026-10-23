@@ -41,21 +41,21 @@ class PaymentConcurrencyTests(TransactionTestCase):
         job=Job.objects.create(employer=self.employer,title='Draft',is_active=False)
         self.assertEqual(self.together(lambda:self.publish(f'/jobs/{job.pk}/edit/')),[302,302])
         p.refresh_from_db();self.assertEqual(p.credits_remaining,0)
-        job.refresh_from_db();self.assertFalse(job.is_active)
+        job.refresh_from_db();self.assertTrue(job.is_active)
     def test_webhook_and_return_concurrent_fulfilment_grants_once(self):
         session={'id':'cs_concurrent','payment_status':'paid','amount_total':9900,'currency':'cad','metadata':{'employer_id':str(self.employer.pk),'package_id':str(self.package.pk),'terms_version':'1','credits':'1','duration_days':'30','package_expires_days':'365','amount_cents':'9900'}}
         self.together(lambda:fulfill_checkout(session))
         self.assertEqual(Invoice.objects.count(),1)
         self.assertEqual(PurchasedPackage.objects.count(),1)
 
-    def test_webhook_and_return_grant_one_credit_without_publishing(self):
+    def test_webhook_and_return_publish_linked_job_once(self):
         from .publication import request_publication
         from .models import JobPublicationRequest
         job=Job.objects.create(employer=self.employer,title='Paid posting',description='Patient assessment and treatment.',location='Calgary',is_active=False)
         intent=request_publication(job)
-        session={'id':'cs_publish_concurrent','payment_status':'paid','amount_total':9900,'currency':'cad','metadata':{'employer_id':str(self.employer.pk),'package_id':str(self.package.pk),'terms_version':'1','credits':'1','duration_days':'30','package_expires_days':'365','amount_cents':'9900','publication_request_id':str(intent.pk)}}
+        session={'id':'cs_publish_concurrent','payment_status':'paid','amount_total':9900,'currency':'cad','metadata':{'employer_id':str(self.employer.pk),'package_id':str(self.package.pk),'terms_version':'1','credits':'1','duration_days':'30','package_expires_days':'365','amount_cents':'9900','publication_request_id':str(intent.pk),'publish_after_payment':'1'}}
         self.together(lambda:fulfill_checkout(session))
-        job.refresh_from_db();self.assertFalse(job.is_active)
+        job.refresh_from_db();self.assertTrue(job.is_active)
         self.assertEqual(Invoice.objects.count(),1);self.assertEqual(PurchasedPackage.objects.count(),1)
-        self.assertEqual(PurchasedPackage.objects.get().credits_remaining,1)
-        self.assertEqual(JobPublicationRequest.objects.filter(status='ready').count(),1)
+        self.assertEqual(PurchasedPackage.objects.get().credits_remaining,0)
+        self.assertEqual(JobPublicationRequest.objects.filter(status='published').count(),1)

@@ -22,9 +22,9 @@
       <label class="form-label" for="publish_job_id">Use this purchase for</label>
       <select class="form-select" id="publish_job_id" name="publish_job_id">
         <option value=""{% if not publication %} selected{% endif %}>Posting credits only - I will create or publish a job later</option>
-        {% for saved in saved_jobs %}<option value="{{ saved.pk }}"{% if publication.job_id == saved.pk %} selected{% endif %}>Review after payment: {{ saved.title }} - {{ saved.location }} (saved {{ saved.posting_date }})</option>{% endfor %}
+        {% for saved in saved_jobs %}<option value="{{ saved.pk }}"{% if publication.job_id == saved.pk %} selected{% endif %}>Publish after payment: {{ saved.title }} - {{ saved.location }} (saved {{ saved.posting_date }})</option>{% endfor %}
       </select>
-      <p class="mt-2 mb-0">Payment adds posting credits to your account. It does not publish a job. After payment, review your saved job and click Publish. Your posting period starts when you publish.</p>
+      <p class="mt-2 mb-0">Selecting a saved job publishes that job after successful payment. Its full posting period starts then. Choosing posting credits only does not publish a job.</p>
       {% if publication %}<p class="mt-2 mb-0"><a href="{% url 'job_edit' publication.job_id %}">Review {{ publication.job.title }} before checkout</a></p>{% endif %}
     </section>
 

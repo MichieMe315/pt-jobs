@@ -27,7 +27,7 @@ class PaidPublicationTests(TestCase):
   job=Job.objects.get();intent=JobPublicationRequest.objects.get(job=job,status='waiting');return job,intent
  def session(self,intent=None,**changes):
   s={'id':'cs_paid_publication','payment_status':'paid','currency':'cad','amount_total':7500,'metadata':{'employer_id':str(self.e.pk),'package_id':str(self.p.pk),'credits':'1','duration_days':'30','package_expires_days':'365','amount_cents':'7500','terms_version':'1'}}
-  if intent:s['metadata']['publication_request_id']=str(intent.pk)
+  if intent:s['metadata'].update(publication_request_id=str(intent.pk),publish_after_payment='1')
   s.update(changes);return s
  def webhook(self,session):
   event={'type':'checkout.session.completed','data':{'object':session}}
@@ -38,33 +38,33 @@ class PaidPublicationTests(TestCase):
   job,intent=self.draft()
   for path in (reverse('checkout_start',args=[self.p.pk]),reverse('stripe_create_session',args=[self.p.pk])):
    with patch('stripe.checkout.Session.create',return_value=SimpleNamespace(id='cs_start',url='https://checkout.stripe.com/test')) as create:r=self.client.post(path,{'payment_method':'card'})
-   self.assertIn(r.status_code,(200,302));self.assertEqual(create.call_args.kwargs['metadata']['publication_request_id'],str(intent.pk));self.assertTrue(create.call_args.kwargs['idempotency_key'].startswith('ptjc-posting-'))
+   self.assertIn(r.status_code,(200,302));self.assertEqual(create.call_args.kwargs['metadata']['publication_request_id'],str(intent.pk));self.assertTrue(create.call_args.kwargs['idempotency_key'].startswith('ptjc-posting-'));self.assertEqual(create.call_args.kwargs['metadata']['publish_after_payment'],'1')
  def test_checkout_selection_survives_missing_browser_keys(self):
   job,intent=self.draft();s=self.client.session
   for key in ('pending_create_job_id','pending_publish_job_id','pending_duplicate_job_id'):s.pop(key,None)
   s.save();r=self.client.get(reverse('checkout_select',args=[self.p.pk]));self.assertContains(r,job.title);self.assertEqual(r.context['publication'],intent)
- def test_webhook_leaves_job_unpublished_and_credit_available(self):
-  job,intent=self.draft();original=(job.posting_date,job.expiry_date);self.client.logout();r=self.webhook(self.session(intent));self.assertEqual(r.status_code,200)
-  job.refresh_from_db();intent.refresh_from_db();self.e.refresh_from_db();self.assertFalse(job.is_active);self.assertEqual(intent.status,'ready');self.assertEqual(self.e.credits,1)
-  self.assertEqual(PurchasedPackage.objects.get().credits_remaining,1);self.assertEqual((job.posting_date,job.expiry_date),original)
- def test_return_requires_separate_explicit_publish(self):
+ def test_webhook_publishes_only_linked_job_without_browser_return(self):
+  job,intent=self.draft();old=Job.objects.create(employer=self.e,title='Old Access post',is_active=False)
+  self.client.logout();r=self.webhook(self.session(intent));self.assertEqual(r.status_code,200)
+  job.refresh_from_db();intent.refresh_from_db();old.refresh_from_db();self.e.refresh_from_db()
+  self.assertTrue(job.is_active);self.assertFalse(old.is_active);self.assertEqual(intent.status,'published');self.assertEqual(self.e.credits,0)
+  self.assertEqual(PurchasedPackage.objects.get().credits_remaining,0);self.assertEqual(job.expiry_date,timezone.localdate()+timedelta(days=29))
+ def test_browser_return_publishes_linked_job_and_shows_confirmation(self):
   job,intent=self.draft()
   with patch('stripe.checkout.Session.retrieve',return_value=SimpleNamespace(**self.session(intent))):r=self.client.get('/checkout/success/?session_id=cs_paid_publication')
-  job.refresh_from_db();self.assertFalse(job.is_active);self.assertContains(r,'Review and publish '+job.title);self.assertContains(r,'No job was published')
-  self.client.get(reverse('job_edit',args=[job.pk]));job.refresh_from_db();self.assertFalse(job.is_active)
-  self.client.post(reverse('job_edit',args=[job.pk]),self.data());job.refresh_from_db();self.assertTrue(job.is_active);self.assertEqual(PurchasedPackage.objects.get().credits_remaining,0)
- def test_repeated_webhook_and_return_never_publish_or_duplicate_credit(self):
+  job.refresh_from_db();self.assertTrue(job.is_active);self.assertContains(r,'Your job is published');self.assertContains(r,reverse('job_detail',args=[job.pk]))
+ def test_repeated_webhook_and_return_publish_once_and_consume_one_credit(self):
   job,intent=self.draft();s=self.session(intent)
   with patch('board.publication.notify_publication') as notice,patch('board.payments.notify_order'):
    with self.captureOnCommitCallbacks(execute=True):self.webhook(s)
    with self.captureOnCommitCallbacks(execute=True):self.webhook(s)
    with patch('stripe.checkout.Session.retrieve',return_value=SimpleNamespace(**s)):
     with self.captureOnCommitCallbacks(execute=True):self.client.get('/checkout/success/?session_id='+s['id'])
-   notice.assert_not_called()
-  job.refresh_from_db();self.assertFalse(job.is_active);self.assertEqual(Invoice.objects.count(),1);self.assertEqual(PurchasedPackage.objects.count(),1);self.assertEqual(PurchasedPackage.objects.get().credits_remaining,1)
- def test_second_distinct_payment_still_does_not_publish(self):
+   self.assertEqual(notice.call_count,1)
+  job.refresh_from_db();self.assertTrue(job.is_active);self.assertEqual(Invoice.objects.count(),1);self.assertEqual(PurchasedPackage.objects.count(),1);self.assertEqual(PurchasedPackage.objects.get().credits_remaining,0)
+ def test_second_distinct_payment_never_republishes_same_job(self):
   job,intent=self.draft();self.webhook(self.session(intent));self.webhook(self.session(intent,id='cs_second_real_payment'))
-  job.refresh_from_db();self.assertFalse(job.is_active);self.assertEqual(Invoice.objects.count(),2);self.assertEqual(sum(PurchasedPackage.objects.values_list('credits_remaining',flat=True)),2)
+  self.assertEqual(Invoice.objects.count(),2);self.assertEqual(sum(PurchasedPackage.objects.values_list('credits_remaining',flat=True)),1);self.assertEqual(JobPublicationRequest.objects.filter(status='published').count(),1)
  def test_save_draft_cancels_pending_publication(self):
   job,intent=self.draft();self.client.post(reverse('job_edit',args=[job.pk]),self.data(action='draft'));self.webhook(self.session(intent));job.refresh_from_db();intent.refresh_from_db();self.assertFalse(job.is_active);self.assertEqual(intent.status,'cancelled');self.assertEqual(PurchasedPackage.objects.get().credits_remaining,1)
  def test_changed_content_preserves_credit_and_requires_review(self):
@@ -109,7 +109,7 @@ class PaidPublicationTests(TestCase):
    keys.append(create.call_args.kwargs['idempotency_key'])
   self.assertEqual(keys[0],keys[1])
  def test_snapshot_duration_survives_package_edit(self):
-  job,intent=self.draft();PostingPackage.objects.filter(pk=self.p.pk).update(duration_days=90,is_active=False);s=self.session(intent);s['metadata']['duration_days']='60';self.webhook(s);job.refresh_from_db();self.assertFalse(job.is_active);self.client.post(reverse('job_edit',args=[job.pk]),self.data());job.refresh_from_db();self.assertEqual(job.expiry_date,timezone.localdate()+timedelta(days=59))
+  job,intent=self.draft();PostingPackage.objects.filter(pk=self.p.pk).update(duration_days=90,is_active=False);s=self.session(intent);s['metadata']['duration_days']='60';self.webhook(s);job.refresh_from_db();self.assertTrue(job.is_active);self.assertEqual(job.expiry_date,timezone.localdate()+timedelta(days=59))
  def test_checkout_publish_request_is_csrf_protected(self):
   browser=Client(enforce_csrf_checks=True);browser.force_login(self.user);self.assertEqual(browser.post(reverse('checkout_start',args=[self.p.pk]),{}).status_code,403)
  def test_paid_unposted_report_permission_and_content(self):
@@ -137,7 +137,7 @@ class PaidPublicationTests(TestCase):
   with patch('board.publication.JobPublicationRequest.save',side_effect=RuntimeError('simulated write failure')):
    with self.captureOnCommitCallbacks(execute=True):r=self.webhook(s)
   self.assertEqual(r.status_code,500);self.assertFalse(Invoice.objects.exists());self.assertFalse(PurchasedPackage.objects.exists())
-  self.assertEqual(self.webhook(s).status_code,200);job.refresh_from_db();self.assertFalse(job.is_active);self.assertEqual(Invoice.objects.count(),1)
+  self.assertEqual(self.webhook(s).status_code,200);job.refresh_from_db();self.assertTrue(job.is_active);self.assertEqual(Invoice.objects.count(),1)
  def test_direct_publish_honours_long_credit_duration(self):
   PurchasedPackage.objects.create(employer=self.e,package=self.p,duration_days=60)
   r=self.client.post(reverse('job_create'),self.data());self.assertEqual(r.status_code,302);self.assertEqual(Job.objects.get().expiry_date,timezone.localdate()+timedelta(days=59))
@@ -147,11 +147,37 @@ class PaidPublicationTests(TestCase):
   self.assertEqual(create.call_args.kwargs['metadata']['publication_request_id'],'')
 
  def test_final_publish_requires_csrf(self):
-  job,intent=self.draft();self.webhook(self.session(intent));browser=Client(enforce_csrf_checks=True);browser.force_login(self.user)
+  job,intent=self.draft();self.webhook(self.session());browser=Client(enforce_csrf_checks=True);browser.force_login(self.user)
   self.assertEqual(browser.post(reverse('job_edit',args=[job.pk]),self.data()).status_code,403)
   job.refresh_from_db();self.assertFalse(job.is_active);self.assertEqual(PurchasedPackage.objects.get().credits_remaining,1)
 
  def test_missing_publish_action_cannot_activate_saved_job(self):
-  job,intent=self.draft();self.webhook(self.session(intent));data=self.data();data.pop('action')
+  job,intent=self.draft();self.webhook(self.session());data=self.data();data.pop('action')
   self.client.post(reverse('job_edit',args=[job.pk]),data)
   job.refresh_from_db();self.assertFalse(job.is_active);self.assertEqual(PurchasedPackage.objects.get().credits_remaining,1)
+
+ def test_old_checkout_without_new_instruction_never_publishes(self):
+  job,intent=self.draft();s=self.session(intent);s['metadata'].pop('publish_after_payment')
+  self.webhook(s);job.refresh_from_db();self.assertFalse(job.is_active);self.assertEqual(PurchasedPackage.objects.get().credits_remaining,1)
+ def test_previously_paid_request_never_retroactively_publishes(self):
+  job,intent=self.draft();intent.status='ready';intent.save();self.webhook(self.session(intent))
+  job.refresh_from_db();self.assertFalse(job.is_active);self.assertEqual(PurchasedPackage.objects.get().credits_remaining,1)
+ def test_publication_failure_rolls_back_payment_and_credit_for_retry(self):
+  job,intent=self.draft();s=self.session(intent)
+  with patch('board.publication.Job.save',side_effect=RuntimeError('simulated publication failure')):self.assertEqual(self.webhook(s).status_code,500)
+  job.refresh_from_db();self.assertFalse(job.is_active);self.assertFalse(Invoice.objects.exists());self.assertFalse(PurchasedPackage.objects.exists())
+  self.assertEqual(self.webhook(s).status_code,200);job.refresh_from_db();self.assertTrue(job.is_active)
+
+ def test_existing_draft_checkout_publishes_only_selected_job(self):
+  job=Job.objects.create(employer=self.e,title='Saved role',description='Assessment and treatment.',location='Calgary',is_active=False)
+  self.client.post(reverse('job_edit',args=[job.pk]),self.data())
+  intent=JobPublicationRequest.objects.get(job=job);self.webhook(self.session(intent))
+  job.refresh_from_db();self.assertTrue(job.is_active);self.assertEqual(PurchasedPackage.objects.get().credits_remaining,0)
+ def test_cancelled_checkout_does_not_publish_or_create_credit(self):
+  job,intent=self.draft();self.client.get(reverse('checkout_select',args=[self.p.pk])+'?publication='+str(intent.pk))
+  job.refresh_from_db();self.assertFalse(job.is_active);self.assertFalse(Invoice.objects.exists());self.assertFalse(PurchasedPackage.objects.exists())
+ def test_unpaid_session_cannot_publish(self):
+  job,intent=self.draft();s=self.session(intent,payment_status='unpaid')
+  from .payments import InvalidCheckout
+  with self.assertRaises(InvalidCheckout):fulfill_checkout(s)
+  job.refresh_from_db();self.assertFalse(job.is_active);self.assertFalse(Invoice.objects.exists())

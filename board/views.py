@@ -1696,6 +1696,7 @@ def checkout_start(request: HttpRequest, package_id: int) -> HttpResponse:
                     "amount_cents": str(amount_cents),
                     "terms_version": "1",
                     "publication_request_id": str(publication.pk) if publication else "",
+                    "publish_after_payment": "1" if publication else "0",
                 },
             )
         except Exception:
@@ -1844,6 +1845,7 @@ def stripe_create_session(request: HttpRequest, package_id: int) -> JsonResponse
                     "amount_cents": str(amount_cents),
                     "terms_version": "1",
                     "publication_request_id": str(publication.pk) if publication else "",
+                    "publish_after_payment": "1" if publication else "0",
             },
         )
     except Exception:

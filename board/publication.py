@@ -1,4 +1,4 @@
-"""Saved-job checkout links. Publication requires a separate employer POST."""
+"""Publish only the completed job explicitly linked to a new paid checkout."""
 import hashlib,json,logging
 from datetime import timedelta
 from django.conf import settings
@@ -74,23 +74,25 @@ def notify_publication(job_id):
     except Exception:logger.exception('Publication notification failed for job %s',job_id)
 
 @transaction.atomic
-def mark_paid_request(intent_id,employer_id,purchase,invoice=None):
-    """Link a paid receipt to its saved job. Never publish or consume a credit."""
+def publish_paid_request(intent_id,employer_id,purchase,invoice):
+    """Fulfil a new checkout's explicit job instruction; never search old jobs."""
+    from .views import _sync_employer_credits
     employer=Employer.objects.select_for_update().select_related('user').get(pk=employer_id)
     try:intent=JobPublicationRequest.objects.select_for_update().get(pk=intent_id,employer=employer)
     except (JobPublicationRequest.DoesNotExist,ValueError,TypeError,ValidationError):
         logger.warning('Paid checkout has an invalid saved-job reference for employer %s',employer_id)
         return None
-    if intent.status in ('published','cancelled'):return intent
+    # Older paid/review requests are not retroactively executed.
+    if intent.status!='waiting':return intent
     job=Job.objects.select_for_update().get(pk=intent.job_id,employer=employer)
     error=''
     if not employer.is_approved or not employer.login_active or not employer.user.is_active:
-        error='Employer approval is required before you can publish. Your posting credit is available.'
+        error='Employer approval is required before publication. Your posting credit is available.'
     elif job.is_active:
         intent.status='cancelled'
         error='This job is already published. Your purchased credit remains available.'
     elif fingerprint(job)!=intent.fingerprint:
-        error='Your saved job changed. Review the details and click Publish when ready.'
+        error='Your saved job changed after checkout began. Review it and publish using your available credit.'
     else:
         from .forms import JobForm
         data=model_to_dict(job,fields=JobForm.Meta.fields)
@@ -98,13 +100,24 @@ def mark_paid_request(intent_id,employer_id,purchase,invoice=None):
         data['relocation_assistance']='yes' if job.relocation_assistance else 'no'
         if not JobForm(data,instance=job,max_expiry_date=data['expiry_date']).is_valid():
             error='Complete the required job details, then click Publish. Your posting credit is available.'
-    if intent.status!='cancelled':intent.status='review' if error else 'ready'
-    intent.last_error=error
-    intent.invoice=invoice or intent.invoice
+    if not error:
+        consumed=PurchasedPackage.objects.filter(pk=purchase.pk,employer=employer,credits_remaining__gt=0).filter(Q(expires_at__isnull=True)|Q(expires_at__gte=timezone.now())).update(credits_remaining=F('credits_remaining')-1)
+        if not consumed:error='Your posting credit is unavailable. No job was published.'
+    intent.invoice=invoice
     intent.purchased_package=purchase
-    intent.save(update_fields=['status','last_error','invoice','purchased_package'])
+    if error:
+        if intent.status!='cancelled':intent.status='review'
+        intent.last_error=error
+        intent.save(update_fields=['status','last_error','invoice','purchased_package'])
+        return intent
+    job.is_active=True
+    refresh_window(job,duration_for(purchase))
+    job.save(update_fields=['is_active','posting_date','expiry_date','expiry_email_sent'])
+    intent.status='published';intent.published_at=timezone.now();intent.last_error=''
+    intent.save(update_fields=['status','published_at','last_error','invoice','purchased_package'])
+    _sync_employer_credits(employer)
+    transaction.on_commit(lambda:notify_publication(job.pk))
     return intent
-
 
 def checkout_idempotency_key(request,package,amount,publication,discount_code=""):
     import uuid
@@ -112,5 +125,5 @@ def checkout_idempotency_key(request,package,amount,publication,discount_code=""
     else:
         token=request.session.get('credit_checkout_token')
         if not token:token=str(uuid.uuid4());request.session['credit_checkout_token']=token
-    terms=f'{package.pk}|{package.name}|{package.credits}|{package.duration_days}|{package.package_expires_days}|{amount}|{discount_code}|{token}'
+    terms=f'publish-v2|{package.pk}|{package.name}|{package.credits}|{package.duration_days}|{package.package_expires_days}|{amount}|{discount_code}|{token}'
     return 'ptjc-posting-'+hashlib.sha256(terms.encode()).hexdigest()
