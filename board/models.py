@@ -401,6 +401,8 @@ class Job(models.Model):
 
     source = models.CharField(max_length=50, blank=True, default="")
 
+    employer_submission_id = models.UUIDField(null=True, unique=True, editable=False)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

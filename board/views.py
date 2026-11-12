@@ -4,13 +4,15 @@ from __future__ import annotations
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from typing import Optional
+from uuid import uuid4
 
 from django import forms
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied
+from django.core import signing
+from django.core.exceptions import BadRequest, PermissionDenied
 from django.db import IntegrityError, transaction
 from django.db.models import Count, F, Q, Sum
 from django.http import HttpRequest, HttpResponse, JsonResponse
@@ -773,6 +775,21 @@ def job_detail(request: HttpRequest, job_id: int) -> HttpResponse:
     )
 
 
+def _job_submission(request, employer):
+    """Keep one saved job per submission of a create or duplicate form."""
+    scope = f"board.job_submission:{employer.pk}:{request.path}"
+    if request.method == "POST":
+        token = request.POST.get("submission_token")
+        if token is None:
+            # Forms opened before deployment can still be submitted.
+            return None, signing.dumps(uuid4().hex, salt=scope)
+        try:
+            return signing.loads(token, salt=scope), token
+        except signing.BadSignature as exc:
+            raise BadRequest("Invalid job submission. Reopen the job form.") from exc
+    return None, signing.dumps(uuid4().hex, salt=scope)
+
+
 @login_required
 @transaction.atomic
 def job_create(request: HttpRequest) -> HttpResponse:
@@ -784,6 +801,12 @@ def job_create(request: HttpRequest) -> HttpResponse:
 
     ss = _sitesettings()
     employer = Employer.objects.select_for_update().get(pk=request.user.employer.pk)
+
+    submission_id, submission_token = _job_submission(request, employer)
+    if submission_id and Job.objects.filter(
+        employer=employer, employer_submission_id=submission_id
+    ).exists():
+        return redirect("employer_dashboard")
 
     posting_date = timezone.localdate()
     max_expiry = _max_expiry_date(posting_date)
@@ -798,6 +821,7 @@ def job_create(request: HttpRequest) -> HttpResponse:
         job = form.save(commit=False)
         job.source = "employer"
         job.employer = employer
+        job.employer_submission_id = submission_id
         job.posting_date = posting_date
 
         # HARD expiry clamp server-side
@@ -845,6 +869,7 @@ def job_create(request: HttpRequest) -> HttpResponse:
         {
             "sitesettings": ss,
             "form": form,
+            "submission_token": submission_token,
             "mode": "create",
             "active_package": active_package,
             "max_expiry_iso": max_expiry.isoformat(),
@@ -887,7 +912,9 @@ def job_edit(request: HttpRequest, job_id: int) -> HttpResponse:
         if action not in ('publish','draft'):
             messages.error(request,'Choose Publish or Save Draft.')
             return redirect(request.path)
-        publish = action == "publish"
+        # A live edit keeps the job published, including stale forms that
+        # still offer Save Draft on an already-published job.
+        publish = not was_inactive or action == "publish"
 
         # A previously inactive job being published (including after a credit
         # purchase) starts a fresh posting window. Draft edits and edits to an
@@ -972,6 +999,12 @@ def job_duplicate(request: HttpRequest, job_id: int) -> HttpResponse:
     employer = Employer.objects.select_for_update().get(pk=request.user.employer.pk)
     original = get_object_or_404(Job.objects.select_for_update(), id=job_id, employer=employer)
 
+    submission_id, submission_token = _job_submission(request, employer)
+    if submission_id and Job.objects.filter(
+        employer=employer, employer_submission_id=submission_id
+    ).exists():
+        return redirect("employer_dashboard")
+
     posting_date = timezone.localdate()
     max_expiry = _max_expiry_date(posting_date)
 
@@ -1001,6 +1034,7 @@ def job_duplicate(request: HttpRequest, job_id: int) -> HttpResponse:
         job = form.save(commit=False)
         job.source = "employer"
         job.employer = employer
+        job.employer_submission_id = submission_id
         job.posting_date = posting_date
 
         # HARD expiry clamp server-side
@@ -1049,6 +1083,7 @@ def job_duplicate(request: HttpRequest, job_id: int) -> HttpResponse:
         {
             "sitesettings": ss,
             "form": form,
+            "submission_token": submission_token,
             "mode": "duplicate",
             "active_package": active_package,
             "max_expiry_iso": max_expiry.isoformat(),
