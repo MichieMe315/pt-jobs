@@ -1,0 +1,22 @@
+{% extends "admin/base_site.html" %}{% load static %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'career_mobility/admin-product.css' %}?v=55">{% endblock %}
+{% block content_title %}{% endblock %}
+{% block content %}
+<header class="pt-dashboard-heading"><div><h1>Résumé builders</h1><p>Manage the builder, designs and PDF access for each audience.</p></div></header>
+<div class="resume-admin-grid">
+{% for builder in cl.queryset %}
+<section class="pt-editor-section resume-admin-card">
+  <p><strong>{{ builder.is_enabled|yesno:"Builder enabled,Builder disabled" }}</strong></p>
+  <h2>{{ builder.title }}</h2>
+  <p>Default design: {{ builder.get_default_layout_display }}</p>
+  {% if builder.access_product %}<p>PDF product: {{ builder.access_product.title }} · {{ builder.access_product.is_published|yesno:"Published,Private draft" }}</p>{% else %}<p>No PDF product linked.</p>{% endif %}
+  <div class="product-actions">
+    <a class="product-button product-primary" href="{% url 'admin:ptjc_resumes_resumetemplate_change' builder.pk %}">Manage builder and designs</a>
+    {% if builder.access_product_id and perms.career_mobility.view_digitalproduct or builder.access_product_id and perms.career_mobility.change_digitalproduct %}<a class="product-button" href="{% url 'admin:career_mobility_digitalproduct_change' builder.access_product_id %}#pricing">Manage PDF price and allowance</a>{% endif %}
+    <a class="product-button" href="{% url 'admin:ptjc_resumes_resumetemplate_sample' builder.pk %}">Preview default design</a>
+  </div>
+</section>
+{% empty %}<p>No résumé builders are configured.</p>{% endfor %}
+</div>
+{% if has_add_permission %}<p><a class="product-button" href="{% url 'admin:ptjc_resumes_resumetemplate_add' %}">Add résumé builder</a></p>{% endif %}
+{% endblock %}

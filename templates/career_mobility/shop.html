@@ -1,9 +1,53 @@
-{% extends "career_mobility/base_tool.html" %}
-{% block title %}PTJC Shop | Digital Tools for Physiotherapists{% endblock %}
+{% extends shop_base %}{% load static %}
 {% block tool_content %}
-<style>.shop-hero{background:linear-gradient(125deg,#102e42,#156b78);border-radius:22px;padding:2.3rem;color:white}.shop-card{border:1px solid #dbe6e8;border-radius:18px;padding:1.5rem;height:100%;background:white;box-shadow:0 8px 24px #173b4b0c}.shop-price{font-size:1.7rem;font-weight:800;color:#125d6b}.shop-tag{color:#14717b;font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em}.shop-card .btn{border-radius:9px}</style>
-<section class="shop-hero mb-4"><p class="shop-tag" style="color:#a9e6df">Physiotherapy Jobs Canada</p><h1>PTJC Shop</h1><p class="lead mb-0">Digital career resources for physiotherapists. Guides, templates, and tools—all in one place.</p></section>
-{% if request.GET.payment == 'return' %}<div class="alert alert-info">Payment processing may take a moment. Your download becomes available here after payment is confirmed.</div>{% endif %}
-<div class="row g-3">{% for product in products %}<div class="col-md-6"><article class="shop-card d-flex flex-column"><span class="shop-tag">Digital download</span><h2 class="h4 mt-2">{{ product.title }}</h2><p class="text-muted flex-grow-1">{{ product.description|linebreaksbr }}</p><div class="d-flex align-items-center justify-content-between gap-2 flex-wrap"><span class="shop-price">${{ product.price_cad }} CAD</span>{% if product.pk in owned_ids %}<a class="btn btn-success" href="{% url 'mobility_product_download' product.pk %}">Download again</a>{% elif user.is_authenticated %}<form method="post" action="{% url 'mobility_product_checkout' product.pk %}">{% csrf_token %}<button class="btn btn-primary" type="submit">Buy download</button></form>{% else %}<a class="btn btn-primary" href="{% url 'login' %}?next={{ request.path|urlencode }}">Sign in to buy</a>{% endif %}</div></article></div>{% empty %}<div class="col-12"><div class="shop-card"><h2 class="h4">New resources coming soon</h2><p class="mb-0">The catalogue will include resume templates, career guides, and other digital products once approved for publication.</p></div></div>{% endfor %}</div>
-<p class="text-muted small mt-4">Digital purchases are fulfilled after payment confirmation. Product availability and pricing are controlled by PTJC administrators.</p>
-{% endblock %}
+<link rel="stylesheet" href="{% static 'career_mobility/pt-jobs-slate.css' %}">
+<link rel="stylesheet" href="{% static 'career_mobility/digital-shop.css' %}?v=51">
+<div class="ptjc-storefront{% if shop_audience == 'international' %} ptjc-career-shell ptjc-slate shop-international{% endif %}">
+<header class="shop-hero shop-heading">
+  {% if shop_audience == 'international' %}
+  <p class="shop-kicker">International · Career resources</p>
+  <h1>Tools for your next step</h1>
+  <p>Prepare for your move, build a résumé that reflects your training, or make a professional networking card.</p>
+  <a href="{% url 'mobility_international' %}">← Plan your move to Canada</a>
+  {% else %}
+  <p class="shop-kicker">Job seeker resources</p>
+  <h1>Career tools and downloads</h1>
+  <p>Build your Canadian résumé, design a business card, or personalize a calendar.</p>
+  {% endif %}
+</header>
+
+{% if featured_resume %}
+<section class="shop-featured-resume" id="resume" aria-labelledby="featured-resume-title">
+  <div>
+    <p class="shop-kicker">Featured career tool</p>
+    <h2 id="featured-resume-title">{% if featured_resume.product %}{{ featured_resume.product.title }}{% elif shop_audience == 'international' %}International Résumé Builder{% else %}Canadian Résumé Builder{% endif %}</h2>
+    <p>{% if featured_resume.product.short_description %}{{ featured_resume.product.short_description }}{% elif shop_audience == 'international' %}Build a résumé that presents your education, clinical experience and Canadian registration status.{% else %}Build a résumé for your next physiotherapy role. Choose a design and preview it as you write.{% endif %}</p>
+    <a class="btn btn-primary" href="{{ featured_resume.href }}">Open builder</a>
+  </div>
+  <img src="{{ featured_resume.image }}" alt="Examples of the available résumé layouts">
+</section>
+{% endif %}
+<details class="shop-filters"{% if query or category %} open{% endif %}><summary>Find a product</summary>
+<form method="get" class="resource-shop-filters">
+  <label>Search <input type="search" name="q" value="{{ query }}"></label>
+  <label>Category <select name="category"><option value="">All categories</option>{% for name in categories %}<option{% if category == name %} selected{% endif %}>{{ name }}</option>{% endfor %}</select></label>
+  <button class="btn btn-primary">Apply</button>{% if query or category %}<a href="{{ request.path }}">Clear filters</a>{% endif %}
+</form></details>
+<div class="ptjc-product-grid" id="downloads">
+  {% for listing in listings %}
+  {% if listing.studio %}{% include 'career_mobility/_shop_studios.html' with studio=listing.studio %}
+  {% else %}{% with p=listing.product %}
+  <article class="shop-card">
+    <div class="shop-listing-image">{% include 'career_mobility/_product_cover.html' with item=p %}</div>
+    <h2>{{ p.title }}</h2>
+    <p>{{ p.short_description|default:p.description|truncatewords:35 }}{% if p.kind == "workbook" %} Start in the international planner to set up your checklist.{% endif %}</p>
+    <div class="shop-card-actions">
+      {% if listing.editor_url %}<a class="btn btn-primary" href="{{ listing.editor_url }}">{% if p.kind == "workbook" %}Start your registration plan{% elif p.kind == "bundle" %}View bundle{% elif "/products/" in listing.editor_url %}View product{% else %}Open builder{% endif %}</a>
+      {% else %}<span>Online editor unavailable</span>{% endif %}
+    </div>
+  </article>
+  {% endwith %}{% endif %}
+  {% empty %}<p>No other tools match this view.</p>
+  {% endfor %}
+</div>
+</div>{% endblock %}

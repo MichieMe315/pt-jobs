@@ -39,6 +39,9 @@ def fee_references():
     add('Prince Edward Island','renewal','Registration renewal',400,'Renewing physiotherapists',pei,'Not stated on current schedule')
     add('Prince Edward Island','application','Labour mobility transfer',425,'Canadian labour mobility applicants',pei,'Not stated on current schedule')
     add('Prince Edward Island','exam','Jurisprudence examination',75,'Where required; separate component',pei,'Not stated on current schedule')
+    from .research_library import records
+    mapping={'initial_registration':'initial','annual_registration':'initial','annual_total':'initial','first_year_payable':'initial','initial_enrolment':'initial','equivalence_application':'application','conditional_application':'application','labour_mobility':'application','jurisprudence':'exam'}
+    rows=[dict(province=r['province_or_territory'],regulator=REGULATORS[r['province_or_territory']][0],fee_type=mapping.get(r['fee_type'],r['fee_type']),description=r['description'],amount_cad=str(r['amount_cad']) if r.get('amount_cad') is not None else None,applies_to='; '.join(str(r.get(k,'')) for k in ['notes','tax_treatment'] if r.get(k)),source_url=r['source_url'],effective_on=r.get('applicable_period','Confirm source'),verified_on=r['reviewed_on'],reference='Dated research snapshot; component only') for r in records('licensing_fees')]
     published=ProvincialLicenceFee.objects.filter(is_published=True).filter(Q(expires_on__isnull=True)|Q(expires_on__gte=timezone.localdate()))
     for f in published:
         # Admin-reviewed values take precedence over a bundled matching component.
@@ -47,5 +50,5 @@ def fee_references():
     return rows
 
 def research_context():
-    locations=json.loads((Path(__file__).parent/'data/rental_references_2026_q2.json').read_text())
+    locations=json.loads((Path(__file__).parent/'data/rental_references_2026_q2.json').read_text(encoding='utf-8'))
     return {'locations':locations,'fees':fee_references(),'regulators':{p:{'name':v[0],'url':v[1]} for p,v in REGULATORS.items()},'reviewed_on':'2026-10-19'}

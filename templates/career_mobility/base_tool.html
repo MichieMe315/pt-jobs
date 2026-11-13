@@ -9,4 +9,5 @@
 <link rel="stylesheet" href="{% static 'career_mobility/ptjc-design-system-v18.css' %}">
 <link rel="stylesheet" href="{% static 'career_mobility/career-refinement.css' %}">
 <link rel="stylesheet" href="{% static 'career_mobility/pt-jobs-slate.css' %}">
+{% if '/international/' in request.path %}<link rel="stylesheet" href="{% static 'career_mobility/country-planner.css' %}">{% endif %}
 {% endblock %}

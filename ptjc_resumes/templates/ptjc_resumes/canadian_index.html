@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+<header class="resource-heading"><h1>Canadian physiotherapy resume builder</h1><p>Build a resume for Canadian roles with your actual registration, clinical experience, education and certifications.</p></header>
+{% include 'career_mobility/_resume_design_previews.html' with canadian_designs=True %}
+<section class="panel"><h2>See how the same résumé changes by practice area</h2>
+<p>These examples are fictional. Your draft starts with your own information.</p>
+<ul><li><a href="{% url 'mobility_public_resume_preview' 'clinical' %}?audience=canadian&amp;focus=pelvic" target="_blank" rel="noopener">Pelvic health résumé ↗</a></li>
+<li><a href="{% url 'mobility_public_resume_preview' 'classic' %}?audience=canadian&amp;focus=sports" target="_blank" rel="noopener">Sports rehabilitation résumé ↗</a></li>
+<li><a href="{% url 'mobility_public_resume_preview' 'editorial' %}?audience=canadian&amp;focus=paediatric" target="_blank" rel="noopener">Paediatric physiotherapy résumé ↗</a></li></ul></section>
+<section class="panel"><h2>Saved resumes</h2>
+<form method="post" action="{% url 'ptjc_canadian_resumes:canadian_create' %}">{% csrf_token %}<label for="practice-track">Practice focus</label> <select name="practice_track" id="practice-track">{% for key, label in practice_tracks %}<option value="{{ key }}">{{ label }}</option>{% endfor %}</select> <button class="btn btn-primary">Create a Canadian resume</button></form>
+<ul>{% for draft in drafts %}<li><a href="{% url 'ptjc_canadian_resumes:canadian_edit' draft.pk %}">{{ draft.data.name|default:draft.title }}</a> · {{ draft.updated_at|date:"M j, Y" }}</li>{% empty %}<li>No saved resumes yet.</li>{% endfor %}</ul></section>
+{% include 'ptjc_resumes/_offers.html' %}
+{% endblock %}

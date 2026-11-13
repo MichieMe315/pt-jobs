@@ -1,0 +1,45 @@
+{
+  "compiled_on": "2026-10-20",
+  "publication_status": "research_only_not_imported",
+  "source_notes": {
+    "scope": "Partial tariff components only. Do not label these a complete utility bill. Do not substitute proposed rate studies for enacted tariffs."
+  },
+  "records": [
+    {
+      "community": "Kenora",
+      "province": "Ontario",
+      "effective_on": "2026-01-01",
+      "small_meter_size": "5/8 inch",
+      "monthly_fixed_water_cad": 60.5,
+      "water_per_cubic_metre_cad": 2.09,
+      "sewer_basis": "100% of water cost; confirm inclusion of fixed charge",
+      "source_url": "https://www.kenora.ca/living-here/water-and-sewer/paying-your-water-bill/",
+      "automatic_household_total": null,
+      "missing": [
+        "usage",
+        "meter size",
+        "billing interpretation",
+        "electricity",
+        "heating"
+      ]
+    },
+    {
+      "community": "Dryden",
+      "province": "Ontario",
+      "effective_on": "2025-12-31",
+      "bylaw": "2025-75",
+      "small_meter_size": "5/8 inch",
+      "monthly_fixed_water_cad": 40.4,
+      "water_per_cubic_metre_cad": 2.82,
+      "sewer_basis": null,
+      "source_url": "https://www.dryden.ca/media/ud3bqdmf/by-law-2025-75-amend-chapter-259-re-increase-water-and-sewer-rates-online-version.pdf",
+      "automatic_household_total": null,
+      "missing": [
+        "sewer tariff",
+        "usage",
+        "electricity",
+        "heating"
+      ]
+    }
+  ]
+}

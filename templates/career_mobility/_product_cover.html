@@ -1,0 +1,21 @@
+{% load static %}
+{% if item.preview_image %}
+<img class="resource-cover" src="{% url 'mobility_product_image' item.pk %}" alt="{{ item.title }} preview" loading="lazy">
+{% elif item.recovered_cover %}
+<img class="resource-cover" src="{% static item.recovered_cover %}" alt="{{ item.title }} sample" loading="lazy">
+{% elif item.journal_preview %}
+<img class="resource-cover journal-product-cover" src="{% static item.journal_preview %}" alt="{{ item.title }} editable journal sample" loading="lazy">
+{% elif item.slug == 'ptjc-exercise-tracker' %}
+<img class="resource-cover" src="{% static 'career_mobility/product-previews/exercise-tracker.png' %}" alt="Weekly exercise worksheet preview" loading="lazy">
+{% elif item.slug == 'ptjc-appointment-notes' %}
+<img class="resource-cover" src="{% static 'career_mobility/product-previews/appointment-notes.png' %}" alt="Physiotherapy appointment question sheet preview" loading="lazy">
+{% elif item.slug == 'ptjc-practice-planner-2027' %}
+<img class="resource-cover" src="{% static 'career_mobility/product-previews/practice-planner-2027.png' %}" alt="2027 planner month index preview" loading="lazy">
+{% elif item.slug == 'ptjc-paediatric-physio-journal' %}
+<img class="resource-cover" src="{% static 'career_mobility/product-previews/paediatric-physio-journal.png' %}" alt="Paediatric journal cover" loading="lazy">
+{% elif item.slug == 'ptjc-physio-wall-calendar-2027' %}
+<img class="resource-cover" src="{% static 'career_mobility/product-previews/physio-wall-calendar-2027.png' %}" alt="January calendar page with a physiotherapy photo" loading="lazy">
+{% elif item.kind == 'workbook' %}<div class="resource-cover workbook-cover"><span>PTJC International</span><strong>Your Canadian<br>registration plan</strong><small>Personalized workbook</small></div>
+{% elif item.includes_resume_builder and item.audience == 'canadian' %}<img class="resource-cover" src="{% static 'ptjc_resumes/designs/canadian-classic.png' %}" alt="Canadian résumé design example" loading="lazy">
+{% elif item.includes_resume_builder %}<img class="resource-cover" src="{% static 'ptjc_resumes/designs/classic.png' %}" alt="International résumé design example" loading="lazy">
+{% endif %}

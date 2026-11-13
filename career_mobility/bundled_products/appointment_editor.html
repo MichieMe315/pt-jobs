@@ -1,0 +1,108 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Appointment card designer</title>
+<style>
+*{box-sizing:border-box}body{background:#25292d;color:#f5f6f7;font:16px/1.5 system-ui;margin:0}main{max-width:1220px;margin:auto;padding:clamp(16px,4vw,48px)}a{color:#add1ff}h1{margin:.3em 0}h2{margin:.3em 0}.layout{display:grid;grid-template-columns:minmax(240px,320px) minmax(0,1fr);gap:2rem;align-items:start}.controls{display:grid;gap:.75rem;padding:1rem;background:#30363b;border:1px solid #59616b}.controls label{display:grid;gap:.25rem;min-width:0}.controls input:not([type=color]),.controls select{display:block;width:100%;min-width:0}.fields{display:grid;gap:.75rem;min-width:0}.pair>*{min-width:0}.pair{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}.actions{display:flex;flex-wrap:wrap;gap:.65rem;align-items:center;margin-block:1rem}input,select,button,.action{font:inherit;color:inherit;background:#282d32;border:1px solid #8995a1;border-radius:4px;padding:.5rem;min-height:42px;max-width:100%}button,.action{cursor:pointer;text-decoration:none}.primary,[aria-pressed=true]{background:#a92430;color:#fff;border-color:#a92430}button:disabled{opacity:.6;cursor:default}input:focus-visible,button:focus-visible,a:focus-visible,select:focus-visible{outline:3px solid #acd5ff;outline-offset:2px}
+.card{container-type:inline-size;aspect-ratio:7/4;background:var(--paper);color:var(--ink);position:relative;overflow:hidden;width:100%;max-width:630px;print-color-adjust:exact}.inner{display:flex;align-items:center;justify-content:center;gap:4cqw;padding:6cqw;height:100%}.content{min-width:0;flex:1;overflow-wrap:anywhere;font-size:3.4cqw}.content h3{font-size:5.6cqw;line-height:1.05;margin:0 0 2cqw}.content p{margin:1cqw 0}.mark{width:var(--scale);height:34cqw;flex:none;object-fit:contain}.right .mark{order:2}.center .inner,.top .inner{flex-direction:column;gap:1cqw;text-align:center}.center .mark,.top .mark{height:14cqw}.center .content,.top .content{width:100%;flex:none}.top .inner{justify-content:flex-start}.front .content{text-align:center}.editorial h3{font-family:Georgia,serif;font-weight:400}.community .inner{border:1.4cqw solid currentColor}.line{display:grid;grid-template-columns:minmax(0,28%) 1fr;gap:2cqw;align-items:baseline}.line i{border-bottom:1px solid currentColor}.watermark::after{content:'PREVIEW';position:absolute;right:3%;bottom:1%;font:700 2.6cqw system-ui;opacity:.65}.sheets{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:1rem}.sheet{container-type:inline-size;aspect-ratio:8.5/11;background:#fff;display:grid;align-content:center;justify-content:center;grid-template-columns:repeat(2,41.17647%);grid-auto-rows:max-content;color:#222}.sheet.single{grid-template-columns:41.17647%}.sheet .card{outline:1px solid #a2a2a2;max-width:none}[hidden]{display:none!important}
+@media(max-width:730px){.layout{grid-template-columns:1fr}}@page{size:letter portrait;margin:0}@media print{body{background:white}main{padding:0;max-width:none}main>*:not(.print-output),#editor-checkout{display:none!important}.print-output:not(.authorized){display:none!important}.sheets{display:block}.sheet{width:8.5in;height:11in;break-after:page;grid-template-columns:repeat(2,3.5in)}.sheet:last-child{break-after:auto}.sheet.single{grid-template-columns:3.5in}.sheet .card{width:3.5in;height:2in}}
+.layout>section,.controls,.fields,.pair,.controls label{min-width:0;max-width:100%}
+.controls{grid-template-columns:minmax(0,1fr)}.fields{grid-template-columns:minmax(0,1fr)}.controls label{grid-template-columns:minmax(0,1fr);overflow-wrap:anywhere}
+.controls input,.controls select{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+.controls input[type=file]{display:block;inline-size:0;min-inline-size:100%;overflow:hidden}.controls input[type=color]{width:100%;height:44px}
+.pair{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:420px){.pair{grid-template-columns:minmax(0,1fr)}}
+@media screen{.sheets{display:none}.print-output{margin-top:1.25rem}}
+</style></head><body><main>
+<header><a id="back" href="/career-resources/shop/">Digital products</a><h1>Appointment card designer</h1><p>Design both sides, then check how they fit on a US Letter sheet.</p></header>
+<div class="actions" aria-label="Card side"><button id="front" type="button">Front · Practice branding</button><button id="backSide" type="button">Back · Appointment details</button></div>
+<div class="layout"><section class="controls" aria-label="Design controls"><label>Design<select id="design"><option value="clinical">Clinical</option><option value="community">Community</option><option value="editorial">Editorial</option></select></label><div id="fields" class="fields"></div>
+<div class="pair"><label>Card colour<input id="paper" type="color"></label><label>Text colour<input id="ink" type="color"></label></div>
+<label>Logo or photo for this side<input id="image" type="file" accept="image/png,image/jpeg,image/webp"></label>
+<div class="pair"><label>Logo position<select id="placement"><option value="left">Left</option><option value="center">Centre</option><option value="right">Right</option><option value="top">Top</option></select></label><label>Logo size<input id="scale" type="range" min="20" max="45" step="1"></label></div>
+<button id="remove" type="button">Remove logo</button></section>
+<section aria-label="Card preview"><div id="proof"></div><p>3.5 × 2 in. Print at Actual size on US Letter paper or printer-compatible cardstock.</p>
+<div class="actions"><button id="save" class="primary" type="button" hidden>Save design to my account</button><a id="signin" class="action" hidden>Sign in to save</a><a id="purchase" class="action" hidden>Buy print access</a></div>
+<p id="status" role="status"></p><!-- APPOINTMENT_SHOP_PANEL --></section></div>
+<section class="print-output" id="output"><h2>Print or save as PDF</h2><p>In the print dialog, select your printer or choose Save as PDF. For double-sided printing, flip on the long edge.</p>
+<div class="actions"><label>Cards per sheet <select id="copies"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option selected>8</option></select></label><label>Sides <select id="sides"><option value="both">Front and back</option><option value="front">Front only</option><option value="back">Back only</option></select></label><button id="print" class="primary" type="button" disabled>Print / Save PDF</button></div><p id="print-help"></p><div class="sheets" id="sheets"></div></section>
+</main><script id="config" type="application/json">__CONFIG__</script>
+<script>
+'use strict';
+const $=id=>document.getElementById(id), c=JSON.parse($('config').textContent);
+const defaults={heading:'',name:'',note:'',date:'',time:'',with:'',paper:'#fffaf4',ink:'#302727',placement:'left',scale:32,image:''};
+const baseStorage='ptjc-appointment-v2:'+(c.storageScope||'offline');
+const storage=baseStorage+':'+(c.ownerScope||'guest')+':'+(c.draft||'new');
+const guestStorage=baseStorage+':guest:new';
+let previous;try{
+ previous=JSON.parse(sessionStorage.getItem(storage));
+ if(c.ownerScope&&!c.draft&&!previous){previous=JSON.parse(sessionStorage.getItem(guestStorage));if(previous){sessionStorage.setItem(storage,JSON.stringify(previous));sessionStorage.removeItem(guestStorage)}}
+}catch{}
+const state=previous||c.savedData||{design:'clinical',front:{...defaults,heading:'Your practice'},back:{...defaults,heading:'Your next appointment',date:'Date',time:'Time',with:'With',note:'To reschedule, call your clinic'}};
+let side='front',draft=c.draft||null,dirty=!draft,paid=!c.demo||!!c.canExport,tracked=false, remaining=c.remaining||0, printing=false;
+const node=(tag,text,cls)=>{const el=document.createElement(tag);el.textContent=text||'';if(cls)el.className=cls;return el};
+function ping(event){if(c.activity)fetch(c.activity,{method:'POST',headers:{'X-CSRFToken':c.csrf},body:new URLSearchParams({event,draft:draft||''}),keepalive:true}).catch(()=>{});}
+function draw(which, watermark){
+ const data=state[which], card=node('article','','card '+which+' '+state.design+' '+data.placement+(watermark?' watermark':''));
+ for(const k of ['paper','ink'])card.style.setProperty('--'+k,data[k]);
+ card.style.setProperty('--scale',data.scale+'%');
+ const inner=node('div','','inner'),content=node('div','','content');card.append(inner);
+ if(data.image){const img=node('img','','mark');img.src=data.image;img.alt='';inner.append(img)}
+ inner.append(content);if(data.heading)content.append(node('h3',data.heading));
+ if(data.name)content.append(node('p',data.name));
+ if(which==='back')for(const key of ['date','time','with'])if(data[key]){const line=node('div','','line');line.append(node('span',data[key]),node('i'));content.append(line)}
+ if(data.note)content.append(node('p',data.note));return card;
+}
+function canPrint(){return !c.demo||!!(draft&&!dirty&&(paid||remaining>=Number($('copies').value)))}
+function renderSheets(){
+ const count=Number($('copies').value), sides=$('sides').value, ready=canPrint();
+ $('sheets').replaceChildren();
+ for(const which of sides==='both'?['front','back']:[sides]){
+  const sheet=node('div','','sheet'+(count===1?' single':''));sheet.setAttribute('aria-label',which+' print sheet');
+  for(let i=0;i<count;i++){const card=draw(which,!(printing||!c.demo||(paid&&ready)));if(count!==1&&which==='back'&&sides==='both')card.style.gridColumn=i%2===0?2:1;if(count!==1)card.style.gridRow=Math.floor(i/2)+1;sheet.append(card);}$('sheets').append(sheet);
+ }
+ $('print').disabled=!ready;$('output').classList.toggle('authorized',printing||!c.demo);
+ $('print-help').textContent=ready?(paid?'Ready to print.':remaining+' starter cards remaining. Printing this sheet uses '+count+'.'):(!draft||dirty?'Save this version to your account before printing.':(remaining?remaining+' starter cards remaining. Select fewer cards per sheet.':'Purchase access or redeem a discount code before printing.'));
+}
+function refresh(){ $('proof').replaceChildren(draw(side,!!c.demo&&!canPrint()));$('remove').disabled=!state[side].image;renderSheets();}
+function changed(){dirty=true;if(!tracked){tracked=true;ping('edited')}try{sessionStorage.setItem(storage,JSON.stringify(state))}catch{}refresh();}
+function selectSide(which){
+ side=which;const data=state[side];$('front').setAttribute('aria-pressed',side==='front');$('backSide').setAttribute('aria-pressed',side==='back');
+ $('fields').replaceChildren();
+ const fields=side==='front'?[['heading','Practice name'],['name','Tagline'],['note','Contact details']]:[['heading','Heading'],['name','Practice name'],['date','Date label'],['time','Time label'],['with','Clinician label'],['note','Rescheduling details']];
+ for(const [key,title] of fields){const label=node('label',title),input=node('input');input.maxLength=92;input.value=data[key];input.oninput=()=>{data[key]=input.value;changed()};label.append(input);$('fields').append(label)}
+ for(const key of ['paper','ink','placement','scale']){$(key).value=data[key];$(key).oninput=()=>{data[key]=key==='scale'?Number($(key).value):$(key).value;changed()}}
+ $('image').value='';refresh();
+}
+$('front').onclick=()=>selectSide('front');$('backSide').onclick=()=>selectSide('back');
+$('design').value=state.design;$('design').oninput=()=>{state.design=$('design').value;changed()};
+$('image').onchange=async()=>{const file=$('image').files[0], dest=state[side];if(!file)return;try{
+ if(file.size>8e6)throw Error();const bitmap=await createImageBitmap(file),canvas=node('canvas'),scale=Math.min(1,460/Math.max(bitmap.width,bitmap.height));canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));const ctx=canvas.getContext('2d');ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close();
+ let data=canvas.toDataURL('image/png');if(data.length>260000){const flattened=node('canvas');flattened.width=canvas.width;flattened.height=canvas.height;const bg=flattened.getContext('2d');bg.fillStyle=dest.paper;bg.fillRect(0,0,canvas.width,canvas.height);bg.drawImage(canvas,0,0);data=flattened.toDataURL('image/jpeg',.88)}if(data.length>260000)throw Error();dest.image=data;changed();$('status').textContent='Logo added.';
+ }catch{$('status').textContent='Choose a smaller PNG, JPEG or WebP image.'}};
+$('remove').onclick=()=>{state[side].image='';$('image').value='';changed()};
+$('copies').onchange=$('sides').onchange=renderSheets;
+$('print').onclick=async()=>{
+ if(!canPrint()||printing)return;
+ const button=$('print');button.disabled=true;
+ try{
+  if(c.demo){
+   const res=await fetch(c.activity,{method:'POST',headers:{'X-CSRFToken':c.csrf},body:new URLSearchParams({event:'print_requested',draft,copies:$('copies').value})});
+   const data=await res.json();if(!res.ok)throw Error(data.error);
+   remaining=data.remaining;
+  }
+  printing=true;renderSheets();window.print();
+ }catch(error){$('print-help').textContent=error.message||'Could not authorize printing.';button.disabled=false;return}
+ finally{printing=false}
+ renderSheets();
+};
+if(c.shopUrl)$('back').href=c.shopUrl;
+if(c.shopLabel)$('back').textContent=c.shopLabel;
+if(c.loginUrl&&!c.saveUrl&&!c.signedIn){$('signin').href=c.loginUrl;$('signin').hidden=false}
+if(c.productUrl){$('purchase').href=c.productUrl;$('purchase').hidden=false}
+if(c.saveUrl){$('save').hidden=false;$('save').onclick=async()=>{
+ const button=$('save');button.disabled=true;const before=JSON.stringify(state);try{
+ const result=await fetch(c.saveUrl,{method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':c.csrf},body:JSON.stringify({draft,data:JSON.parse(before)})});
+ const saved=await result.json();if(!result.ok)throw Error(saved.error||'Could not save the design.');
+ draft=saved.id;paid=saved.canPrint;remaining=saved.remaining;dirty=before!==JSON.stringify(state);const savedUrl=new URL(saved.url,location.origin);if(new URLSearchParams(location.search).has('editor_frame'))savedUrl.searchParams.set('editor_frame','1');history.replaceState(null,'',savedUrl);if(!dirty)try{sessionStorage.removeItem(storage)}catch{}
+ $('status').textContent=dirty?'Saved. Save again to keep your latest edits.':'Saved to your account.';refresh();
+ }catch(error){$('status').textContent=error.message}finally{button.disabled=false}}}
+selectSide('front');
+</script></body></html>

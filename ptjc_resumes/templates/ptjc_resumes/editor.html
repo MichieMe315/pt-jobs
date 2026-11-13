@@ -1,0 +1,5 @@
+{% extends 'career_mobility/standalone.html' %}
+{% load static %}
+{% block title %}{% if canadian %}Canadian{% else %}International{% endif %} résumé builder | Physiotherapy Jobs Canada{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'ptjc_resumes/builder.css' %}?v=67">{% endblock %}
+{% block tool_content %}{% include 'ptjc_resumes/_editor_workspace.html' %}{% endblock %}

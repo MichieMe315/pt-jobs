@@ -1,3 +1,4 @@
+from django.utils import timezone
 import json
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -7,7 +8,7 @@ from .models import InternationalProfile, SavedCareerPlan
 class SavedComparisonTests(TestCase):
     def setUp(self):
         self.user = get_user_model().objects.create_user(username="intl-salary@example.com", password="TestPass2026!X")
-        InternationalProfile.objects.create(user=self.user, country_of_education="India")
+        InternationalProfile.objects.create(email_verified_at=timezone.now(),user=self.user, country_of_education="India")
         self.client.force_login(self.user)
 
     def test_international_salary_save_is_blocked(self):

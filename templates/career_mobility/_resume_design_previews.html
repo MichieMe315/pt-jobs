@@ -1,0 +1,14 @@
+{% load static %}
+<div class="resume-layout-previews" aria-label="Four resume designs">
+  {% url 'ptjc_resumes:design_preview' 'classic' as classic_preview %}<a href="{% if classic_preview %}{{ classic_preview }}{% if canadian_designs %}?audience=canadian{% endif %}{% else %}{% static 'ptjc_resumes/designs/classic.png' %}{% endif %}" target="_blank" rel="noopener"><img src="{% if canadian_designs %}{% static 'ptjc_resumes/designs/canadian-classic.png' %}{% else %}{% static 'ptjc_resumes/designs/classic.png' %}{% endif %}" alt="Classic resume layout" loading="lazy"><span>Classic</span></a>
+  {% url 'ptjc_resumes:design_preview' 'clinical' as clinical_preview %}<a href="{% if clinical_preview %}{{ clinical_preview }}{% if canadian_designs %}?audience=canadian{% endif %}{% else %}{% static 'ptjc_resumes/designs/clinical.png' %}{% endif %}" target="_blank" rel="noopener"><img src="{% if canadian_designs %}{% static 'ptjc_resumes/designs/canadian-clinical.png' %}{% else %}{% static 'ptjc_resumes/designs/clinical.png' %}{% endif %}" alt="Clinical resume layout" loading="lazy"><span>Clinical</span></a>
+  {% url 'ptjc_resumes:design_preview' 'editorial' as editorial_preview %}<a href="{% if editorial_preview %}{{ editorial_preview }}{% if canadian_designs %}?audience=canadian{% endif %}{% else %}{% static 'ptjc_resumes/designs/editorial.png' %}{% endif %}" target="_blank" rel="noopener"><img src="{% if canadian_designs %}{% static 'ptjc_resumes/designs/canadian-editorial.png' %}{% else %}{% static 'ptjc_resumes/designs/editorial.png' %}{% endif %}" alt="Editorial resume layout" loading="lazy"><span>Editorial</span></a>
+  {% url 'ptjc_resumes:design_preview' 'sidebar' as sidebar_preview %}<a href="{% if sidebar_preview %}{{ sidebar_preview }}{% if canadian_designs %}?audience=canadian{% endif %}{% else %}{% static 'ptjc_resumes/designs/sidebar.png' %}{% endif %}" target="_blank" rel="noopener"><img src="{% if canadian_designs %}{% static 'ptjc_resumes/designs/canadian-sidebar.png' %}{% else %}{% static 'ptjc_resumes/designs/sidebar.png' %}{% endif %}" alt="Sidebar resume layout" loading="lazy"><span>Sidebar</span></a>
+</div>
+<style>
+.resume-layout-previews{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0;max-width:840px}
+.resume-layout-previews a{display:flex;flex-direction:column;gap:6px;text-align:center;min-width:0}
+.resume-layout-previews img{display:block;width:100%;height:auto;aspect-ratio:612/792;object-fit:cover;border:1px solid #cad2cd;border-radius:4px}
+.resume-layout-previews span{font-size:14px;font-weight:600}
+@media(min-width:900px){.panel .resume-layout-previews{grid-template-columns:repeat(4,minmax(0,1fr))}}
+</style>

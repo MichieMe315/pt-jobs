@@ -1,0 +1,130 @@
+{
+  "compiled_on": "2026-10-20",
+  "validation": "PASSED: source counts, unique keys, positive rents, vacancy ranges, wage ordering, food conversion, fee sums, incentive sum, suppression and Banff conflict checks.",
+  "files": [
+    {
+      "file": "food_northern_communities_2026.json",
+      "records": 124,
+      "sha256": "d82ddcc388dd7de0ec98ae70aab786b1369600f18d3fe17b4d9aa9e7c4fd29c7"
+    },
+    {
+      "file": "gaps_and_conflicts.json",
+      "records": 14,
+      "sha256": "7bee03fc790cdd2a93923bd50c8318e5bb5676324056f61ad49bbf27515c89d0"
+    },
+    {
+      "file": "hospital_pay_examples.json",
+      "records": 2,
+      "sha256": "e9b56bd18fb60a58104c4c598b9b7bad697a605f6680826ca1136e41b164eb31"
+    },
+    {
+      "file": "household_mbm_components_2025.json",
+      "records": 459,
+      "sha256": "726db82b09e849867f73fa934e79286fb3a19aa7f2b5a76f20b4a99111013cca"
+    },
+    {
+      "file": "household_mbm_family_sizes_2025.json",
+      "records": 650,
+      "sha256": "5334a7e47f26e57ed68cc2558bbd32a97300f36f0ac4040a3b8e7a0dc465838d"
+    },
+    {
+      "file": "housing_alberta_rural_2025.json",
+      "records": 310,
+      "sha256": "ea4173c62d0d0bbd4562cae058d6432eef6cb970abd1cb793e6fe58e9cb93169"
+    },
+    {
+      "file": "housing_cmhc_rural_2025.json",
+      "records": 2290,
+      "sha256": "265f0c583093bdfd909ab367fca4d60895a43e8ee57b5d8bd187b731ad5bfc3a"
+    },
+    {
+      "file": "housing_national_2025.json",
+      "records": 832,
+      "sha256": "535795c958659d622a0e66d151f8ec2d9a820a76f69fd6438e924ac0e84e2d3c"
+    },
+    {
+      "file": "international_costs.json",
+      "records": 14,
+      "sha256": "fe8d7c982abf93e8d5ea01008b31162499a6694bd5057602965342077f37f607"
+    },
+    {
+      "file": "international_fee_scenarios.json",
+      "records": 2,
+      "sha256": "03adef084ec4f0ac2ff7487673cd5b3caa5dcedcaf5120ba9288ad253979d6e7"
+    },
+    {
+      "file": "international_language_policy.json",
+      "records": 1,
+      "sha256": "b955d5c9ffe27ac5470f86fc12787af49e4946551bb88277ed5866034c3eed3c"
+    },
+    {
+      "file": "language_test_prices.json",
+      "records": 3,
+      "sha256": "99c4c510fb64bd39f607c71a04d1048fe1f3963bcefcdb34917337ee78d9e280"
+    },
+    {
+      "file": "licensing_fees.json",
+      "records": 41,
+      "sha256": "9c4b7fa2267a08c3b60dc3c87ce31b25dfe9a7b719bb5d0e9678a464bd13a2ee"
+    },
+    {
+      "file": "municipal_utility_components.json",
+      "records": 2,
+      "sha256": "b2391a0493a304b7185a2eebc6308af9568e00f457456c7c04699ebd27124e8f"
+    },
+    {
+      "file": "priority_community_coverage.json",
+      "records": 81,
+      "sha256": "d70007059552fdd3b1f085e6d4152c857e086a36053830672202ca797c88a1df"
+    },
+    {
+      "file": "pt_wages_regional.json",
+      "records": 86,
+      "sha256": "4a2c264fdbd5697c69573340c0eeba69387d5258c296e6b6722251dc0ff4b8f9"
+    },
+    {
+      "file": "rural_incentives.json",
+      "records": 6,
+      "sha256": "d1d468255756ef622b105ce6c3232ee91a567c86c3e06389a0d1a5dc609d1b9f"
+    },
+    {
+      "file": "source_provenance.json",
+      "records": 48,
+      "sha256": "805dc197b4cb14df3743ca31394027458881c02349315cf2a3f5556cd92e3b2c"
+    },
+    {
+      "file": "vacancy_small_centres_2025.json",
+      "records": 141,
+      "sha256": "df97cd29277e9fd710e602b89cb0034adc8ff7522a14dd38168e9684a85d93ed"
+    },
+    {
+      "file": "international_country_document_notes_2026.json",
+      "records": 17,
+      "sha256": "e9779a8e6eec124febb453925d7df664fdabec85abb288157969c89af733d93e"
+    }
+  ],
+  "summary": {
+    "cmhc_source_csds": 458,
+    "cmhc_csds_with_any_rent": 206,
+    "cmhc_csds_fully_suppressed": 252,
+    "cmhc_numeric_rent_rows": 654,
+    "cmhc_good_or_better_rent_rows": 580,
+    "alberta_communities": 62,
+    "rural_source_communities_total": 520,
+    "rural_source_communities_with_some_rent": 268,
+    "northern_communities": 124,
+    "northern_published_prices": 87,
+    "wage_areas": 86,
+    "published_wage_areas": 72,
+    "mbm_regions": 65,
+    "priority_communities": 81,
+    "priority_communities_with_some_name_matched_rent": 59,
+    "municipal_two_bedroom_references_refreshed": 81,
+    "municipalities_with_economic_region_mapping": 5161
+  },
+  "updated_on": "2026-10-28",
+  "supplemental_sources": {
+    "municipal_rents": "../community_updates_2026_10_28.json",
+    "municipality_economic_regions": "../community_economic_regions_2021.json"
+  }
+}

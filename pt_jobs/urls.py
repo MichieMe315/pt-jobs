@@ -1,3 +1,5 @@
+from career_mobility.editable_products import jobseeker_calendar
+from career_mobility.store_status import status as digital_checkout_status
 from career_mobility.usage import usage_report
 from django.contrib import admin
 from django.urls import include, path
@@ -16,6 +18,11 @@ sitemaps = {
 }
 
 urlpatterns = [
+    path('admin/digital-checkout/',admin.site.admin_view(digital_checkout_status),name='digital_checkout_status'),
+    path("jobseeker/tools/resume/", include("ptjc_resumes.canadian_urls")),
+    path("jobseeker/tools/business-cards/", include("ptjc_resumes.jobseeker_card_urls")),
+    path("jobseeker/tools/calendar/", jobseeker_calendar, name="jobseeker_calendar"),
+    path("jobseeker/tools/calendar/editor/", jobseeker_calendar, {"embedded": True}, name="jobseeker_calendar_editor"),
     path('admin/paid-postings/',paid_postings,name='paid_postings_report'),
     path('admin/calculator-usage/',admin.site.admin_view(usage_report),name='calculator_usage_report'),
 

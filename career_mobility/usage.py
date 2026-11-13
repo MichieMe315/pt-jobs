@@ -17,7 +17,7 @@ from .models import CalculatorUsageEvent
 
 COOKIE = 'ptjc_calculator_session'
 SALT = 'ptjc.calculator.usage.v1'
-ONCE = {'salary_calculator_view', 'salary_calculator_start', 'salary_comparison_complete'}
+ONCE = {'salary_calculator_view', 'salary_calculator_start', 'salary_comparison_complete', 'salary_comparison_returned'}
 EVENTS = {name for name, label in CalculatorUsageEvent.EVENTS}
 logger = logging.getLogger(__name__)
 

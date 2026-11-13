@@ -1,0 +1,8 @@
+{% extends 'career_mobility/standalone.html' %}
+{% load static %}
+{% block title %}International business cards | Physiotherapy Jobs Canada{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'ptjc_resumes/builder.css' %}?v=47">{% endblock %}
+{% block tool_content %}
+<a href="{% url 'mobility_international_shop' %}">← International resources</a>
+{% load related_digital_products %}{% include 'ptjc_resumes/_card_workspace.html' %}{% related_digital_products False "cards" %}
+{% endblock %}

@@ -9,8 +9,12 @@ class ShopTests(TestCase):
         DigitalProduct.objects.create(title='Draft',slug='draft',price_cad='5.00',is_published=False)
 
     def test_shop_public_and_only_published(self):
+        self.product.preview_editor = 'resume-review-workspace'
+        self.product.save(update_fields=['preview_editor'])
         response=self.client.get(reverse('ptjc_shop'))
         self.assertEqual(response.status_code,200)
+        self.assertContains(response,'Career tools and downloads')
+        response=self.client.get(reverse('mobility_canadian_shop'))
         self.assertContains(response,'Resume template')
         self.assertNotContains(response,'<h2 class="h4 mt-2">Draft</h2>')
 

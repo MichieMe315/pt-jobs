@@ -1,0 +1,812 @@
+[
+  {
+    "city": "Red Deer",
+    "province": "Alberta",
+    "rent": 1420.5,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4808011"
+  },
+  {
+    "city": "Strathmore",
+    "province": "Alberta",
+    "rent": 1542.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4805018"
+  },
+  {
+    "city": "Drumheller",
+    "province": "Alberta",
+    "rent": 1111.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4805026"
+  },
+  {
+    "city": "Sylvan Lake",
+    "province": "Alberta",
+    "rent": 1420.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4808012"
+  },
+  {
+    "city": "Bow Island",
+    "province": "Alberta",
+    "rent": 917.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4801014"
+  },
+  {
+    "city": "Wainwright",
+    "province": "Alberta",
+    "rent": 1104.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4807054"
+  },
+  {
+    "city": "Red Deer County",
+    "province": "Alberta",
+    "rent": 1703.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4808001"
+  },
+  {
+    "city": "Stettler",
+    "province": "Alberta",
+    "rent": 1056.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4807026"
+  },
+  {
+    "city": "Bowden",
+    "province": "Alberta",
+    "rent": 1007.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4808006"
+  },
+  {
+    "city": "Innisfail",
+    "province": "Alberta",
+    "rent": 1066.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4808008"
+  },
+  {
+    "city": "Penhold",
+    "province": "Alberta",
+    "rent": 1496.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4808009"
+  },
+  {
+    "city": "Eckville",
+    "province": "Alberta",
+    "rent": 940.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4808024"
+  },
+  {
+    "city": "Edmonton",
+    "province": "Alberta",
+    "rent": 1581.25,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4811061"
+  },
+  {
+    "city": "Lethbridge",
+    "province": "Alberta",
+    "rent": 1570.25,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4802012"
+  },
+  {
+    "city": "Bassano",
+    "province": "Alberta",
+    "rent": 792.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4802039"
+  },
+  {
+    "city": "Rocky Mountain House",
+    "province": "Alberta",
+    "rent": 1098.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4809015"
+  },
+  {
+    "city": "Brooks",
+    "province": "Alberta",
+    "rent": 1439.75,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4802034"
+  },
+  {
+    "city": "Smoky Lake",
+    "province": "Alberta",
+    "rent": 1112.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4812029"
+  },
+  {
+    "city": "Ponoka",
+    "province": "Alberta",
+    "rent": 1045.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4808039"
+  },
+  {
+    "city": "Rimbey",
+    "province": "Alberta",
+    "rent": 1012.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4808044"
+  },
+  {
+    "city": "Vegreville",
+    "province": "Alberta",
+    "rent": 1065.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4810028"
+  },
+  {
+    "city": "Westlock",
+    "province": "Alberta",
+    "rent": 971.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4813031"
+  },
+  {
+    "city": "Whitecourt",
+    "province": "Alberta",
+    "rent": 1225.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4813030"
+  },
+  {
+    "city": "Tofield",
+    "province": "Alberta",
+    "rent": 941.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4810018"
+  },
+  {
+    "city": "Barrhead",
+    "province": "Alberta",
+    "rent": 937.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4813019"
+  },
+  {
+    "city": "Medicine Hat",
+    "province": "Alberta",
+    "rent": 1206.5,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4801006"
+  },
+  {
+    "city": "Lacombe",
+    "province": "Alberta",
+    "rent": 1406.75,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4808031"
+  },
+  {
+    "city": "Fort Macleod",
+    "province": "Alberta",
+    "rent": 1334.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4803019"
+  },
+  {
+    "city": "Raymond",
+    "province": "Alberta",
+    "rent": 921.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4802008"
+  },
+  {
+    "city": "Taber",
+    "province": "Alberta",
+    "rent": 1173.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4802022"
+  },
+  {
+    "city": "Pincher Creek",
+    "province": "Alberta",
+    "rent": 1078.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4803014"
+  },
+  {
+    "city": "Cardston",
+    "province": "Alberta",
+    "rent": 960.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4803004"
+  },
+  {
+    "city": "Claresholm",
+    "province": "Alberta",
+    "rent": 958.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4803022"
+  },
+  {
+    "city": "Nanton",
+    "province": "Alberta",
+    "rent": 1093.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4803026"
+  },
+  {
+    "city": "Hanna",
+    "province": "Alberta",
+    "rent": 923.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4804011"
+  },
+  {
+    "city": "Vulcan",
+    "province": "Alberta",
+    "rent": 1217.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4805006"
+  },
+  {
+    "city": "Olds",
+    "province": "Alberta",
+    "rent": 1071.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4806034"
+  },
+  {
+    "city": "Sundre",
+    "province": "Alberta",
+    "rent": 1375.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4806036"
+  },
+  {
+    "city": "Three Hills",
+    "province": "Alberta",
+    "rent": 710.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4805048"
+  },
+  {
+    "city": "High River",
+    "province": "Alberta",
+    "rent": 1329.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4806006"
+  },
+  {
+    "city": "Provost",
+    "province": "Alberta",
+    "rent": 936.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4807002"
+  },
+  {
+    "city": "Black Diamond",
+    "province": "Alberta",
+    "rent": 1600.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4806011"
+  },
+  {
+    "city": "Okotoks",
+    "province": "Alberta",
+    "rent": 1785.33,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4806012"
+  },
+  {
+    "city": "Calgary",
+    "province": "Alberta",
+    "rent": 1896.25,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4806016"
+  },
+  {
+    "city": "Carstairs",
+    "province": "Alberta",
+    "rent": 1032.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4806029"
+  },
+  {
+    "city": "Didsbury",
+    "province": "Alberta",
+    "rent": 1458.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4806032"
+  },
+  {
+    "city": "Camrose",
+    "province": "Alberta",
+    "rent": 1350.5,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4810011"
+  },
+  {
+    "city": "High Prairie",
+    "province": "Alberta",
+    "rent": 1251.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4817021"
+  },
+  {
+    "city": "Swan Hills",
+    "province": "Alberta",
+    "rent": 943.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4817024"
+  },
+  {
+    "city": "Slave Lake",
+    "province": "Alberta",
+    "rent": 1532.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4817029"
+  },
+  {
+    "city": "Falher",
+    "province": "Alberta",
+    "rent": 935.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4819046"
+  },
+  {
+    "city": "Fairview",
+    "province": "Alberta",
+    "rent": 1027.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4819068"
+  },
+  {
+    "city": "Mayerthorpe",
+    "province": "Alberta",
+    "rent": 839.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4813002"
+  },
+  {
+    "city": "Wembley",
+    "province": "Alberta",
+    "rent": 1068.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4819011"
+  },
+  {
+    "city": "Grande Prairie",
+    "province": "Alberta",
+    "rent": 1444.5,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4819012"
+  },
+  {
+    "city": "Sexsmith",
+    "province": "Alberta",
+    "rent": 1010.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4819014"
+  },
+  {
+    "city": "Peace River",
+    "province": "Alberta",
+    "rent": 1194.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4819038"
+  },
+  {
+    "city": "Drayton Valley",
+    "province": "Alberta",
+    "rent": 1254.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4811031"
+  },
+  {
+    "city": "Lloydminster (Part)",
+    "province": "Alberta",
+    "rent": 1458.75,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4810039"
+  },
+  {
+    "city": "Canmore",
+    "province": "Alberta",
+    "rent": 2446.33,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4815023"
+  },
+  {
+    "city": "Fox Creek",
+    "province": "Alberta",
+    "rent": 1460.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4818002"
+  },
+  {
+    "city": "Greenview No. 16",
+    "province": "Alberta",
+    "rent": 1133.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4818015"
+  },
+  {
+    "city": "Valleyview",
+    "province": "Alberta",
+    "rent": 1342.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4818018"
+  },
+  {
+    "city": "Cold Lake",
+    "province": "Alberta",
+    "rent": 1327.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4812002"
+  },
+  {
+    "city": "Bonnyville",
+    "province": "Alberta",
+    "rent": 1201.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4812009"
+  },
+  {
+    "city": "Elk Point",
+    "province": "Alberta",
+    "rent": 875.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4812016"
+  },
+  {
+    "city": "St. Paul",
+    "province": "Alberta",
+    "rent": 1083.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4812018"
+  },
+  {
+    "city": "Grimshaw",
+    "province": "Alberta",
+    "rent": 1073.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4819074"
+  },
+  {
+    "city": "Crowsnest Pass",
+    "province": "Alberta",
+    "rent": 1059.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4815007"
+  },
+  {
+    "city": "Banff",
+    "province": "Alberta",
+    "rent": 2091.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4815035"
+  },
+  {
+    "city": "Wood Buffalo",
+    "province": "Alberta",
+    "rent": 1452.33,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4816037"
+  },
+  {
+    "city": "Bruderheim",
+    "province": "Alberta",
+    "rent": 1506.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4810066"
+  },
+  {
+    "city": "Millet",
+    "province": "Alberta",
+    "rent": 1025.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4811011"
+  },
+  {
+    "city": "Wetaskiwin",
+    "province": "Alberta",
+    "rent": 1320.75,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4811002"
+  },
+  {
+    "city": "High Level",
+    "province": "Alberta",
+    "rent": 1269.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4817093"
+  },
+  {
+    "city": "Athabasca",
+    "province": "Alberta",
+    "rent": 1013.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4813048"
+  },
+  {
+    "city": "Beaverlodge",
+    "province": "Alberta",
+    "rent": 935.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4819009"
+  },
+  {
+    "city": "Two Hills",
+    "province": "Alberta",
+    "rent": 1034.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4810052"
+  },
+  {
+    "city": "Vermilion",
+    "province": "Alberta",
+    "rent": 1163.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4810042"
+  },
+  {
+    "city": "Hinton",
+    "province": "Alberta",
+    "rent": 1493.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4814019"
+  },
+  {
+    "city": "Edson",
+    "province": "Alberta",
+    "rent": 1142.0,
+    "reference_period": "2025",
+    "verified_on": "2026-10-28",
+    "source_url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+    "basis": "Government of Alberta municipality survey average; two-bedroom non-subsidized rental units. Historical reference, not a current asking rent.",
+    "source_geography_code": "4814024"
+  }
+]

@@ -1,0 +1,5 @@
+{% extends editor_base %}
+{% block title %}{{ editor_title }} | Physiotherapy Jobs Canada{% endblock %}
+{% block extra_head %}{% if editor_base != "base.html" %}<link rel="canonical" href="{{ editor_canonical }}"><meta name="description" content="{{ editor_description }}">{% endif %}{% endblock %}
+{% block content %}{% include "career_mobility/shop_editor_frame.html" %}{% endblock %}
+{% block tool_content %}{% include "career_mobility/shop_editor_frame.html" %}{% endblock %}

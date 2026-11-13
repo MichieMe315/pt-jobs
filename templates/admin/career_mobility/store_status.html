@@ -1,0 +1,19 @@
+{% extends 'admin/base_site.html' %}
+{% block content %}
+<div class="ops-shell">
+  {% if local %}<p class="ops-notice"><strong>Local checkout test.</strong> These values describe the process running on your computer. Railway’s payment gateway and environment variables are separate.</p>{% endif %}
+  <section class="ops-panel">
+    <h2>Digital products</h2>
+    <dl>
+      <dt>Stripe connection</dt><dd>{{ has_key|yesno:'Configured,Not configured for this server' }} · {{ mode }}</dd>
+      <dt>Digital webhook signing secret</dt><dd>{{ has_webhook|yesno:'Configured,Not configured for this server' }}</dd>
+      <dt>Endpoint on this server</dt><dd style="overflow-wrap:anywhere"><code>{{ endpoint }}</code></dd>
+      <dt>Workbook price</dt><dd>CAD ${{ workbook.price_cad }} {% url 'admin:career_mobility_digitalproduct_change' workbook.pk as workbook_admin %}{% if workbook_admin %}· <a href="{{ workbook_admin }}">Edit price</a>{% endif %}</dd>
+    </dl>
+    {% if error %}<p role="alert">{{ error }}</p>{% endif %}
+    {% if probe %}<p role="status">{{ probe }}</p>{% endif %}
+    {% if has_key %}<form method="post">{% csrf_token %}<button class="ops-button" name="probe" value="1">Check Stripe connection · no charge</button></form>{% endif %}
+    <p>To confirm the full flow, complete a Stripe test payment and check that the purchase appears in the buyer’s library.</p>
+  </section>
+</div>
+{% endblock %}

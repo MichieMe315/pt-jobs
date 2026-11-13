@@ -1,0 +1,322 @@
+:root{--ink:#153f4c;--teal:#106f72;--paper:#f3f5f4;--line:#d5dfdf;--muted:#586b73}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:#183744;font:15px/1.55 Arial,Helvetica,sans-serif}.top{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:20px 4vw;background:var(--ink);color:white}.top a{color:inherit;text-decoration:none;font-weight:bold}.top span{font-weight:normal;margin-left:16px;opacity:.9}.heading{display:flex;justify-content:space-between;align-items:center;gap:24px;margin:30px 0}.heading h1{font-size:30px;line-height:1.2;margin:4px 0 12px}.heading p{margin:0}.eyebrow{color:var(--teal);font-size:11px;letter-spacing:1.4px;font-weight:bold}main{max-width:1760px;margin:auto;padding:0 3vw 60px}.save-state{font-size:13px;white-space:nowrap;color:var(--teal)}.save-state.unsaved{color:#8a4b18}.layout{display:grid;grid-template-columns:210px minmax(330px,1fr) minmax(350px,1fr);gap:22px;align-items:start}aside{position:sticky;top:18px}aside nav{display:grid;gap:6px}button,input,select,textarea{font:inherit}button,a.primary{cursor:pointer;border:1px solid var(--line);border-radius:5px;background:white;color:var(--ink);padding:10px 16px;text-decoration:none}button:hover{border-color:var(--teal)}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #48a9aa;outline-offset:2px}button.primary{background:var(--teal);border-color:var(--teal);color:white;font-weight:bold}button:disabled{cursor:wait;opacity:.65}nav button{text-align:left;font-size:14px;padding:12px}nav button.active{background:var(--ink);border-color:var(--ink);color:white}.privacy,aside details{font-size:12px;color:var(--muted);padding:14px 0}.privacy{border-top:1px solid var(--line);margin-top:20px}aside ul{padding-left:18px}a{color:var(--teal)}.form-panel{background:white;border:1px solid var(--line);padding:24px;border-radius:8px}.title-label{font-size:12px;color:var(--muted)}input,select,textarea{display:block;width:100%;border:1px solid #b7c9cb;border-radius:4px;background:white;color:#173744;padding:10px 11px;margin:5px 0 0}textarea{min-height:100px;resize:vertical;line-height:1.5}label{display:block;font-weight:bold;font-size:13px;margin-top:18px}.help,.step-intro{font-size:13px;color:var(--muted);margin:6px 0 12px}.form-panel h2{font-size:21px;margin:26px 0 6px}.repeat{padding:18px 0;border-bottom:1px solid var(--line)}.repeat-tools{display:flex;gap:7px;justify-content:flex-end;margin-top:12px}.repeat-tools button{padding:6px 10px;font-size:12px}.repeat h3{margin:0;font-size:15px}.add{margin:18px 0}.form-actions{display:flex;justify-content:space-between;gap:12px;margin-top:24px;padding-top:20px;border-top:1px solid var(--line)}details.example{font-size:13px;background:#edf5f4;padding:12px;margin:15px 0}details.example p{margin-bottom:0}.preview-tools{display:flex;justify-content:space-between;align-items:center;gap:10px}.preview-tools h2{font-size:18px}.preview-tools button{font-size:12px}.preview-note{font-size:12px;color:var(--muted)}#resume{background:#fff;border:1px solid #d0d9dc;min-height:650px;box-shadow:0 3px 18px #11343a0c;padding:35px 30px;font-size:11px;line-height:1.5;color:#242a30;overflow-wrap:anywhere}#resume h2{font-size:24px;line-height:1.2;margin:0 0 7px;color:#153f4c}#resume h3{font-size:12px;margin:19px 0 6px;color:#153f4c}#resume h4{font-size:11px;margin:10px 0 3px}#resume p{margin:0 0 6px;white-space:pre-line}#resume ul{padding-left:16px;margin:6px 0 12px}#resume .meta{font-size:10px;color:#53626b}#resume .empty{color:#7b858c;font-style:italic}.purchase{padding:24px 0}.purchase h2{font-size:18px}.purchase p{font-size:13px}#errors{background:#fff0eb;border:1px solid #dfb4a3;padding:14px 18px;margin-bottom:18px;color:#8e3127;white-space:pre-line}#completion{font-size:12px;color:#7c4921;margin-top:12px}input[type=checkbox]{display:inline-block;width:auto;margin-right:8px}.order-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}.order-row button{padding:5px 10px;margin-left:4px}.save-button{margin-top:12px;width:100%}#draft-title{font-weight:bold}.state-box{font-size:13px;border-left:3px solid var(--teal);padding:4px 12px;margin:16px 0}.subheading{font-size:16px;margin-top:26px}@media(min-width:1400px){#resume{font-size:12px;padding:40px 42px}}@media(max-width:1150px){.layout{grid-template-columns:170px minmax(300px,1fr)}.preview-panel{grid-column:2}#resume{max-width:700px}.top span{display:none}}@media(max-width:700px){.heading{display:block}.heading h1{font-size:25px}.save-state{margin-top:14px}.layout{display:block}aside{position:static}aside nav{display:flex;overflow:auto;padding-bottom:12px}nav button{white-space:nowrap}.privacy,aside details{display:none}.form-panel{padding:18px}.preview-panel{margin-top:25px}main{padding:0 16px 40px}.top{padding:16px}.top a{font-size:13px}.repeat-tools{flex-wrap:wrap}#resume{padding:25px 20px}}
+/* Match the international account; the document preview retains its paper colours. */
+:root{--ink:#e8edf2;--teal:#ff8995;--paper:#171e24;--line:#4a5967;--muted:#bcc7d0}body{background:var(--paper);color:#e8edf2;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}.top{background:#171e24;border-bottom:1px solid var(--line)}.heading h1{font-size:28px}.form-panel{background:#202a35}button,a.primary{background:#263341;color:#edf1f5}button.primary,nav button.active{background:#b9283d;border-color:#b9283d;color:#fff}input,select,textarea{background:#18212b;color:#edf1f5;border-color:#586878}details.example{background:#293743}.save-state{color:#a6e0bb}.save-state.unsaved{color:#ffd192}#errors{background:#45252b;color:#ffe3e7;border-color:#ba5261}#resume{color:#242a30}#resume h2,#resume h3{color:#153f4c}@media(max-width:700px){#resume{min-height:380px}.heading h1{font-size:24px}.top{flex-wrap:wrap;padding:14px 4vw}}
+
+.repeat-tools{gap:10px}.repeat-tools button{min-height:40px}.form-panel label{font-size:14px}.step-intro{line-height:1.6;max-width:65ch}.empty-section{padding:20px;border:1px dashed #586878;border-radius:6px;line-height:1.6}.save-state{position:sticky;top:10px;background:#202a35;padding:12px 16px;border-radius:6px;border:1px solid #586878;z-index:2}.completion-link{display:block;width:100%;text-align:left;margin:8px 0;color:#ffd2d9;border-color:#80515b}.repeat{background:#1c2732;padding:20px;border:1px solid #465666;border-radius:7px;margin:16px 0}.repeat h3{font-size:17px}.purchase{border-top:2px solid #b9283d;margin-top:24px}#completion h3{font-size:16px;color:#edf1f5}input::placeholder,textarea::placeholder{color:#899aab;font-size:12px}@media(max-width:700px){.save-state{position:static}.repeat{padding:15px}.form-actions{position:static;background:#202a35;padding:14px 0}.form-actions button{min-height:46px}aside nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible}aside nav button{white-space:normal;font-size:12px;padding:10px;min-height:44px}.save-button{margin-bottom:16px}}
+
+#mobile-section,.mobile-section-label{display:none}@media(max-width:700px){aside nav{display:none}#mobile-section,.mobile-section-label{display:block}#mobile-section{margin-bottom:12px}.form-actions{position:static}.heading{margin:22px 0}.form-panel{margin-top:12px}}
+
+.staff-demo-notice{padding:12px 4vw;background:#473820;color:#ffe6b0;font-size:14px;border-bottom:1px solid #94713f}
+.resume-ad{margin:20px 0;padding:10px;border-top:1px solid #d6dce2;max-width:100%;overflow:hidden;min-height:90px}.resume-ad>small{display:block;font-size:11px;color:#64707e;text-align:center;margin-bottom:6px}.save-state{position:sticky;top:8px;z-index:2;border:1px solid #83a88f;background:#eef8f1;color:#204f2d;padding:10px 14px;border-radius:6px}.save-state.unsaved{background:#fff3dc;color:#674600;border-color:#cda75f}
+
+.design-picker,.specialty-picker{border:0;padding:0;margin:16px 0}.design-picker legend,.specialty-picker legend{font-weight:700;margin:12px 0}.design-picker{display:grid;grid-template-columns:1fr 1fr;gap:8px}.design-picker legend{grid-column:1/-1}.design-option{display:grid;text-align:left;gap:4px;white-space:normal}.design-option small{font-size:11px}.design-option[aria-pressed=true]{border:2px solid #b62b3b;background:#3a2731}.specialty-picker label{font-weight:400}.bullet-example{display:block;text-align:left;margin:10px 0;width:100%;font-size:13px}#resume[data-layout=clinical]{border-top:18px solid #183a47}#resume[data-layout=editorial]{border-left:5px solid #9a3046}#resume[data-layout=editorial] h2{font-size:32px;color:#9a3046}#resume[data-layout=editorial] h3{color:#9a3046;border-bottom:1px solid #e5d4d8;padding-bottom:5px}#resume[data-layout=sidebar]{border-left:45px solid #dce8ea}#resume[data-layout=sidebar] h3{border-bottom:1px solid #aac0c3;padding-bottom:4px}@media(max-width:420px){.design-picker{grid-template-columns:1fr}.design-option{padding:10px}}
+.card-workspace{display:grid;grid-template-columns:minmax(280px,1fr) minmax(320px,1fr);gap:30px;align-items:start}.card-proof{display:block;width:100%;max-width:560px;aspect-ratio:1.75;box-shadow:0 8px 30px #0003;background:white}.card-workspace .preview-panel{position:sticky;top:20px}@media(max-width:760px){.card-workspace{display:block}.card-workspace .preview-panel{position:static}}
+
+.resume-ad{position:static;min-height:90px;max-height:140px;padding:8px 0;overflow:hidden}.design-option img{width:100%;height:140px;object-fit:contain;object-position:top;background:white;border-radius:3px}
+
+.design-gallery{margin:15px 0;border:1px solid #586477;border-radius:6px;padding:12px}.design-gallery summary{cursor:pointer;font-weight:bold}.card-mobile-tabs{display:none}@media(max-width:760px){.card-mobile-tabs{display:flex;gap:10px;margin:15px 0}.card-workspace[data-view=edit]>.preview-panel{display:none}.card-workspace[data-view=preview]>.form-panel{display:none}}@media(max-width:420px){.design-picker{grid-template-columns:1fr 1fr}.design-option img{height:100px}.design-option small{font-size:10px}}
+
+.ptjc-card-studio{--ink:#173c34;--teal:#175f52;--line:#d2e0d8;--muted:#4a675f;background:#eef2ed;color:#193d34}.ptjc-card-studio .top{background:#163e35;color:#fff;border:0}.ptjc-card-studio .top a{color:#fff}.ptjc-card-studio .heading h1,.ptjc-card-studio .card-workspace h2{font-family:Georgia,serif;color:#183e35}.ptjc-card-studio .form-panel,.ptjc-card-studio .preview-panel,.ptjc-card-studio .purchase,.ptjc-card-studio .save-state{background:#fff;color:#193d34;border-color:#d2e0d8;border-radius:14px}.ptjc-card-studio .card-workspace input,.ptjc-card-studio .card-workspace select{background:#f8faf7;color:#193d34;border-color:#acc2b8}.ptjc-card-studio .primary{background:#175f52;color:white}.ptjc-card-studio .help,.ptjc-card-studio .preview-note{color:#4a675f}.ptjc-card-studio .card-proof{border-radius:8px;box-shadow:0 7px 20px #173b3226}
+.resume-workspace [hidden]{display:none!important}
+.resume-workspace{--paper:#f5f1ed;--ink:#332a30;--teal:#71374a;--line:#dacdd1;--muted:#61545b;color:var(--ink);background:var(--paper)}
+.resume-workspace .top{background:#332a30;color:white}.resume-workspace .top a{color:inherit}
+.resume-workspace main{max-width:1480px}
+.resume-workspace .form-panel,.resume-workspace button,.resume-workspace input,.resume-workspace select,.resume-workspace textarea,.resume-workspace a.primary{background:white;color:var(--ink);border-color:var(--line)}
+.resume-workspace button.primary,.resume-workspace a.primary,.resume-workspace #steps button.active,.layout-options button[aria-pressed=true]{background:#71374a;color:white;border-color:#71374a}
+.resume-workspace details.example,.resume-workspace .repeat{background:#faf6f3;border-color:var(--line)}
+.resume-workspace .design-bar{background:#fff;padding:12px 16px;border:1px solid var(--line);border-radius:12px;display:flex;justify-content:space-between;align-items:end;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+.design-bar h2{font-size:14px;margin:0 0 6px}.layout-options{display:flex;gap:6px;flex-wrap:wrap}.layout-options button,.design-bar>button{min-height:42px;padding:6px 12px}
+#resume-sample{margin:0}#resume-sample img{width:100%;height:auto;display:block;border:1px solid #dacdd1;box-shadow:0 8px 24px #332a301c}#resume-sample figcaption{margin-top:8px;font-size:.82rem}
+#resume[data-layout=sidebar]{border:1px solid #d0d9dc;padding:0;display:grid;grid-template-columns:minmax(86px,28%) minmax(0,1fr);gap:0}#resume[data-layout=sidebar]:not(:has(.resume-sidebar)){display:block;padding:24px}
+.resume-sidebar{background:#e9d8cd;padding:22px 12px}.resume-main{padding:24px 14px;min-width:0}
+#resume[data-layout=clinical]{border:1px solid #dacdd1}#resume[data-layout=clinical]>h2{background:#f4dfd1;text-align:center;padding:16px 8px}
+#resume[data-layout=classic] h2{text-align:center}#resume[data-layout=editorial]{border-left:1px solid #dacdd1;border-top:6px solid #71374a}
+@media(min-width:701px) and (max-width:1150px){.resume-workspace .layout{grid-template-columns:minmax(260px,1fr) minmax(260px,1fr)}.resume-workspace .layout>aside{position:static;grid-column:1/-1}.resume-workspace #steps{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}.resume-workspace .preview-panel{grid-column:auto}.resume-workspace aside .privacy{display:none}}
+@media(max-width:700px){.resume-workspace .design-bar{align-items:start}.resume-workspace #resume-sample img{max-height:60vh;object-fit:contain;background:white}.resume-workspace .preview-panel[data-example=true]{margin-top:10px}.resume-workspace .layout{display:flex;flex-direction:column}.resume-workspace .layout>*{width:100%}.resume-workspace .preview-panel{order:-1}.resume-workspace .preview-panel .purchase{display:none}}
+.resume-workspace #resume[data-layout=editorial] h2{font-family:Georgia,serif}
+#sample-page{padding:4px 9px;margin-right:5px}
+.edit-jump{display:none}
+@media(max-width:700px){.edit-jump{display:inline-block;padding:.45rem 0}.resume-workspace #resume-sample img{max-height:none}.resume-workspace #resume-edit{scroll-margin-top:12px}}
+
+.resume-workspace .design-bar{border:0;border-block:1px solid #b9aea3;border-radius:0;background:transparent;padding:10px 0}
+.resume-workspace .layout-options button,.resume-workspace .design-bar>button{border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;color:#42352e}
+.resume-workspace .layout-options button[aria-pressed=true]{border-color:#65493e;background:transparent;color:#332a25;font-weight:700}
+.resume-workspace #resume-sample img{border:0;box-shadow:0 3px 13px #332a3020}
+.resume-workspace #resume[data-layout=editorial]{border-top:1px solid #d0c7be}
+.resume-workspace #resume[data-layout=editorial] h2{text-align:center;color:#302d29}
+.resume-workspace #resume[data-layout=editorial] h3{color:#302d29;border:0}
+.resume-workspace #resume[data-layout=sidebar] .resume-sidebar{background:#f2ede7}
+.resume-workspace #resume[data-layout=sidebar] h3{border:0}
+
+/* Match the site's Slate shell; the printable document keeps its own palette. */
+.resume-workspace{--paper:#272b30;--ink:#e9ecef;--teal:#8bb9ff;--line:#495057;--muted:#adb5bd;background:var(--paper);color:var(--ink)}
+.resume-workspace .top{background:#32383e;border-bottom:1px solid var(--line);color:#e9ecef}
+.resume-workspace .top a,.resume-workspace .edit-jump{color:#8bb9ff}
+.resume-workspace .form-panel,.resume-workspace button,.resume-workspace input,.resume-workspace select,.resume-workspace textarea,.resume-workspace a.primary{background:#32383e;color:#e9ecef;border-color:#626b75}
+.resume-workspace button.primary,.resume-workspace a.primary,.resume-workspace #steps button.active{background:#c9343b;border-color:#c9343b;color:white}
+.resume-workspace details.example,.resume-workspace .repeat{background:#272b30;border-color:var(--line)}
+.resume-workspace .layout-options button,.resume-workspace .design-bar>button{color:#e9ecef}
+.resume-workspace .layout-options button[aria-pressed=true]{color:#8bb9ff;border-color:#8bb9ff}
+.resume-workspace #design-controls{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap}
+.resume-workspace #design-controls h2,.resume-workspace .resume-palette{margin:0}
+.resume-workspace #resume-palette{width:auto;margin:0;min-height:40px}
+.resume-workspace #resume{--resume-ink:#222;--resume-wash:#f2ede7;background:white}
+.resume-workspace #resume[data-palette=slate]{--resume-ink:#334155;--resume-wash:#e8edf2}
+.resume-workspace #resume[data-palette=navy]{--resume-ink:#203c5c;--resume-wash:#e5edf5}
+.resume-workspace #resume[data-palette=plum]{--resume-ink:#58334b;--resume-wash:#f1e6ee}
+.resume-workspace #resume[data-palette=grayscale]{--resume-ink:#252525;--resume-wash:#ececec}
+.resume-workspace #resume[data-palette]:not([data-palette=original]) :is(h2,h3){color:var(--resume-ink)}
+.resume-workspace #resume[data-layout=clinical]:not([data-palette=original])>h2,.resume-workspace #resume[data-layout=sidebar] .resume-sidebar{background:var(--resume-wash)}
+.resume-workspace #resume[data-layout=sidebar]{grid-template-columns:minmax(0,1fr) minmax(86px,32%)}
+
+.resume-workspace #resume[data-layout=sidebar]{display:block;padding:0}
+.resume-workspace #resume .resume-identity{padding:1.15rem 1.25rem .8rem;border-bottom:1px solid #d0c7be}
+.resume-workspace #resume[data-layout=clinical] .resume-identity{background:#f4e4d9;text-align:center}
+.resume-workspace #resume[data-layout=clinical]:not([data-palette=original]) .resume-identity{background:var(--resume-wash)}
+.resume-workspace #resume[data-layout=editorial] .resume-identity>.meta{text-align:center}
+.resume-workspace #resume .resume-columns{display:grid;grid-template-columns:minmax(0,30%) minmax(0,1fr);gap:0}
+.resume-workspace #resume[data-layout=sidebar] .resume-columns{grid-template-columns:minmax(0,1fr) minmax(0,33%)}
+.resume-workspace #resume .resume-sidebar{background:transparent;border-right:1px solid #ddd5cf;padding:.8rem;overflow-wrap:anywhere}
+.resume-workspace #resume[data-layout=sidebar] .resume-sidebar{background:var(--resume-wash);border:0;border-left:1px solid #ddd5cf}
+.resume-workspace #resume .resume-main{padding:.9rem}
+.resume-workspace #resume .resume-section:first-child>h3{margin-top:0}
+.ptjc-card-studio{--ink:#e9ecef;--teal:#8bb9ff;--line:#495057;--muted:#adb5bd;background:#272b30;color:#e9ecef}
+.ptjc-card-studio .top,.ptjc-card-studio .form-panel,.ptjc-card-studio .preview-panel,.ptjc-card-studio .purchase,.ptjc-card-studio .save-state{background:#32383e;color:#e9ecef;border-color:#495057;border-radius:7px}
+.ptjc-card-studio .heading h1,.ptjc-card-studio .card-workspace h2{font-family:system-ui,sans-serif;color:#e9ecef}
+.ptjc-card-studio .card-workspace input,.ptjc-card-studio .card-workspace select{background:#272b30;color:#e9ecef;border-color:#626b75}
+.ptjc-card-studio .primary{background:#c9343b;color:white}
+.ptjc-card-studio .help,.ptjc-card-studio .preview-note{color:#adb5bd}
+
+.resume-workspace #resume[data-audience=international] h2{text-align:left;font-size:27px;color:#253449}
+.resume-workspace #resume[data-audience=international][data-layout=clinical]>h2{background:transparent;text-align:left;padding:0 0 13px;border-bottom:3px solid var(--resume-ink,#20423f)}
+.resume-workspace #resume[data-audience=international][data-layout=classic] h2{text-align:left}
+.resume-workspace #resume[data-audience=international][data-layout=editorial] .resume-columns{grid-template-columns:minmax(0,1fr) minmax(0,32%)}
+.resume-workspace #resume[data-audience=international][data-layout=editorial] .resume-sidebar{border:0;border-left:1px solid #ddd5cf}
+.resume-workspace #resume[data-audience=international][data-layout=sidebar] .resume-columns{grid-template-columns:minmax(0,31%) minmax(0,1fr)}
+.resume-workspace #resume[data-audience=international][data-layout=sidebar] .resume-sidebar{border:0;border-right:1px solid #ddd5cf;background:#eaf0f3}
+.resume-workspace #resume[data-audience=international] .resume-identity{border-bottom:2px solid #253449}
+
+.specialty-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.6rem 1rem}.specialty-picker .specialty-options label{display:flex;align-items:start;gap:.45rem;margin:0}.specialty-options input{width:auto;flex:none;margin-top:.35em}@media(max-width:1100px){.specialty-options{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:480px){.specialty-options{grid-template-columns:1fr}}
+
+.card-toolbar{display:flex;align-items:end;justify-content:space-between;gap:1rem;margin:1rem 0 .4rem}.card-toolbar h1{font-size:clamp(1.4rem,4vw,2rem);margin:0}.card-toolbar label{display:block}.card-toolbar select{width:auto;max-width:45vw}.card-style-options{display:flex;align-items:end;gap:.7rem;flex-wrap:wrap;margin:1rem 0}.card-style-options input[type=color]{width:3rem;padding:2px}.card-style-options label{margin:0}#card-field-options label{display:flex;align-items:center;gap:.45rem}#card-field-options input{width:auto}#card-state{font-size:.82rem;margin-bottom:.75rem}
+
+.resume-workspace #resume[data-typeface=serif]{font-family:Georgia,serif}.resume-workspace #resume[data-typeface=sans]{font-family:Arial,sans-serif}.resume-workspace #resume:is([data-typeface=serif],[data-typeface=sans]) h2{font-family:inherit}.resume-workspace #resume[style*='--custom-resume-accent'] :is(h2,h3){color:var(--custom-resume-accent)}#design-controls input[type=color]{width:3rem;min-height:2.2rem}
+
+#design-controls details{flex-basis:100%}#design-controls details label{display:inline-flex;align-items:center;gap:.35rem;margin:.3rem .6rem .3rem 0}#design-controls details input[type=checkbox]{width:auto;margin:0}.resume-portrait{display:block;height:auto;margin:0 auto .35rem}.resume-workspace #resume[data-audience=international] .resume-portrait{margin-left:0}
+
+@media(min-width:761px){.ptjc-card-studio .preview-panel{position:sticky;top:1rem;max-height:calc(100vh - 2rem);overflow:auto}}.ptjc-card-studio .card-proof{max-width:420px}.ptjc-card-studio #card-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 .65rem}.ptjc-card-studio #card-fields [hidden]{display:none!important}@media(max-width:490px){.ptjc-card-studio #card-fields{grid-template-columns:1fr}}
+
+.canadian-resume-guide{padding:1rem 1.25rem;margin:1rem 0;background:#32383e;border:1px solid #626b75}.canadian-resume-guide h2{font-size:1.2rem;margin-bottom:.75rem}.canadian-resume-guide>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}.canadian-resume-guide p{margin:0}@media(max-width:600px){.canadian-resume-guide>div{grid-template-columns:1fr;gap:.5rem}.card-toolbar{flex-wrap:wrap}}
+
+.editor-actions{display:flex;align-items:center;flex-wrap:wrap;gap:.75rem 1rem;margin-top:.85rem}
+.purchase .editor-actions a{margin:0}
+.purchase .editor-actions .primary{display:inline-flex;align-items:center;min-height:44px}
+.purchase :is(form,.editor-actions)+form{margin-top:.85rem}
+.card-toolbar{flex-wrap:wrap;align-items:center}
+.card-toolbar select{max-width:100%}
+.card-appearance .card-style-top,.card-appearance .card-style-options{
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,10rem),1fr));gap:.8rem;align-items:start;
+}
+.card-appearance .card-style-top label,.card-appearance .card-colour-control>label{margin:0 0 .35rem}
+.card-appearance .card-style-top select{display:block;margin-top:.35rem}
+.card-appearance .card-colour-control>div{display:grid;grid-template-columns:44px minmax(0,1fr);gap:.45rem;align-items:stretch}
+.card-appearance .card-colour-control input{margin:0;min-width:0;height:44px}
+.card-appearance .card-colour-control input[type=color]{width:44px;cursor:pointer}
+.card-appearance .card-colour-control input[type=text]{width:100%;font-family:monospace;padding:.4rem}
+
+.resume-workspace .save-state,.ptjc-card-studio .save-state{position:static}
+.resume-workspace .form-actions,.resume-workspace .preview-tools,.ptjc-card-studio .card-toolbar{flex-wrap:wrap;gap:.65rem}
+.ptjc-card-studio .card-toolbar>div{min-width:0;max-width:100%}
+.ptjc-card-studio .card-toolbar select{display:block;width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+.resume-workspace #resume[data-palette=forest]{--resume-ink:#22493d;--resume-wash:#e9f1e9}
+.resume-workspace #resume[data-palette=teal]{--resume-ink:#145663;--resume-wash:#e6f3f4}
+.resume-workspace #resume[data-palette=berry]{--resume-ink:#75384f;--resume-wash:#f7e9ee}
+.resume-workspace #resume[data-palette=clay]{--resume-ink:#793f2d;--resume-wash:#f9eee6}
+.resume-workspace #resume[data-palette=cobalt]{--resume-ink:#293e86;--resume-wash:#e9edfc}
+.resume-workspace #resume[data-typeface=sans]{font-family:"DejaVu Sans",Verdana,sans-serif}
+.resume-workspace #resume[data-typeface=helvetica]{font-family:Helvetica,Arial,sans-serif}
+.resume-workspace #resume:is([data-typeface=times],[data-typeface=italic]){font-family:"Times New Roman",Times,serif}
+.resume-workspace #resume[data-typeface=italic]{font-style:italic}
+.resume-workspace #resume[data-typeface=mono]{font-family:"Courier New",Courier,monospace}
+.resume-workspace #resume:not([data-typeface=original]) :is(h2,h3,h4){font-family:inherit}
+.resume-workspace #resume .resume-interests{padding-inline-start:1rem;margin:0 0 .75rem}
+.resume-workspace #resume .resume-interests li{margin-block:.2rem;overflow-wrap:normal;hyphens:auto}
+.resume-workspace #design-controls{flex-wrap:wrap;gap:.65rem;align-items:center}
+
+/* Keep the workspace controls separate from the résumé design styles. */
+.resume-workspace .design-bar{display:flex;align-items:center;justify-content:flex-start;gap:.5rem .75rem;padding:.5rem 0;overflow-anchor:none}
+.resume-workspace #design-controls{display:flex;flex:1 1 32rem;min-width:0;gap:.5rem .75rem;align-items:center}
+.resume-workspace #design-controls .layout-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));flex:1 1 20rem}
+.resume-workspace .layout-options button,.resume-workspace .design-bar>button{min-height:2.5rem;height:100%;padding:.35rem .6rem;line-height:1.2}
+.resume-workspace #design-controls>details{flex:0 0 auto;margin:0}
+.resume-workspace #design-controls>details[open]{flex:1 0 100%;padding:.5rem .75rem;border:1px solid var(--line);border-radius:.4rem}
+.resume-workspace #design-controls summary{cursor:pointer}
+.resume-workspace .resume-appearance-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,10rem),1fr));gap:.75rem;margin:.5rem 0 0}
+.resume-workspace #design-controls .resume-appearance-fields label{display:block;margin:0 0 .3rem}
+.resume-workspace #design-controls .resume-appearance-fields select{width:100%;margin:0}
+.resume-workspace .resume-appearance-fields input[type=color]{display:inline-block;margin:0 .4rem 0 0;vertical-align:middle}
+.resume-workspace .preview-panel{min-width:0;overflow-anchor:none}
+.ptjc-card-studio #card-fields{grid-auto-rows:auto;gap:.6rem .75rem}
+.ptjc-card-studio #card-fields>[data-field]{display:grid;grid-template-rows:subgrid;grid-row:span 2;min-width:0;gap:.3rem}
+.ptjc-card-studio #card-fields label,.ptjc-card-studio #card-fields input{margin:0}
+@media(max-width:560px){.resume-workspace #design-controls .layout-options{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.resume-workspace .layout>.preview-panel{order:0}}
+
+/* Reference-led layouts. Keep these rules scoped to the document itself. */
+.resume-workspace #resume:is([data-layout=clinical],[data-layout=editorial],[data-layout=sidebar]){display:block;padding:0}
+.resume-workspace #resume[data-layout=classic] h2{text-align:center}
+.resume-workspace #resume[data-layout=classic]>.meta{text-align:center}
+.resume-workspace #resume[data-layout=classic] .resume-section>h3{padding-bottom:.15rem;border-bottom:1px solid #a8a8a8}
+.resume-workspace #resume .resume-role{margin:0 0 .45rem;text-align:center}
+.resume-workspace #resume[data-layout=clinical] .resume-identity{text-align:center;background:#fae5d7;padding:1.65rem 1rem}
+.resume-workspace #resume[data-layout=clinical]:not([data-palette=original]) .resume-identity{background:var(--resume-wash)}
+.resume-workspace #resume[data-layout=clinical] .resume-identity h2{text-align:center;text-transform:uppercase}
+.resume-workspace #resume[data-layout=clinical][data-typeface=original] .resume-role{font:italic 1.15em Georgia,serif}
+.resume-workspace #resume[data-layout=clinical] .resume-sidebar{text-align:center}
+.resume-workspace #resume[data-layout=clinical] .resume-sidebar section+section{margin-top:.65rem;padding-top:.5rem;border-top:1px solid #d0c7be}
+.resume-workspace #resume[data-layout=editorial] .resume-identity{text-align:center;border-bottom:1px solid #d0c7be}
+.resume-workspace #resume[data-layout=editorial] .resume-identity h2{text-align:center;text-transform:uppercase;letter-spacing:.1em}
+.resume-workspace #resume[data-layout=editorial] .resume-role{text-transform:uppercase;letter-spacing:.12em}
+.resume-workspace #resume[data-layout=editorial] .resume-contact-strip{border-top:1px solid #d0c7be;padding-top:.45rem}
+.resume-workspace #resume[data-layout=editorial] .resume-columns{grid-template-columns:minmax(0,30%) minmax(0,1fr)}
+.resume-workspace #resume[data-layout=editorial] .resume-sidebar{border:0;border-right:1px solid #ddd5cf}
+.resume-workspace #resume .resume-columns{min-height:26rem}
+.resume-workspace #resume .resume-sidebar,.resume-workspace #resume .resume-main{min-width:0}
+.resume-workspace #resume[data-layout=sidebar] .resume-role{text-align:left}
+
+.resume-workspace #resume[data-layout=clinical] .resume-identity{background:var(--custom-resume-header,#fae5d7)}
+.resume-workspace #resume[data-layout=clinical]:not([data-palette=original]) .resume-identity{background:var(--custom-resume-header,var(--resume-wash))}
+.resume-workspace #resume[data-layout=clinical] .resume-identity :is(h2,.resume-role){color:var(--custom-resume-header-ink,var(--resume-ink))}
+.resume-workspace #design-controls .resume-appearance-fields input[type=color]{display:inline-block;margin:0 .4rem 0 0;vertical-align:middle}
+
+.resume-workspace #resume{font-size:clamp(11px,1vw,14px);line-height:1.5}
+.resume-workspace #resume .resume-section>h3{font-size:.93em;line-height:1.35}
+.resume-workspace #resume .resume-section h4{font-size:1em;line-height:1.35;margin:.75em 0 .25em}
+.resume-workspace #resume .resume-section .meta{font-size:.86em;line-height:1.45}
+.resume-workspace #resume .resume-section li+li{margin-top:.25em}
+.resume-workspace #resume .resume-sidebar{font-size:.94em;line-height:1.45}
+.resume-workspace #resume .resume-sidebar h3{font-size:.91em;text-transform:uppercase}
+.resume-workspace #resume:is([data-layout=clinical],[data-layout=editorial],[data-layout=sidebar]) .resume-main .resume-section>h3{text-transform:uppercase}
+.resume-workspace #resume[data-layout=clinical] .resume-main .resume-section>h3{padding-bottom:.25em;border-bottom:1px solid #d0c7be}
+.resume-workspace #resume[data-layout=editorial][data-typeface=original] .resume-section>h3{font-family:Georgia,serif;font-weight:400}
+.resume-workspace #resume:is([data-layout=clinical],[data-layout=editorial])[data-typeface=original] .resume-identity h2{font-family:Arial,Helvetica,sans-serif;font-weight:400}
+.resume-workspace .preview-panel .design-bar{border:0;margin:0 0 .7rem;padding:.25rem 0}
+.resume-workspace .preview-panel #design-controls{flex-basis:100%}
+.resume-workspace .preview-panel #design-controls .layout-options{flex-basis:100%}
+.resume-workspace .preview-panel #design-controls h2{font-size:.9rem}
+.resume-workspace .pdf-proof{margin:1rem 0}
+.resume-workspace .pdf-proof summary{cursor:pointer}
+.resume-workspace #pdf-proof-frame{width:100%;height:clamp(26rem,75vh,56rem);border:1px solid var(--line);background:white}
+.resume-workspace .preview-panel .design-bar{margin:0 0 .6rem;padding:0}
+.resume-workspace .preview-panel #design-controls{gap:.35rem .7rem;align-items:center}
+.resume-workspace .resume-layout-field{display:flex;align-items:center;gap:.55rem;flex:1 1 100%;min-width:0}
+.resume-workspace .resume-layout-field label{margin:0;white-space:nowrap;font-size:.9rem}
+.resume-workspace .resume-layout-field select{min-width:0;margin:0;flex:1;width:auto}
+.resume-workspace .preview-tools{gap:.5rem;margin:0 0 .55rem}
+.resume-workspace .preview-tools h2{margin:0}
+.resume-workspace .preview-tools #sample-toggle{padding:.4rem .7rem;min-height:36px}
+.resume-workspace .preview-panel #design-controls>details:not([open]){font-size:.85rem}
+.resume-workspace .preview-panel #design-controls>details summary{margin:0}
+
+
+.resume-workspace #resume-edit .design-bar{border:0;border-bottom:1px solid var(--line);padding:0 0 .7rem;margin:0 0 .9rem}
+.resume-workspace #resume-edit #design-controls{gap:.45rem .7rem}
+.resume-workspace #resume-edit #design-controls>details:not([open]){font-size:.9rem}
+
+/* Keep design controls above the editing workspace so the paper gets its full column. */
+.resume-workspace main > .design-bar{padding:.8rem 0;margin:0 0 1.15rem;border-color:var(--line)}
+.resume-workspace main > .design-bar #design-controls{width:100%;gap:.55rem 1.25rem}
+.resume-workspace main > .design-bar .resume-layout-field{flex:0 1 22rem;max-width:100%}
+.resume-workspace main > .design-bar #design-controls > details[open]{flex-basis:100%}
+.resume-workspace .layout > *{min-width:0}
+.resume-workspace .layout > .preview-panel{padding:0;margin:0}
+.resume-workspace .preview-tools{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;min-height:42px;margin-bottom:.6rem}
+.resume-workspace .layout > .form-panel{margin:0;padding:clamp(1rem,2vw,1.6rem)}
+@media(min-width:1151px){.resume-workspace .layout{display:grid;grid-template-columns:minmax(10rem,.34fr) minmax(0,1fr) minmax(0,1.1fr);gap:1.25rem}}
+@media(min-width:761px) and (max-width:1150px){
+ .resume-workspace .layout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+ .resume-workspace .layout>aside{grid-column:1/-1}
+ .resume-workspace #steps{display:flex;flex-wrap:wrap;gap:.4rem}
+ .resume-workspace #steps button{width:auto}
+}
+@media(max-width:760px){.resume-workspace .layout{display:grid;grid-template-columns:minmax(0,1fr);gap:1rem}}
+#card-account-options[hidden]{display:none}
+#card-account-options{display:flex;flex-wrap:wrap;gap:.75rem 1.5rem;margin:1rem 0;padding:1rem;border:1px solid var(--line)}
+#card-account-options>div{display:flex;flex-wrap:wrap;gap:.5rem 1rem}
+.resume-workspace #resume .resume-columns:has(>.resume-sidebar[aria-hidden=true]){grid-template-columns:minmax(0,1fr)}
+.resume-workspace #resume .resume-sidebar[aria-hidden=true]{display:none}
+.resume-workspace .preview-tools #sample-toggle,.resume-workspace .form-actions button,.resume-workspace .pdf-proof button{min-height:44px;line-height:1.25}
+.resume-workspace .preview-panel #resume{container-type:inline-size;min-height:0}
+.resume-workspace #resume .resume-columns{min-height:0}
+.resume-workspace #resume .resume-identity h2{line-height:1.12}
+.resume-workspace #resume .resume-contact-strip{overflow-wrap:anywhere}
+.resume-workspace #resume .resume-section+.resume-section{margin-top:.9em}
+
+/* Keep mobile fields, navigation, and live preview in one explicit grid track. */
+@media(max-width:760px){
+  .resume-workspace .layout{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-flow:row}
+  .resume-workspace .layout>aside,.resume-workspace .layout>.form-panel,.resume-workspace .layout>.preview-panel{
+    grid-area:auto / 1 / auto / 2;width:100%;max-width:none;order:0
+  }
+  .resume-workspace .layout>aside{position:static;display:block}
+  .resume-workspace #steps{display:none}
+  .resume-workspace .mobile-section-label,.resume-workspace #mobile-section{display:block;width:100%}
+  .resume-workspace .layout>aside>.save-button{margin-top:.45rem}
+}
+.resume-workspace #resume:is([data-layout=clinical],[data-layout=editorial]) .resume-identity h2{text-transform:none}
+
+/* Keep the paper flush with the editor by placing preview controls above both. */
+.resume-workspace main > .design-bar .preview-tools{margin:0 0 0 auto;gap:.65rem;align-self:center}
+.resume-workspace main > .design-bar .preview-tools h2{white-space:nowrap}
+.resume-workspace .layout>.preview-panel :is(#resume-sample,#resume){margin-top:0}
+@media(max-width:760px){.resume-workspace main > .design-bar .preview-tools{width:100%;margin:0;justify-content:space-between}}
+@media(min-width:1151px){
+  .resume-workspace main > .design-bar #design-controls{width:auto;flex:1 1 32rem;min-width:0}
+}
+
+.resume-workspace details > summary { display:block; list-style:none; cursor:pointer; text-decoration:underline; text-underline-offset:.18em; }
+.resume-workspace details > summary::marker { content:""; }
+.resume-workspace details > summary::-webkit-details-marker { display:none; }
+.resume-workspace details > summary:focus-visible { outline:2px solid currentColor; outline-offset:3px; }
+
+/* Prevent layout utilities from revealing the contents of closed disclosures. */
+.resume-workspace details:not([open]) > :not(summary) { display: none !important; }
+.resume-workspace #design-controls { flex-wrap: wrap; }
+.resume-workspace #design-controls > details[open] { min-width: 0; max-width: 100%; }
+
+.resume-workspace #design-controls .resume-settings { flex: 1 1 100%; min-width: 0; }
+.resume-workspace .resume-settings-toggle { min-height: 44px; text-align: left; }
+.resume-workspace .resume-settings-toggle[aria-expanded="true"] { border-color: var(--teal); }
+.resume-workspace .resume-settings-content[hidden] { display: none !important; }
+.resume-workspace #resume-section-options label { display:inline-flex;align-items:center;gap:.35rem;margin:.4rem .75rem .4rem 0; }
+.resume-workspace #resume-section-options input[type=checkbox] { width:auto;margin:0; }
+
+.resume-workspace main > .design-bar { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:start; }
+.resume-workspace main > .design-bar #design-controls { display:grid; width:auto; min-width:0; }
+.resume-workspace .resume-design-actions { display:flex; flex-wrap:wrap; align-items:center; gap:.65rem; }
+.resume-workspace main > .design-bar .resume-layout-field { flex:0 1 auto; }
+.resume-workspace .resume-design-actions :is(button,select) { min-height:44px; margin:0; }
+.resume-workspace #design-controls > .resume-settings-content { padding:.65rem 0; min-width:0; }
+@media(max-width:1000px) {
+  .resume-workspace main > .design-bar { grid-template-columns:minmax(0,1fr); }
+}
+.resume-next-steps { margin:2rem 0 1rem; padding:1.25rem 0; border-top:1px solid var(--line); }
+.resume-next-steps-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr)); gap:1rem; margin:.75rem 0 1rem; }
+.resume-next-steps-grid article { padding:1rem; border:1px solid var(--line); }
+.resume-next-steps-grid :is(h3,p) { margin:0; }
+.resume-next-steps-grid p { margin-top:.4rem; }
+.resume-workspace #design-controls .resume-appearance-fields{align-items:start;grid-template-columns:repeat(auto-fit,minmax(min(100%,11rem),1fr))}
+.resume-workspace .resume-colour-actions{display:flex;align-items:center;gap:.5rem}
+.resume-workspace #design-controls .resume-colour-actions input[type=color]{width:3.5rem;margin:0}
+.resume-workspace #design-controls .resume-appearance-fields :is(select,input[type=color],button){height:48px;min-height:48px;box-sizing:border-box}
+.resume-workspace #design-controls .resume-colour-actions button{margin:0}
+
+.resume-workspace .resume-pdf-options{display:grid;gap:.65rem}
+.resume-workspace .resume-pdf-option{display:flex;flex-wrap:wrap;align-items:flex-end;gap:.65rem;margin:0}
+.resume-workspace .resume-pdf-option label{display:grid;gap:.3rem;margin:0}
+.resume-workspace .resume-pdf-option :is(input,button){height:48px;min-height:48px;box-sizing:border-box;margin:0}
+.resume-workspace #resume-sample a{display:block}
+.resume-workspace #resume-sample figcaption a{display:inline}
+.resume-workspace .purchase .resume-pdf-option + .resume-pdf-option{margin-top:0}
+.resume-workspace .purchase{margin-top:1rem;padding:1rem 0 0}
+.resume-workspace .purchase > h2{margin:0 0 .65rem}

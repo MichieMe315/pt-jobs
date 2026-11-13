@@ -1,0 +1,5 @@
+{% if not user.is_authenticated %}
+<p><a href="{{ signup_url }}">Create an account</a> to save your design.{% if employer_signup_url %} <a href="{{ employer_signup_url }}">Create an employer account</a>.{% endif %}</p>
+{% elif not can_save %}<p>Saving is unavailable for this account or listing.</p>{% endif %}
+  {% if price %}<p><strong>CAD ${{ price }}</strong> for print access.</p>{% endif %}
+  {% if starter_quantity %}<p>Eligible new accounts include {{ starter_quantity }} starter card{{ starter_quantity|pluralize }}.{% if can_save %} {{ remaining }} remaining.{% endif %}</p>{% endif %}

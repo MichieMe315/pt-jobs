@@ -1,0 +1,62 @@
+{% extends product_base %}{% load static %}
+{% block title %}{{ product.title }} | PTJC{% endblock %}
+{% block tool_content %}
+{% if starter_remaining %}<section class="panel"><strong>{{ starter_remaining }} starter uses remaining</strong>
+{% if product.kind == 'bundle' %}<form method="post" action="{% url 'mobility_claim_starter_bundle' product.pk %}">{% csrf_token %}<button type="submit">Claim one starter bundle</button></form>
+{% elif product.download and not editable_key and not product.is_online_builder %}<a class="btn" href="{% url 'mobility_product_download' product.pk %}">Use one starter download</a>{% endif %}</section>{% endif %}
+
+<link rel="stylesheet" href="{% static 'career_mobility/pt-jobs-slate.css' %}">
+<link rel="stylesheet" href="{% static 'career_mobility/digital-shop.css' %}?v=51">
+<div class="ptjc-storefront{% if product_base == 'career_mobility/standalone.html' %} ptjc-career-shell ptjc-slate{% endif %}">
+<nav class="shop-crumb" aria-label="Breadcrumb"><a href="{% if international_shop %}{% url 'mobility_international_shop' %}{% else %}{% url 'mobility_shop' %}{% endif %}">← Digital products</a></nav>
+{% if request.GET.payment == 'cancel' %}<p class="notice">Checkout was cancelled. No purchase was completed.</p>{% endif %}
+<div class="shop-product{% if card_designs %} shop-card-pack{% endif %}">
+  <header class="shop-product-header">
+    {% if product.category %}<p class="shop-tag">{{ product.category }}</p>{% endif %}
+    <h1>{% if card_designs %}Business card templates{% else %}{{ product.title }}{% endif %}</h1>
+    <p>{% if card_designs %}Choose a design and customize both sides in the online builder.{% else %}{{ product.description|default:product.short_description|linebreaksbr }}{% endif %}</p>
+    {% if card_designs %}
+    <div class="shop-card-pack-links">
+      <a class="btn btn-primary" href="#card-designs">Choose a design ↓</a>
+    </div>
+    {% endif %}
+  </header>
+  <div class="shop-product-art">
+{% if card_designs %}
+<h2 id="card-designs">Choose a design</h2><p>Customize the preview in the builder. Sign in to save or download your own card.</p>
+<div class="shop-card-samples">
+{% for key,label in card_designs %}
+<section>
+<h3>{{ label }}</h3>
+<div class="shop-card-sample-sides">
+<figure><img src="{% url 'mobility_public_card_preview' key 'front' %}" alt="{{ label }} front" loading="lazy"><figcaption>Front</figcaption></figure>
+<figure><img src="{% url 'mobility_public_card_preview' key 'back' %}" alt="{{ label }} back" loading="lazy"><figcaption>Back</figcaption></figure>
+</div>
+<a class="btn btn-primary" href="{% url 'mobility_try_cards' %}?design={{ key }}&amp;audience={% if international_shop %}international{% else %}canadian{% endif %}">Customize {{ label }}</a>
+{% if owned and file_available and user.is_authenticated %}<a class="btn btn-outline-light" href="{% url 'mobility_product_download' product.pk %}?design={{ key }}">Download {{ label }} files</a>{% endif %}
+</section>
+{% endfor %}
+</div>
+{% else %}{% include 'career_mobility/_product_cover.html' with item=product %}{% endif %}
+</div>
+  <div class="shop-product-actions">{% if not card_designs or not owned and price %}{% if editable_key == 'physio-wall-calendar-2027' %}<a class="btn btn-outline-light" href="{{ editor_url }}&amp;preview=letter">Preview US Letter layout</a>{% endif %}{% if editable_key %}{% if not owned %}<p><a class="btn btn-primary" target="_blank" rel="noopener" href="{{ editor_url }}">Open builder</a></p>{% endif %}{% endif %}{% if price %}<p>CAD ${{ price }}</p>{% endif %}{% url 'mobility_product_checkout' product.pk as checkout_url %}{% if product.includes_card_builder %}<p><a target="_blank" rel="noopener" href="{% url 'mobility_try_cards' %}{% if international_shop %}?audience=international{% endif %}">Open the studio ↗</a></p>{% endif %}
+{% if product.includes_resume_builder and product.audience == 'canadian' %}<p><a target="_blank" rel="noopener" href="{% url 'ptjc_canadian_resumes:canadian_start' %}">Start building without an account ↗</a></p>{% endif %}
+{% url 'ptjc_resumes:start' as international_builder %}{% if product.includes_resume_builder and product.audience == 'international' and international_builder %}<p><a target="_blank" rel="noopener" href="{{ international_builder }}">Start an International résumé ↗</a></p>{% endif %}
+{% if not checkout_url %}<p>Checkout is not available on this page yet.</p>{% elif not file_available %}<p class="notice">This resource is temporarily unavailable. Please contact PTJC if you have already purchased it.</p>{% elif owned and product.includes_card_builder %}<a class="btn" href="{% if international_shop %}{% url 'ptjc_resumes:cards' %}{% else %}{% url 'jobseeker_cards:cards' %}{% endif %}" target="_blank" rel="noopener">Open my business cards ↗</a>{% elif owned and product.includes_resume_builder %}{% include 'career_mobility/_open_resume_builder.html' %}{% elif owned and editor_url %}<a class="btn btn-primary" href="{{ editor_url }}">Open my editor</a>{% elif owned and product.kind == 'file' %}{% if card_designs %}
+
+
+{% else %}<a class="btn" href="{% url 'mobility_product_download' product.pk %}">Download my purchase</a>{% endif %}{% if print_palettes %}<p>Print colours: <a href="{% url 'mobility_product_download' product.pk %}?palette=grayscale">Grayscale</a> · <a href="{% url 'mobility_product_download' product.pk %}?palette=plum">Plum</a></p>{% endif %}{% elif product.kind == 'workbook' %}<a class="btn btn-primary" href="{% url 'mobility_international' %}">Open International Planner</a>{% elif product.includes_resume_builder and product.audience == 'canadian' and not user.jobseeker.is_approved %}<a class="btn" href="{% url 'login' %}?next={{ request.path|urlencode }}">Sign in to an approved Canadian job seeker account</a>{% elif product.includes_resume_builder and product.audience != 'canadian' and not user.international_pt_profile and not product.download %}<a class="btn" href="{% url 'mobility_international_signup' %}?next={{ request.path|urlencode }}">Create an international account</a><p><a href="{% url 'mobility_international_login' %}?next={{ request.path|urlencode }}">Sign in to your international account</a></p>{% elif price <= 0 %}<p>Purchasing is not currently available.</p>{% elif user.is_authenticated %}<form method="post" action="{% url 'mobility_product_checkout' product.pk %}">{% csrf_token %}{% if price %}<label for="resource-discount">Discount code (optional)</label><input id="resource-discount" name="discount_code" maxlength="50" autocomplete="off">{% endif %}<button class="btn btn-primary" type="submit">Continue to checkout</button></form>{% else %}<div class="actions">{% if product.audience != 'international' %}<a class="btn" href="{% url 'login' %}?next={{ request.path|urlencode }}">Canadian job seeker sign in</a>{% endif %}{% if product.audience != 'canadian' %}<a class="btn" href="{% url 'mobility_international_login' %}?next={{ request.path|urlencode }}">International account sign in</a>{% endif %}</div>{% endif %}{% endif %}</div></div>
+{% if gallery_pages %}
+<section class="shop-gallery" aria-labelledby="gallery-title">
+  <h2 id="gallery-title">Look inside</h2>{% if editable_key == "physio-wall-calendar-2027" %}<p>Three layouts in one download. No photos required. Print at actual size on US Letter paper or printer-compatible cardstock.</p>{% endif %}
+  {% if gallery_print_samples %}<p>These print samples show the page formats. Open the editable demo to try the browser version.</p>{% endif %}
+  <div class="shop-gallery-pages">
+    {% for page in gallery_pages %}
+      <figure><a href="{{ page.url }}" target="_blank" rel="noopener">
+        <img src="{{ page.url }}" alt="{{ page.caption }}" loading="lazy" decoding="async">
+        </a><figcaption>{{ page.caption }}{% if page.editor_url %}<br><a href="{{ page.editor_url }}" target="_blank" rel="noopener">Try this layout ↗</a>{% endif %}</figcaption></figure>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+<section class="shop-product-info">{% if bundle_items %}<h2>Included in this bundle</h2><ul>{% for line in bundle_items %}<li>{{ line.product.title }}{% if line.product.kind == "workbook" %} · {{ line.quantity }} download credit{{ line.quantity|pluralize }}{% endif %}</li>{% endfor %}</ul><p>Every included resource activates in your account when this bundle is purchased or granted.</p>{% endif %}{% if product.includes_card_builder %}<h2>Editable business cards</h2><p>Choose from four designs, edit both sides and keep your drafts. Preview both sides as you work.</p>{% endif %}{% if product.includes_resume_builder %}<h2>Resume PDF access</h2>{% if product.audience == 'canadian' %}{% include "career_mobility/_resume_design_previews.html" with canadian_designs=True %}{% else %}{% include "career_mobility/_resume_design_previews.html" %}{% endif %}<p>Build your résumé, preview each layout and download a finished PDF. Saved drafts are available in your account.</p>{% endif %}</section>{% include "ptjc_resumes/_offers.html" %}</div>{% endblock %}

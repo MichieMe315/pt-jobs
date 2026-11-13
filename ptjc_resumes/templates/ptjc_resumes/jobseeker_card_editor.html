@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Business card builder | Physiotherapy Jobs Canada{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'ptjc_resumes/builder.css' %}?v=47">{% endblock %}
+{% block content %}<a class="btn btn-outline-secondary btn-sm mt-3" href="{{ card_index_url }}">My saved cards</a>
+{% load related_digital_products %}{% include 'ptjc_resumes/_card_workspace.html' %}{% related_digital_products True "cards" %}{% endblock %}

@@ -1,0 +1,18 @@
+{% if shop_url %}
+{% if next_steps %}
+<section class="resume-next-steps" aria-labelledby="resume-next-steps-title">
+  <h2 id="resume-next-steps-title">After your résumé</h2>
+  <div class="resume-next-steps-grid">
+    {% for title,description,url in next_steps %}
+    <article><h3><a href="{{ url }}">{{ title }}</a></h3><p>{{ description }}</p></article>
+    {% endfor %}
+  </div>
+  <a href="{{ shop_url }}">Browse career templates and tools</a>
+</section>
+{% else %}
+<nav aria-label="Related digital products" style="padding:1rem;display:flex;flex-wrap:wrap;gap:.75rem">
+<a href="{{ shop_url }}">Browse digital products</a>
+{% for title,url in related %}<a href="{{ url }}">{{ title }}</a>{% endfor %}
+</nav>
+{% endif %}
+{% endif %}

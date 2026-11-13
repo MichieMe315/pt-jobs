@@ -1,5 +1,5 @@
 {% load static %}
-<link rel="stylesheet" href="{% static 'css/site-navigation.css' %}">
+<link rel="stylesheet" href="{% static 'css/site-navigation.css' %}?v=3">
 
 <header class="bg-dark border-bottom ptjc-site-header">
   <nav class="navbar navbar-expand-xl navbar-dark container">
@@ -9,15 +9,15 @@
        href="{% url 'home' %}"
        aria-label="Physiotherapy Jobs Canada">
 
-      {% if sitesettings and sitesettings.branding_logo %}
-        <img
-          src="{{ sitesettings.branding_logo.url }}"
-          alt=""
-          aria-hidden="true"
-          onerror="this.style.display='none'"
-          style="height:32px; width:auto; object-fit:contain;"
-        >
-      {% endif %}
+      {% static 'board/marketing/live-header-logo.jpg' as default_job_board_logo %}
+      <img
+        src="{% if sitesettings and sitesettings.branding_logo %}{{ sitesettings.branding_logo.url }}{% else %}{{ default_job_board_logo }}{% endif %}"
+        data-fallback-logo="{{ default_job_board_logo }}"
+        alt=""
+        aria-hidden="true"
+        onerror="this.onerror=null; this.src=this.dataset.fallbackLogo;"
+        style="height:32px; width:auto; object-fit:contain;"
+      >
 
       <!-- ONE visible title, always -->
       <span class="text-white">Physiotherapy Jobs Canada</span>
@@ -36,18 +36,34 @@
       <!-- Left nav -->
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'job_list' %}">Jobs</a>
+          <a class="nav-link find-jobs-link" href="{% url 'job_list' %}">Find Jobs</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'employer_list' %}">Employers</a>
+        <li class="nav-item dropdown career-nav-dropdown">
+          <button class="nav-link dropdown-toggle" id="careerResourcesMenu" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">Career Resources</button>
+          <ul class="dropdown-menu" aria-labelledby="careerResourcesMenu">
+            <li><a class="dropdown-item" href="{% url 'mobility_home' %}">All Career Resources</a></li>
+            <li><a class="dropdown-item" href="{% url 'mobility_salary_comparison' %}">Salary vs. Split Calculator</a></li>
+            <li><a class="dropdown-item" href="{% url 'mobility_clinic_offer_guide' %}">Job Offer Checklist</a></li>
+            {% url 'ptjc_canadian_resumes:canadian_start' as canadian_resume_url %}
+            {% url 'ptjc_resumes:start' as international_resume_url %}
+            {% if canadian_resume_url or international_resume_url %}
+            <li><hr class="dropdown-divider"></li>
+            <li><details class="header-resume-menu" open>
+              <summary class="dropdown-item-text">Résumé Builder</summary>
+              {% if canadian_resume_url %}<a class="dropdown-item" href="{{ canadian_resume_url }}">Canadian</a>{% endif %}
+              {% if international_resume_url %}<a class="dropdown-item" href="{{ international_resume_url }}">International</a>{% endif %}
+            </details></li>
+            {% endif %}
+          </ul>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'package_list' %}">
-            Job Posting Packages
-          </a>
+        <li class="nav-item dropdown career-nav-dropdown">
+          <button class="nav-link dropdown-toggle" id="employersMenu" type="button" data-bs-toggle="dropdown" aria-expanded="false">For Employers</button>
+          <ul class="dropdown-menu" aria-labelledby="employersMenu">
+            <li><a class="dropdown-item" href="{% url 'job_create' %}">Post a Job</a></li>
+            <li><a class="dropdown-item" href="{% url 'package_list' %}">Posting Packages</a></li>
+            {% if not request.user.is_authenticated %}<li><a class="dropdown-item" href="{% url 'employer_signup' %}">Create an Employer Account</a></li>{% endif %}
+          </ul>
         </li>
-
-        <li class="nav-item dropdown career-nav-dropdown"><button class="nav-link dropdown-toggle" id="careerResourcesMenu" type="button" data-bs-toggle="dropdown" aria-expanded="false">Career Resources</button><ul class="dropdown-menu" aria-labelledby="careerResourcesMenu"><li><a class="dropdown-item" href="{% url 'mobility_home' %}">All career resources</a></li><li><a class="dropdown-item" href="{% url 'mobility_salary_comparison' %}">Salary vs. Split Calculator</a></li><li><hr class="dropdown-divider"></li><li><span class="dropdown-item-text career-menu-label">In development</span></li><li><span class="dropdown-item-text career-menu-upcoming">Canadian relocation <small>Coming soon</small></span></li><li><span class="dropdown-item-text career-menu-upcoming">International PT planner <small>Coming soon</small></span></li><li><span class="dropdown-item-text career-menu-upcoming">Job offer checklist <small>Coming soon</small></span></li><li><span class="dropdown-item-text career-menu-upcoming">Career guides &amp; templates <small>Coming soon</small></span></li></ul></li>
       </ul>
 
       <!-- Right side buttons -->
@@ -57,10 +73,6 @@
             <a class="btn btn-outline-light btn-sm"
                href="{% url 'employer_dashboard' %}">
               Employer dashboard
-            </a>
-            <a class="btn btn-primary btn-sm"
-               href="{% url 'job_create' %}">
-              Post a job
             </a>
           {% elif request.user.jobseeker %}
             <a class="btn btn-outline-light btn-sm"

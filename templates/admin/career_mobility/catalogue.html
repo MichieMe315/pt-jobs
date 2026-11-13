@@ -1,0 +1,80 @@
+{% extends 'admin/base_site.html' %}{% load static %}
+{% block content_title %}{% endblock %}
+{% block content %}
+<div class="ops-shell pt-product-catalogue">
+  <p><a href="{% url 'admin:career_mobility_digitalproduct_changelist' %}">← Digital products</a></p>
+  <header class="pt-dashboard-heading"><div><h1>{% if audience == 'international' %}International{% else %}Canadian{% endif %} digital products</h1><p>Published products appear in their assigned storefront. Drafts are private. An editor linked to a draft does not appear in the store. Open “Online editors and visibility” to see which tiles are hidden and why.</p></div>
+    {% if can_import %}<a class="ops-button ops-primary" href="{% url 'admin:career_mobility_digitalproduct_add' %}">Add a product</a>{% endif %}
+  </header>
+  {% if perms.ptjc_resumes.view_resumetemplate or perms.ptjc_resumes.change_resumetemplate %}
+  <section aria-labelledby="resume-admin-title" style="margin:1rem 0;padding:1rem;border:1px solid var(--border-color)">
+    <h2 id="resume-admin-title">Résumé builders</h2>
+    <p>Manage Canadian and international builders, their designs and linked checkout products.</p>
+    <ul>{% for builder in resume_builders %}<li><strong>{{ builder.title }}</strong> · {{ builder.is_enabled|yesno:"Enabled,Disabled" }} · <a href="{% url 'admin:ptjc_resumes_resumetemplate_change' builder.pk %}">Edit builder</a>{% if builder.access_product_id %} · <a href="{% url 'admin:career_mobility_digitalproduct_change' builder.access_product_id %}">Edit price and allowance</a>{% endif %}</li>{% endfor %}</ul>
+    <a class="ops-button ops-primary" href="{% url 'admin:ptjc_resumes_resumetemplate_changelist' %}">Manage résumé builders</a>
+  </section>
+  {% endif %}
+  <nav class="pt-catalogue-actions" aria-label="Storefront">
+    <a class="ops-button" href="{% url 'admin:career_mobility_digitalproduct_allowances' %}">Starter allowances</a>
+    {% if perms.career_mobility.view_storediscount or perms.career_mobility.change_storediscount %}<a class="ops-button" href="{% url 'admin:career_mobility_storediscount_changelist' %}">Discounts</a>{% endif %}
+    {% if perms.career_mobility.view_storegrant or perms.career_mobility.change_storegrant %}<a class="ops-button" href="{% url 'admin:career_mobility_storegrant_changelist' %}">Complimentary access</a>{% endif %}
+    {% if perms.ptjc_resumes.view_resumetemplate or perms.ptjc_resumes.change_resumetemplate %}<a class="ops-button" href="{% url 'admin:ptjc_resumes_resumetemplate_changelist' %}">Résumé builders</a>{% endif %}
+    {% if can_edit %}<a class="ops-button" href="{% url 'admin:career_mobility_digitalproduct_order' %}">Reorder shop</a>{% endif %}
+    <a class="ops-button" href="{% url 'admin:career_mobility_digitalproduct_activity' %}">Product activity</a>
+    <a class="ops-button" href="?audience=canadian"{% if audience == 'canadian' %} aria-current="page"{% endif %}>Canadian</a>
+    <a class="ops-button" href="?audience=international"{% if audience == 'international' %} aria-current="page"{% endif %}>International</a>
+    {% if audience == 'international' %}{% url 'mobility_international_shop' as public_shop %}{% else %}{% url 'mobility_shop' as public_shop %}{% endif %}
+    {% if public_shop %}<a class="ops-button" href="{{ public_shop }}" target="_blank" rel="noopener">Open storefront ↗</a>{% else %}<span>Storefront unavailable</span>{% endif %}
+  </nav>
+  <section aria-labelledby="live-shop-title"><h2 id="live-shop-title">What customers see · {{ live_count }} listings</h2>
+    <ol>{% for row in live_rows %}{% if row.studio %}{% with p=row.studio.product %}<li>{% if p %}<a href="{% url 'admin:career_mobility_digitalproduct_change' p.pk %}">{{ p.title }}</a>{% else %}{{ row.studio.title }}{% endif %}{% if row.studio.key == 'canadian-resume' or row.studio.key == 'international-resume' %} · Résumé builder{% endif %}</li>{% endwith %}{% else %}<li><a href="{% url 'admin:career_mobility_digitalproduct_change' row.product.pk %}">{{ row.product.title }}</a></li>{% endif %}{% empty %}<li>No public listings.</li>{% endfor %}</ol>
+
+  </section>
+  {% if editors %}<details class="pt-catalogue-maintenance"><summary>Online editors and visibility</summary><ul>
+    {% for editor in editors %}<li><a href="{% url 'admin:career_mobility_storefrontstudio_change' editor.pk %}">{{ editor.title }}</a> · {{ editor.status }}{% if editor.linked_product %} · <a href="{% url 'admin:career_mobility_digitalproduct_change' editor.linked_product.pk %}">{{ editor.linked_product.title }}</a>{% endif %} · <a href="{{ editor.href }}" target="_blank" rel="noopener">Open editor ↗</a></li>{% endfor %}
+  </ul></details>{% endif %}
+  <nav class="pt-catalogue-actions" aria-label="Product status">
+    <a class="ops-button" href="?audience={{ audience }}&amp;status=all"{% if not status %} aria-current="page"{% endif %}>All · {{ counts.total }}</a>
+    <a class="ops-button" href="?audience={{ audience }}&amp;status=published"{% if status == "published" %} aria-current="page"{% endif %}>Listed products</a>
+    <a class="ops-button" href="?audience={{ audience }}&amp;status=draft"{% if status == "draft" %} aria-current="page"{% endif %}>Private drafts · {{ counts.draft }}</a>
+  </nav>
+  <form method="get" class="pt-catalogue-filters">
+    <label>Product name<input name="q" value="{{ q }}" type="search"></label>
+    <label>Category<select name="category"><option value="">All categories</option>{% for value in categories %}<option{% if category == value %} selected{% endif %}>{{ value }}</option>{% endfor %}</select></label>
+    <input type="hidden" name="audience" value="{{ audience }}">
+    <label>Status<select name="status"><option value="all">All statuses</option><option value="draft"{% if status == 'draft' %} selected{% endif %}>Draft</option><option value="published"{% if status == 'published' %} selected{% endif %}>Published</option></select></label>
+    <label>Sort<select name="sort">{% for value,label in sorts.items %}<option value="{{ value }}"{% if sort == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <div class="pt-catalogue-actions"><button class="ops-button ops-primary">Apply filters</button><a href="?audience={{ audience }}">Clear</a></div>
+  </form>
+  <p>{{ page.paginator.count }} matching product{{ page.paginator.count|pluralize }}</p>
+  <div class="pt-catalogue-grid">
+    {% for p in products %}
+      <article class="pt-task-card pt-catalogue-product">
+        <div class="pt-catalogue-meta"><span class="pt-status {% if p.is_published %}success{% endif %}">{% if p.storefront_url %}Live in shop{% elif p.is_published %}Published · no editor listing{% else %}Private draft{% endif %}</span><strong>{% if p.audience != "international" %}Canada: {% if p.price_for_canadian > 0 %}CAD ${{ p.price_for_canadian }}{% else %}Checkout off{% endif %}{% endif %}{% if p.audience == "both" %} · {% endif %}{% if p.audience != "canadian" %}International: {% if p.price_for_international > 0 %}CAD ${{ p.price_for_international }}{% else %}Checkout off{% endif %}{% endif %}</strong></div>
+        <div class="pt-catalogue-title">
+          {% if p.preview_image %}<img src="{% url 'admin:career_mobility_digitalproduct_store_image' p.pk %}" alt="" loading="lazy" width="52" height="52">{% elif p.recovered_cover %}<img src="{% static p.recovered_cover %}" alt="" loading="lazy" width="52" height="52">{% endif %}
+          <h2>{{ p.title }}</h2>
+        </div>
+        <p>{{ p.category|default:'Uncategorized' }} · {{ p.get_audience_display }}</p>
+        <p>{{ p.short_description|default:p.description|truncatewords:20 }}</p>
+        <div class="pt-catalogue-actions">
+          {% if can_edit %}<a class="ops-button ops-primary" href="{% url 'admin:career_mobility_digitalproduct_change' p.pk %}">Edit product</a>{% endif %}
+          <a class="ops-button" href="{% url 'admin:career_mobility_digitalproduct_review' p.pk %}">Preview &amp; files</a>
+          {% if p.storefront_url %}<a href="{{ p.storefront_url }}" target="_blank" rel="noopener">Open customer tool ↗</a>{% endif %}
+          {% if p.is_online_builder %}<a href="{% url 'admin:career_mobility_digitalproduct_demo' p.pk %}" target="_blank" rel="noopener">Try builder ↗</a>{% endif %}
+        </div>
+      </article>
+    {% empty %}<p>No products match these filters. <a href="?audience={{ audience }}">Clear filters</a></p>{% endfor %}
+  </div>
+  {% if page.has_other_pages %}<nav class="pt-catalogue-actions pt-catalogue-pagination" aria-label="Catalogue pages">
+    {% if page.has_previous %}<a class="ops-button" href="?{{ query }}{% if query %}&amp;{% endif %}page={{ page.previous_page_number }}">Previous</a>{% endif %}
+    <span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+    {% if page.has_next %}<a class="ops-button" href="?{{ query }}{% if query %}&amp;{% endif %}page={{ page.next_page_number }}">Next</a>{% endif %}
+  </nav>{% endif %}
+  <details class="pt-catalogue-maintenance"><summary>Catalogue tools</summary>
+    <div class="pt-catalogue-actions"><a href="{% url 'admin:career_mobility_digitalproduct_changelist' %}">Table view</a><a href="{% url 'admin:career_mobility_digitalproduct_duplicates' %}">Review possible duplicate products</a></div>
+    {% if can_import_resumes %}<form method="post" action="{% url 'admin:career_mobility_digitalproduct_resume_import' %}">{% csrf_token %}<button class="ops-button">Import résumé packages as drafts</button></form>{% endif %}
+    {% if can_import %}<form method="post" action="{% url 'admin:career_mobility_digitalproduct_import' %}">{% csrf_token %}<button class="ops-button">Import older mixed collection as a draft</button></form>{% endif %}
+  </details>
+</div>
+{% endblock %}

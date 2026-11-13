@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -19,6 +20,7 @@ class MobilityTests(TestCase):
             'canadian_immigration_status': 'none',
             'graduation_year': 2023,
             'registered_in_education_country': 'yes',
+            'application_history': 'new',
         })
         self.assertEqual(response.status_code, 302, getattr(response.context.get('form'), 'errors', None) if response.context else '')
         user = get_user_model().objects.get(email='overseas@example.com')
@@ -28,7 +30,7 @@ class MobilityTests(TestCase):
 
     def test_international_cannot_use_canadian_gate(self):
         user = get_user_model().objects.create_user(username='international@example.com', password='ExampleSafePassword2026!')
-        InternationalProfile.objects.create(user=user, country_of_education='India', citizenship_country='India', residence_country='India')
+        InternationalProfile.objects.create(email_verified_at=timezone.now(),user=user, country_of_education='India', citizenship_country='India', residence_country='India')
         self.client.force_login(user)
         self.assertEqual(self.client.get(reverse('mobility_canadian_full')).status_code, 403)
 
@@ -47,10 +49,10 @@ class IntegratedMobilityTests(TestCase):
         self.assertEqual(response.status_code,302)
     def test_international_checklist_access(self):
         user=get_user_model().objects.create_user(username="inttest@example.com",password="ExampleSafePassword2026!")
-        InternationalProfile.objects.create(user=user,country_of_education="India")
+        InternationalProfile.objects.create(email_verified_at=timezone.now(),user=user,country_of_education="India")
         self.client.force_login(user)
         self.assertEqual(self.client.get(reverse("mobility_international_dashboard")).status_code,200)
-        self.assertEqual(self.client.post(reverse("mobility_checklist_toggle"),{"key":"education"}).status_code,302)
+        self.assertEqual(self.client.post(reverse("mobility_checklist_toggle"),{"key":self.client.get(reverse("mobility_international_dashboard")).context["checklist"][0]["key"]}).status_code,302)
         self.assertEqual(self.client.get(reverse("mobility_personalized_checklist")).status_code,200)
         self.assertEqual(self.client.post(reverse("mobility_save_plan"),data='{"plan_type":"salary","inputs":{}}',content_type="application/json").status_code,403)
     def test_webhook_unsigned_rejected(self):

@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block title %}2027 calendar | Physiotherapy Jobs Canada{% endblock %}
+{% block content %}
+<p><a href="{% url 'jobseeker_dashboard' %}">← My job seeker dashboard</a></p>
+<h1>2027 calendar</h1>
+<p>Try a layout and save an editable copy to your device. You can reopen it in the editor any time.</p>
+<iframe title="2027 calendar editor" src="{% url 'jobseeker_calendar_editor' %}" style="width:100%;height:80vh;min-height:620px;border:1px solid #495057"></iframe>
+{% endblock %}

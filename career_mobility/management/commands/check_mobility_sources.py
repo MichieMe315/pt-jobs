@@ -28,15 +28,18 @@ class Command(BaseCommand):
                 req = urllib.request.Request(source.url, headers={"User-Agent": "PTCareerDataMonitor/1.0 (publication change monitoring)", "Accept": "text/html"})
                 with urllib.request.urlopen(req, timeout=15) as resp:
                     status = resp.status
-                    # Bound memory and avoid downloading large files; HTML pages only.
+                    # Bound memory; PDF changes are flagged for manual fee review.
                     content_type = resp.headers.get("Content-Type", "").lower()
-                    if "text/html" not in content_type:
+                    if "text/html" not in content_type and "application/pdf" not in content_type and not (source.url=="https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons" and any(t in content_type for t in ("application/json","application/octet-stream"))):
                         raise ValueError(f"Unsupported content type: {content_type}")
                     body = resp.read(2_000_001)
                     if len(body) > 2_000_000:
                         raise ValueError("Page exceeds 2MB; review manually")
+                from career_mobility.research_refresh import SUPPORTED,queue
+                if source.url.rstrip('/') in SUPPORTED:
+                    queue(source,body)
                 digest = hashlib.sha256(body).hexdigest()
-                if source.content_sha256 and digest != source.content_sha256:
+                if source.content_sha256 and digest != source.content_sha256 and source.url.rstrip('/') not in SUPPORTED:
                     DataSourceReview.objects.create(source=source, previous_hash=source.content_sha256,
                         detected_hash=digest, detail="Source page HTML changed. Check actual publication dates and figures before updating public data.")
                     source.last_changed_at = now

@@ -1,0 +1,3 @@
+{% if product.audience == 'canadian' %}{% url 'ptjc_canadian_resumes:canadian_start' as saved_resume_url %}
+{% else %}{% url 'ptjc_resumes:start' as saved_resume_url %}{% endif %}
+{% if saved_resume_url %}<a href="{{ saved_resume_url }}" target="_blank" rel="noopener">Open resume builder ↗</a>{% endif %}

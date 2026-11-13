@@ -1,0 +1,38 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_modify %}
+{% block title %}{{ title }} | PTJC Admin{% endblock %}
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-form pt-record-editor{% endblock %}
+{% block content_title %}{% endblock %}
+{% block content_subtitle %}{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+{% block extrahead %}{{ block.super }}<script src="{% url 'admin:jsi18n' %}"></script>{{ media }}{% endblock %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'admin/css/forms.css' %}"><link rel="stylesheet" href="{% static 'board/admin-records.css' %}">{% endblock %}
+{% block content %}
+<div id="content-main" class="pt-editor">
+<header class="pt-editor-header">
+ <div>{% if not is_popup %}<a href="{% url opts|admin_urlname:'changelist' %}">← {{ opts.verbose_name_plural|capfirst }}</a>{% endif %}
+ <h1>{% if add %}Add {{ opts.verbose_name }}{% elif original %}{{ original }}{% else %}{{ title }}{% endif %}</h1>
+ {% if original %}<p>{{ opts.verbose_name|capfirst }} #{{ original.pk }}</p>{% endif %}</div>
+ {% if change and not is_popup %}<ul class="object-tools">{% block object-tools-items %}{% change_form_object_tools %}{% endblock %}</ul>{% endif %}
+</header>
+{% block editor_banner %}{% endblock %}
+<div class="pt-editor-grid{% if related_activity %} pt-editor-grid-aside{% endif %}">
+<form {% if has_file_field %}enctype="multipart/form-data"{% endif %} {% if form_url %}action="{{ form_url }}"{% endif %} method="post" id="{{ opts.model_name }}_form" novalidate>
+ {% csrf_token %}{% block form_top %}{% endblock %}
+ {% if is_popup %}<input type="hidden" name="{{ is_popup_var }}" value="1">{% endif %}
+ {% if to_field %}<input type="hidden" name="{{ to_field_var }}" value="{{ to_field }}">{% endif %}
+ {% if errors %}<p class="errornote" role="alert">Review the highlighted fields before saving.</p>{{ adminform.form.non_field_errors }}{% endif %}
+ {% block editor_section_nav %}{% if adminform %}<nav class="pt-editor-nav" aria-label="Sections on this page">{% for group in adminform %}<a href="#edit-group-{{ forloop.counter }}">{{ group.name|default:"Record details" }}</a>{% endfor %}{% if inline_admin_formsets %}<a href="#related-records">Related records</a>{% endif %}</nav>{% endif %}{% endblock %}
+ {% block field_sets %}{% for fieldset in adminform %}<section class="pt-editor-section" id="edit-group-{{ forloop.counter }}">{% include "admin/includes/fieldset.html" with heading_level=2 prefix="fieldset" id_prefix=0 id_suffix=forloop.counter0 %}</section>{% endfor %}{% endblock %}
+ {% block after_field_sets %}{% endblock %}
+ {% if inline_admin_formsets %}<section class="pt-editor-related" id="related-records">{% block inline_field_sets %}{% for inline_admin_formset in inline_admin_formsets %}{% include inline_admin_formset.opts.template %}{% endfor %}{% endblock %}</section>{% endif %}
+ {% block after_related_objects %}{% endblock %}
+ <div class="pt-editor-actions">{% block submit_buttons_bottom %}{% submit_row %}{% endblock %}</div>
+ {% block admin_change_form_document_ready %}<script id="django-admin-form-add-constants" src="{% static 'admin/js/change_form.js' %}" {% if adminform and add %}data-model-name="{{ opts.model_name }}"{% endif %} async></script>{% endblock %}
+ {% prepopulated_fields_js %}
+</form>
+{% if related_activity %}<aside class="pt-editor-activity" aria-label="Related activity">
+{% for group in related_activity %}<section><h2>{{ group.title }}</h2>{% for row in group.rows %}<p>{% if row.url %}<a href="{{ row.url }}">{{ row.label }}</a>{% else %}{{ row.label }}{% endif %}{% if row.detail %}<small>{{ row.detail }}</small>{% endif %}</p>{% empty %}<p>{{ group.empty }}</p>{% endfor %}{% if group.url %}<a href="{{ group.url }}">Open list →</a>{% endif %}</section>{% endfor %}
+</aside>{% endif %}
+</div></div>
+{% endblock %}

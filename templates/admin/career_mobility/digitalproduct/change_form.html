@@ -1,0 +1,58 @@
+{% extends "admin/workspace/record_editor.html" %}
+{% load static %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'career_mobility/admin-product.css' %}?v=55">{% endblock %}
+{% block editor_section_nav %}
+<nav class="product-actions product-form-nav" aria-label="Product settings">
+  <a class="product-button" href="#listing">Listing and editor</a>
+  <a class="product-button" href="#pricing">Price and publication</a>
+  {% if not add and has_change_permission %}<button class="product-button product-primary" type="submit" name="_continue">Save changes</button>{% endif %}
+</nav>
+{% endblock %}
+{% block object-tools-items %}{% endblock %}
+{% block editor_banner %}
+{% if original %}
+<section class="product-overview" aria-label="Current product status">
+  {% if original.preview_image %}<img class="product-cover-thumb" src="{% url 'admin:career_mobility_digitalproduct_store_image' original.pk %}" alt="Current storefront cover">{% endif %}
+  <div>
+    <p><strong>{{ original.is_published|yesno:"Published,Private draft" }}</strong> · {% if original.audience != "international" %}Canada: CAD ${{ original.price_for_canadian }}{% endif %}{% if original.audience == "both" %} · {% endif %}{% if original.audience != "canadian" %}International: CAD ${{ original.price_for_international }}{% endif %} · {{ original.get_audience_display }}</p>
+    {% if original.is_online_builder or original.has_editable_preview %}<p>Customers use this product through an online editor.</p>{% elif original.download %}<p>A customer download file is attached.</p>{% elif original.kind == 'file' %}<p>No customer download file attached.</p>{% endif %}
+    <div class="product-actions">
+      <a class="product-button product-primary" href="{% url 'admin:career_mobility_digitalproduct_review' original.pk %}">Preview and files</a>
+      {% if original.is_online_builder or original.has_editable_preview %}<a class="product-button" href="{% url 'admin:career_mobility_digitalproduct_demo' original.pk %}" target="_blank" rel="noopener">{% if original.includes_resume_builder %}Open interactive resume builder ↗{% else %}Try editor ↗{% endif %}</a>{% endif %}
+      {% if original.is_published %}<a class="product-button" href="{% url 'mobility_product_detail' original.slug %}" target="_blank" rel="noopener">View this product in the shop ↗</a>{% endif %}
+      <details><summary>More actions</summary><div class="product-actions">      <a class="product-button" href="{% url 'admin:career_mobility_digitalproduct_history' original.pk %}">Change history</a>
+      {% if perms.career_mobility.view_storediscount or perms.career_mobility.change_storediscount %}<a class="product-button" href="{% url 'admin:career_mobility_storediscount_changelist' %}">Manage discounts</a>{% endif %}
+      </div></details>
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}
+{% block field_sets %}
+<div class="product-edit-core">
+{% for fieldset in adminform %}
+  {% if forloop.counter <= 2 %}
+    <section class="pt-editor-section" id="{% if forloop.first %}listing{% else %}pricing{% endif %}">{% include "admin/includes/fieldset.html" with heading_level=2 prefix="fieldset" id_prefix=0 id_suffix=forloop.counter0 %}</section>
+  {% endif %}
+{% endfor %}
+</div>
+{% for fieldset in adminform %}
+  {% if forloop.counter > 2 %}
+    <details class="pt-editor-section product-edit-details"{% if errors or add %} open{% endif %}>
+      <summary>{{ fieldset.name }}</summary>
+      {% include "admin/includes/fieldset.html" with heading_level=2 prefix="fieldset" id_prefix=0 id_suffix=forloop.counter0 %}</details>
+  {% endif %}
+{% endfor %}
+{% endblock %}
+{% block inline_field_sets %}
+{% for inline_admin_formset in inline_admin_formsets %}
+  {% if inline_admin_formset.opts.verbose_name_plural == 'Additional listing images' %}
+  <details class="pt-editor-section product-edit-details"{% if errors %} open{% endif %}>
+    <summary>Additional listing images</summary>
+    {% include inline_admin_formset.opts.template %}
+  </details>
+  {% else %}
+    {% include inline_admin_formset.opts.template %}
+  {% endif %}
+{% endfor %}
+{% endblock %}

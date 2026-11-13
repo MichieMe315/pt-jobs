@@ -1,0 +1,13 @@
+<section id="editor-checkout" aria-labelledby="editor-checkout-title" style="max-width:44rem;margin:2rem auto;padding:1.25rem;background:#fff;color:#25292d;border:1px solid #ccc;">
+  <h2 id="editor-checkout-title">Print and export</h2>
+  <p>{{ product.title }} · CAD ${{ price }}</p>
+  {% if user.is_authenticated %}
+    <form method="post" action="{% url 'mobility_product_checkout' product.pk %}" target="_top" style="display:flex;flex-wrap:wrap;align-items:end;gap:.75rem;">
+      {% csrf_token %}
+      <label>Discount code (optional)<br><input name="discount_code" maxlength="50" autocomplete="off"></label>
+      <button type="submit">Continue to checkout</button>
+    </form>
+  {% else %}
+    <a style="color:#9d222c;" target="_top" href="{% url login_route %}?next={{ return_path|default:request.get_full_path|urlencode }}%23editor-checkout">Sign in to continue</a>
+  {% endif %}
+</section>

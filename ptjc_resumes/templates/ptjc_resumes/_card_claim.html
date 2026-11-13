@@ -1,0 +1,5 @@
+{% load static %}<h1>{% if can_save and card_pending %}Saving your business card…{% else %}Save your business card{% endif %}</h1>
+{% if not card_pending %}<p>Open the editor to start a card.</p><a href="{% url 'mobility_try_cards' %}">Open editor</a>
+{% elif can_save %}<form method="post" id="complete-card-save">{% csrf_token %}<button class="btn btn-primary">Save to my account</button></form><script src="{% static 'ptjc_resumes/complete-card-save.js' %}" defer></script>
+{% elif international_login and user.international_pt_profile %}<p>Verify your International account before saving.</p>{% url 'mobility_verify_pending' as verify_url %}{% if verify_url %}<a href="{{ verify_url }}">Verify email</a>{% endif %}
+{% else %}<p>Sign in to save this card.</p><div class="d-flex flex-wrap gap-3">{% if board_login %}<a class="btn btn-primary" href="{{ board_login }}">Job seeker sign in</a>{% endif %}{% if international_login %}<a class="btn btn-outline-light" href="{{ international_login }}">International candidate sign in</a>{% endif %}</div>{% endif %}

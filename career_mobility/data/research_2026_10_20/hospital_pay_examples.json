@@ -1,0 +1,29 @@
+{
+  "compiled_on": "2026-10-20",
+  "publication_status": "research_only_not_imported",
+  "source_notes": {},
+  "records": [
+    {
+      "employer": "Notre-Dame Hospital",
+      "community": "Hearst",
+      "province": "Ontario",
+      "hourly_low_cad": 40.88,
+      "hourly_high_cad": 56.66,
+      "posting_date": "2026-09-28",
+      "employment_type": "Temporary full-time example",
+      "source_url": "https://www.ndh.on.ca/physiotherapist/",
+      "status": "Prior same-day research; direct re-download blocked, reconfirm vacancy before publication",
+      "use": "Specific posting example, not a regional wage benchmark"
+    },
+    {
+      "employer": "BC public healthcare careers",
+      "province": "British Columbia",
+      "hourly_low_cad": 45.15,
+      "hourly_high_cad": 56.17,
+      "effective_on": "2026-04-01",
+      "source_url": "https://bchealthcareers.ca/professions/allied-health-professionals/physiotherapists/",
+      "status": "Published range; role/step/premiums vary",
+      "use": "Hospital/public healthcare example, not a city median"
+    }
+  ]
+}

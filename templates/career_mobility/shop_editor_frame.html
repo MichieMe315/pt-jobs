@@ -1,0 +1,30 @@
+<section style="width:100%;min-width:0" aria-labelledby="shop-editor-title">
+  <a class="btn btn-outline-secondary" href="{{ shop_url }}">Digital products</a>
+  <h1 id="shop-editor-title" style="font-size:clamp(1.4rem,4vw,2rem);margin:1rem 0 .4rem">{{ editor_title }}</h1>
+  {% if editor_intro %}<p class="mb-2">{{ editor_intro }}</p>{% endif %}
+  <iframe id="shop-editor-frame" title="{{ editor_title }} editor" src="{{ editor_frame }}" style="display:block;width:100%;height:85vh;border:0"></iframe>
+{% include "career_mobility/builder_product_nav.html" %}
+</section>
+<script>
+(() => {
+  const frame = document.getElementById('shop-editor-frame');
+  let observer;
+  function fitEditor() {
+    observer?.disconnect();
+    const body = frame.contentDocument?.body;
+    if (!body || frame.contentDocument.URL === "about:blank") return;
+    const fit = () => {
+      const height = Math.ceil(body.getBoundingClientRect().height);
+      if (height > 0 && frame.style.height !== height + 'px') frame.style.height = height + 'px';
+    };
+    observer = new ResizeObserver(fit);
+    observer.observe(body);
+    fit();
+    if (window.location.hash === '#editor-checkout') {
+      frame.contentDocument.getElementById('editor-checkout')?.scrollIntoView({block: 'start'});
+    }
+  }
+  frame.addEventListener('load', fitEditor);
+  if (frame.contentDocument?.readyState === 'complete') fitEditor();
+})();
+</script>

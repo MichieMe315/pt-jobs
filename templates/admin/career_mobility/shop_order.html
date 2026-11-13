@@ -1,0 +1,11 @@
+{% extends "admin/base_site.html" %}{% load static %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'career_mobility/admin-product.css' %}?v=54">{% endblock %}
+{% block content %}
+<p><a href="{% url 'admin:career_mobility_digitalproduct_catalogue' %}">← Digital products</a></p>
+<p>Move products to change their order across the shops. The featured résumé and other fixed tools keep their own placement.</p>
+<label>Preview order for <select id="shop-account-preview"><option value="">All products</option><option value="jobseeker">Job Seeker</option><option value="employer">Employer</option><option value="international">International</option></select></label>
+<form method="post">{% csrf_token %}<ol id="shop-order">
+{% for item in items %}<li draggable="true" data-roles="{{ item.roles|join:' ' }}"><input type="hidden" name="product" value="{{ item.product.pk }}"><div class="product-actions">{{ item.thumbnail }} <strong>{{ item.product.title }}</strong><span>{{ item.product.get_audience_display }}</span><button type="button" class="product-button" data-move="up">Move up</button><button type="button" class="product-button" data-move="down">Move down</button></div></li>{% empty %}<li>No published products with an online editor.</li>{% endfor %}
+</ol><button class="product-button product-primary" type="submit">Save shop order</button></form>
+<script src="{% static 'career_mobility/shop-order.js' %}" defer></script>
+{% endblock %}

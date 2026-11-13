@@ -1,0 +1,16 @@
+{% extends "career_mobility/standalone.html" %}
+{% block title %}International planning workbook | PTJC{% endblock %}
+{% block tool_content %}
+<section class="panel">
+  <h1>{% if product %}{{ product.title }}{% else %}International planning workbook{% endif %}</h1>
+  <p>Keep a PDF copy of your Canadian registration plan and checklist, based on the province you selected and the steps you’ve completed.</p>
+  {% if product %}
+  <p>Sign in with an international planning account to open your workbook. If you already have a Canadian PTJC account, it uses a separate sign-in.</p>
+  <div class="actions">
+    <a class="btn btn-primary" href="{{ login_url }}">Sign in to open your workbook</a>
+    <a class="btn" href="{{ signup_url }}">Create an international account</a>
+  </div>
+  {% else %}<p>The workbook is currently unavailable.</p>{% endif %}
+  <p><a href="{% url 'mobility_international' %}">Go to the international planner</a></p>
+</section>
+{% endblock %}

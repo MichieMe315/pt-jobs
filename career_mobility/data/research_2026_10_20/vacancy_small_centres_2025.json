@@ -1,0 +1,1278 @@
+{
+  "compiled_on": "2026-10-20",
+  "publication_status": "research_only_not_imported",
+  "source_notes": {
+    "scope": "Source areas include aggregates; housing survey vacancy, not a current property listing feed."
+  },
+  "records": [
+    {
+      "source_area": "Census agglomerations 10,000 to 49,999",
+      "dgu_id": null,
+      "vacancy_percent": 2.4,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930364",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Alma, Quebec",
+      "dgu_id": "2011S0504410",
+      "vacancy_percent": 1.5,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930383",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Amos, Quebec",
+      "dgu_id": "2011S0504481",
+      "vacancy_percent": 0.5,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930365",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Baie-Comeau, Quebec",
+      "dgu_id": "2011S0504406",
+      "vacancy_percent": 1.1,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930384",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Bathurst, New Brunswick",
+      "dgu_id": "2011S0504328",
+      "vacancy_percent": 3.9,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930385",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Bay Roberts, Newfoundland and Labrador",
+      "dgu_id": "2011S0504005",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v42135455",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Bonnyvill No. 87, Alberta",
+      "dgu_id": "4812004",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v53843563",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Bracebridge, Ontario",
+      "dgu_id": "2011A00053544018",
+      "vacancy_percent": 3.9,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930366",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Brighton, Ontario",
+      "dgu_id": "2011A00053514004",
+      "vacancy_percent": 4.3,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v53843564",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Brock, Ontario",
+      "dgu_id": "2011A00053518039",
+      "vacancy_percent": 0.0,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v53843565",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Brockville, Ontario",
+      "dgu_id": "2011S0504512",
+      "vacancy_percent": 4.3,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930387",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Brooks, Alberta",
+      "dgu_id": "2011S0504806",
+      "vacancy_percent": 2.5,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930367",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Campbell River, British Columbia",
+      "dgu_id": "2011S0504944",
+      "vacancy_percent": 2.0,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930388",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Campbellton, New Brunswick/Quebec",
+      "dgu_id": "2011S0504330",
+      "vacancy_percent": 0.9,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930389",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Camrose, Alberta",
+      "dgu_id": "2011S0504833",
+      "vacancy_percent": 1.6,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930390",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Canmore, Alberta",
+      "dgu_id": "2011S0504828",
+      "vacancy_percent": 1.8,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v20662192",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Centre Wellington, Ontario",
+      "dgu_id": "2011S0504531",
+      "vacancy_percent": 3.7,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v42135456",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Chester, Nova Scotia",
+      "dgu_id": "2011A00051206009",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v53843566",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Clearwater County, Alberta",
+      "dgu_id": "2011A00054809002",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v53843567",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Cobourg, Ontario",
+      "dgu_id": "2011S0504527",
+      "vacancy_percent": 3.2,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930392",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Cold Lake, Alberta",
+      "dgu_id": "2011S0504845",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v1930407",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Collingwood, Ontario",
+      "dgu_id": "2011S0504567",
+      "vacancy_percent": 4.5,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930393",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Corner Brook, Newfoundland and Labrador",
+      "dgu_id": "2011S0504015",
+      "vacancy_percent": 1.0,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930394",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Cowansville, Quebec",
+      "dgu_id": "2011S0504437",
+      "vacancy_percent": 1.9,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930396",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Cranbrook, British Columbia",
+      "dgu_id": "2011S0504905",
+      "vacancy_percent": 1.4,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930397",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Dawson Creek, British Columbia",
+      "dgu_id": "2011S0504975",
+      "vacancy_percent": 0.7,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930398",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Dolbeau-Mistassini, Quebec",
+      "dgu_id": "2011S0504411",
+      "vacancy_percent": 0.5,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930399",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Duncan, British Columbia",
+      "dgu_id": "2011S0504937",
+      "vacancy_percent": 2.9,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930400",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "East Hants, Nova Scotia",
+      "dgu_id": "2011A00051208008",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v53843568",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Edmundston, New Brunswick",
+      "dgu_id": "2011S0504335",
+      "vacancy_percent": 1.0,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930401",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Elliot Lake, Ontario",
+      "dgu_id": "2011S0504582",
+      "vacancy_percent": 1.9,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930402",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Erin, Ontario",
+      "dgu_id": "2011A00053523017",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v53843557",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Essex, Ontario",
+      "dgu_id": "2011A00053537016",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v53843569",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Estevan, Saskatchewan",
+      "dgu_id": "2011S0504750",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v1930403",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Foothills No. 13, Alberta",
+      "dgu_id": "4806001",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v53843570",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Fort St. John, British Columbia",
+      "dgu_id": "2011S0504977",
+      "vacancy_percent": 2.4,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930405",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Gander, Newfoundland and Labrador",
+      "dgu_id": "2011A00051006009",
+      "vacancy_percent": 0.9,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930406",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Gaspé, Quebec",
+      "dgu_id": "2011A00052403005",
+      "vacancy_percent": 1.7,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930369",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Grand Falls-Windsor, Newfoundland and Labrador",
+      "dgu_id": "2011S0504010",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v1930408",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Gravenhurst, Ontario",
+      "dgu_id": "2011A00053544002",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v1930370",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Greater Napanee, Ontario",
+      "dgu_id": "2011A00053511015",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v20662194",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Haldimand, Ontario",
+      "dgu_id": "3528018",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v53843558",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Hanover, Manitoba",
+      "dgu_id": "2011A00054602041",
+      "vacancy_percent": 2.2,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v42135458",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Hawkesbury, Ontario part, Ontario/Quebec",
+      "dgu_id": "2011S050635502",
+      "vacancy_percent": 0.3,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930411",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "High River, Alberta",
+      "dgu_id": "2011S0504821",
+      "vacancy_percent": 0.9,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v53843571",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Huntsville, Ontario",
+      "dgu_id": "2011A00053544042",
+      "vacancy_percent": 1.9,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930372",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Ingersoll, Ontario",
+      "dgu_id": "2011S0504533",
+      "vacancy_percent": 3.8,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v20662195",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Joliette, Quebec",
+      "dgu_id": "2011S0504456",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v1930412",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Kenora, Ontario",
+      "dgu_id": "2011S0504598",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v1930413",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Kentville, Nova Scotia",
+      "dgu_id": "2011S0504210",
+      "vacancy_percent": 1.4,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930414",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Kincardine, Ontario",
+      "dgu_id": "2011A00053541024",
+      "vacancy_percent": 3.4,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v53843572",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Kings Subdivision, Ontario",
+      "dgu_id": "3532038",
+      "vacancy_percent": 0.7,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v53843573",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "La Tuque, Quebec",
+      "dgu_id": "2006S0504446",
+      "vacancy_percent": 1.3,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930419",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Lachute, Quebec",
+      "dgu_id": "2011S0504468",
+      "vacancy_percent": 1.5,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930418",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Lacombe, Alberta",
+      "dgu_id": "2011S0504832",
+      "vacancy_percent": 1.6,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v53843574",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Lacombe County, Alberta",
+      "dgu_id": "2011A00054808022",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v53843575",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Lambton Shores, Ontario",
+      "dgu_id": "2011A00053538040",
+      "vacancy_percent": 4.7,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v20662196",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Leamington, Ontario",
+      "dgu_id": "2011S0504557",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v1930420",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Les Îles-de-la-Madeleine, Quebec",
+      "dgu_id": "2011A00052401023",
+      "vacancy_percent": 2.2,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v53843576",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Lloydminster, Saskatchewan/Alberta",
+      "dgu_id": "2011S0504840",
+      "vacancy_percent": 3.5,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930422",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Lunenburg, Nova Scotia",
+      "dgu_id": "2011A00051206001",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v53843577",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Mackenzie No. 23, Alberta",
+      "dgu_id": "4817095",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v53843578",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Matane, Quebec",
+      "dgu_id": "2011S0504403",
+      "vacancy_percent": 1.4,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930424",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Meaford, Ontario",
+      "dgu_id": "2011A00053542047",
+      "vacancy_percent": 0.0,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v42135457",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Midland, Ontario",
+      "dgu_id": "2011S0504571",
+      "vacancy_percent": 3.4,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930425",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Miramichi, New Brunswick",
+      "dgu_id": "2011S0504329",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v1930374",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Mississippi Mills, Ontario",
+      "dgu_id": "2011A00053509030",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v20662197",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Mont-Laurier, Quebec",
+      "dgu_id": "2011A00052479088",
+      "vacancy_percent": 2.2,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v53843579",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Montmagny, Quebec",
+      "dgu_id": "2011A00052418050",
+      "vacancy_percent": 0.7,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930375",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Moose Jaw, Saskatchewan",
+      "dgu_id": "2011S0504715",
+      "vacancy_percent": 4.8,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930426",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Mountain View County, Alberta",
+      "dgu_id": "2011A00054806028",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v53843580",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "New Glasgow, Nova Scotia",
+      "dgu_id": "2011S0504220",
+      "vacancy_percent": 1.9,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930427",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "North Battleford, Saskatchewan",
+      "dgu_id": "2011S0504735",
+      "vacancy_percent": 3.7,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930428",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "North Grenville, Ontario",
+      "dgu_id": "2011A00053507065",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v53843581",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "North Perth, Ontario",
+      "dgu_id": "2011A00053531040",
+      "vacancy_percent": 4.7,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v20662198",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Okotoks, Alberta",
+      "dgu_id": "2011S0504820",
+      "vacancy_percent": 3.1,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v20662199",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Orillia, Ontario",
+      "dgu_id": "2011S0504569",
+      "vacancy_percent": 3.2,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930429",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Owen Sound, Ontario",
+      "dgu_id": "2011S0504566",
+      "vacancy_percent": 2.3,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930430",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Parksville, British Columbia",
+      "dgu_id": "2011S0504939",
+      "vacancy_percent": 0.9,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v4419491",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Pembroke, Ontario",
+      "dgu_id": "2011S0504515",
+      "vacancy_percent": 2.7,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930431",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Penticton, British Columbia",
+      "dgu_id": "2011S0504913",
+      "vacancy_percent": 2.6,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930432",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Petawawa, Ontario",
+      "dgu_id": "2011S0504516",
+      "vacancy_percent": 1.2,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930377",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Port Alberni, British Columbia",
+      "dgu_id": "2011S0504940",
+      "vacancy_percent": 2.2,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930434",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Port Hope, Ontario",
+      "dgu_id": "2011S0504528",
+      "vacancy_percent": 2.9,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930435",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Portage la Prairie, Manitoba",
+      "dgu_id": "2011S0504607",
+      "vacancy_percent": 8.4,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930433",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Powell River, British Columbia",
+      "dgu_id": "2011S0504945",
+      "vacancy_percent": 4.0,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930436",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Prévost, Quebec",
+      "dgu_id": "2011A00052475040",
+      "vacancy_percent": 5.3,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v53843582",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Prince Albert, Saskatchewan",
+      "dgu_id": "2011S0504745",
+      "vacancy_percent": 5.6,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930437",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Prince Edward, Ontario",
+      "dgu_id": "2011A00053513020",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v4419492",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Prince Rupert, British Columbia",
+      "dgu_id": "2011S0504955",
+      "vacancy_percent": 1.6,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930438",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Quesnel, British Columbia",
+      "dgu_id": "2011S0504952",
+      "vacancy_percent": 2.0,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930439",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Queens, Nova Scotia",
+      "dgu_id": "2011A00051204010",
+      "vacancy_percent": 0.0,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v53843583",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Rawdon, Quebec",
+      "dgu_id": "2011A00052462037",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v53843584",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Red Deer County, Alberta",
+      "dgu_id": "2011A00054808001",
+      "vacancy_percent": 4.2,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v53843585",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Rivière-du-Loup, Quebec",
+      "dgu_id": "2011S0504405",
+      "vacancy_percent": 0.8,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930441",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Roberval, Quebec",
+      "dgu_id": "2011A00052491025",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v1930378",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Rouyn-Noranda, Quebec",
+      "dgu_id": "2011S0504485",
+      "vacancy_percent": 1.0,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930442",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Saint-Félicien, Quebec",
+      "dgu_id": "2011A00052491042",
+      "vacancy_percent": 0.4,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v4419493",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Saint-Georges, Quebec",
+      "dgu_id": "2011S0504428",
+      "vacancy_percent": 1.0,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930443",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Saint-Lin--Laurentides, Quebec",
+      "dgu_id": "2011A00052463048",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v20662201",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Sainte-Adèle, Quebec",
+      "dgu_id": "2011A00052477022",
+      "vacancy_percent": 0.6,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v53843586",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Sainte-Marie, Quebec",
+      "dgu_id": "2011A00052426030",
+      "vacancy_percent": 1.6,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930379",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Sainte- Sophie, Quebec",
+      "dgu_id": "2475028",
+      "vacancy_percent": 0.9,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v53843587",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Salaberry-de-Valleyfield, Quebec",
+      "dgu_id": "2011S0504465",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v1930459",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Salmon Arm, British Columbia",
+      "dgu_id": "2011S0504920",
+      "vacancy_percent": 0.8,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930380",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Saugeen Shores, Ontario",
+      "dgu_id": "2011A00053541045",
+      "vacancy_percent": 8.2,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v20662203",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Scugog, Ontario",
+      "dgu_id": "2011A00053518020",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v53843588",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Sept-Îles, Quebec",
+      "dgu_id": "2011S0504412",
+      "vacancy_percent": 1.7,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930444",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Sorel-Tracy, Quebec",
+      "dgu_id": "2011S0504454",
+      "vacancy_percent": 0.6,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930447",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Squamish, British Columbia",
+      "dgu_id": "2011S0504934",
+      "vacancy_percent": 0.1,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930381",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "St. Andrews, Ontario",
+      "dgu_id": "3501011",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v53843559",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Steinbach, Manitoba",
+      "dgu_id": "2011S0504605",
+      "vacancy_percent": 1.9,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v53843589",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Stratford, Ontario",
+      "dgu_id": "2011S0504553",
+      "vacancy_percent": 4.1,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930448",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Strathmore, Alberta",
+      "dgu_id": "2011S0504826",
+      "vacancy_percent": 1.6,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v53843590",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Summerland, British Columbia",
+      "dgu_id": "2011A00055907035",
+      "vacancy_percent": 3.7,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v42135459",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Summerside, Prince Edward Island",
+      "dgu_id": "2011S0504110",
+      "vacancy_percent": 3.2,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930450",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Swift Current, Saskatchewan",
+      "dgu_id": "2011S0504720",
+      "vacancy_percent": 5.5,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930451",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Sylvan Lake, Alberta",
+      "dgu_id": "2011S0504831",
+      "vacancy_percent": 2.8,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v53843591",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Temiskaming Shores, Ontario",
+      "dgu_id": "2011S0504584",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v1930410",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Terrace, British Columbia",
+      "dgu_id": "2011S0504965",
+      "vacancy_percent": 1.0,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930452",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "The Nation, Ontario",
+      "dgu_id": "3502025",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v53843592",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Thetford Mines, Quebec",
+      "dgu_id": "2011S0504430",
+      "vacancy_percent": 1.1,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930453",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Thompson, Manitoba",
+      "dgu_id": "2011S0504640",
+      "vacancy_percent": 6.0,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930454",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Tillsonburg, Ontario",
+      "dgu_id": "2011S0504546",
+      "vacancy_percent": 4.5,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930455",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Timmins, Ontario",
+      "dgu_id": "2011S0504586",
+      "vacancy_percent": 3.7,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930456",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Trent Hills, Ontario",
+      "dgu_id": "2011A00053514045",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v53843560",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Truro, Nova Scotia",
+      "dgu_id": "2011S0504215",
+      "vacancy_percent": 1.5,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930457",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Val-d'Or, Quebec",
+      "dgu_id": "2011S0504480",
+      "vacancy_percent": 1.0,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930458",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Victoriaville, Quebec",
+      "dgu_id": "2011S0504440",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v1930461",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Wasaga Beach, Ontario",
+      "dgu_id": "2011A00053543064",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v53843561",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "West Grey, Ontario",
+      "dgu_id": "2011A00053542004",
+      "vacancy_percent": 0.0,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v53843593",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "West Hants, Nova Scotia",
+      "dgu_id": "2011A00051208001",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v53843594",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "West Nipissing, Ontario",
+      "dgu_id": "2011A00053548055",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v20662206",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Wetaskiwin County No. 10, Alberta",
+      "dgu_id": "2011A00054811001",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v53843595",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Whitehorse, Yukon",
+      "dgu_id": "2011S0504990",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v53843562",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Williams Lake, British Columbia",
+      "dgu_id": "2011S0504950",
+      "vacancy_percent": 0.2,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930464",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Woodstock, Ontario",
+      "dgu_id": "2011S0504544",
+      "vacancy_percent": 2.8,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930466",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Yarmouth, Nova Scotia",
+      "dgu_id": "2011A00051202004",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v53843596",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Yellowhead County, Alberta",
+      "dgu_id": "2011A00054814003",
+      "vacancy_percent": null,
+      "source_status": "F",
+      "year": 2025,
+      "source_vector": "v53843597",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Yellowknife, Northwest Territories",
+      "dgu_id": "2011S0504995",
+      "vacancy_percent": 1.3,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930467",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    },
+    {
+      "source_area": "Yorkton, Saskatchewan",
+      "dgu_id": "2011S0504710",
+      "vacancy_percent": 2.1,
+      "source_status": "",
+      "year": 2025,
+      "source_vector": "v1930468",
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013201"
+    }
+  ]
+}

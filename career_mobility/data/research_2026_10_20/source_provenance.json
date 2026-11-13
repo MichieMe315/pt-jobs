@@ -1,0 +1,399 @@
+{
+  "compiled_on": "2026-10-20",
+  "publication_status": "research_only_not_imported",
+  "source_notes": {},
+  "records": [
+    {
+      "source_file": "cmhc_rent.xlsx",
+      "url": "https://assets.cmhc-schl.gc.ca/sites/cmhc/professional/housing-markets-data-and-research/housing-data-tables/rental-market/rural-rental-market-survey-data-average-rent-centre/rural-rental-market-survey-data-average-rent-census-subdivision-2025-en.xlsx?rev=ea6c1c71-339f-484b-a587-9c9b3f4b0f44",
+      "retrieved_on": "2026-10-20",
+      "bytes": 100083,
+      "sha256": "745854b98ef7ac50262e8a7c31f85850072392bef1cbf493b043e820c12502fb"
+    },
+    {
+      "source_file": "cmhc_vacancy.xlsx",
+      "url": "https://assets.cmhc-schl.gc.ca/sites/cmhc/professional/housing-markets-data-and-research/housing-data-tables/rental-market/rural-rental-market-survey-data-vacancy-rate-centre/rural-rental-market-survey-data-vacancy-rate-census-subdivision-2025-en.xlsx?rev=9ea567cb-a139-48c4-8f6c-0c27f603606f",
+      "retrieved_on": "2026-10-20",
+      "bytes": 94125,
+      "sha256": "ef08de004429e109a8b120d6fb6188120fb262f69f85f1667eafefaeb8b501c4"
+    },
+    {
+      "source_file": "cmhc_units.xlsx",
+      "url": "https://assets.cmhc-schl.gc.ca/sites/cmhc/professional/housing-markets-data-and-research/housing-data-tables/rental-market/rural-rental-market-survey-data-units-bedroom-type-centre/rental-market-survey-number-units-universe-bedroom-type-census-subdivision-2025-en.xlsx?rev=17d7e4ac-4a50-45b6-8bdc-ab7fbf5e8b84",
+      "retrieved_on": "2026-10-20",
+      "bytes": 78757,
+      "sha256": "7fd1b1c5aa2ebc06fc888de6547947914aa28eab9b2b58eeed2f164b92808d96"
+    },
+    {
+      "source_file": "alberta.xlsx",
+      "url": "https://open.alberta.ca/dataset/fb9452c6-395e-45a8-8149-645956fd83ac/resource/8e11688b-2540-47a4-be28-d31863cb5c43/download/apartment-vacancy-and-rental-cost-survey-avs-data.xlsx",
+      "retrieved_on": "2026-10-20",
+      "bytes": 360474,
+      "sha256": "b454804846969bdf41d6bed70f770004d947df3dbf1e98794c7e716bb39b8afb"
+    },
+    {
+      "source_file": "wages.html",
+      "url": "https://www.jobbank.gc.ca/wagereport/occupation/18214",
+      "retrieved_on": "2026-10-20",
+      "bytes": 253958,
+      "sha256": "6736c89fd5fe0e93328e826bc25a7dfe901ca2e33ba99cbc2cdeda8cf0f3886a"
+    },
+    {
+      "source_file": "food.html",
+      "url": "https://nutritionnorthcanada.gc.ca/eng/1791378570955/1791378626803",
+      "retrieved_on": "2026-10-20",
+      "bytes": 143514,
+      "sha256": "5e1bdfd29312f5c85a423424439402fce3cc51be98bb2477f0285374e6a75ae0"
+    },
+    {
+      "source_file": "34100133.zip",
+      "url": "https://www150.statcan.gc.ca/n1/tbl/csv/34100133-eng.zip",
+      "retrieved_on": "2026-10-20",
+      "bytes": 1545574,
+      "sha256": "9085a5bdbcdd2f29a4235175a65d940d7b84346a09548a974ffff26fbf0523b2"
+    },
+    {
+      "source_file": "34100132.zip",
+      "url": "https://www150.statcan.gc.ca/n1/tbl/csv/34100132-eng.zip",
+      "retrieved_on": "2026-10-20",
+      "bytes": 37393,
+      "sha256": "dbcdf7d47c27ee6acb7325a50aedcb91c18245d16afc4b055a2c37a8172f6a9f"
+    },
+    {
+      "source_file": "11100066.zip",
+      "url": "https://www150.statcan.gc.ca/n1/tbl/csv/11100066-eng.zip",
+      "retrieved_on": "2026-10-20",
+      "bytes": 365446,
+      "sha256": "b97d469e3904b5a72a74e7efaa76b1e73ab607e245d308ee46fd46927533bb49"
+    },
+    {
+      "source_file": "11100104.zip",
+      "url": "https://www150.statcan.gc.ca/n1/tbl/csv/11100104-eng.zip",
+      "retrieved_on": "2026-10-20",
+      "bytes": 318115,
+      "sha256": "23f4a1ebfe3442bd12bfea5ef3c101c346b39f903b83b53719a694704e5230eb"
+    },
+    {
+      "key": "ontario",
+      "url": "https://collegept.org/physiotherapists/registrant-information/",
+      "retrieval_error": "503 Server Error: Service Unavailable for url: https://collegept.org/physiotherapists/registrant-information/",
+      "retrieved_on": null
+    },
+    {
+      "key": "alberta_fees",
+      "url": "https://www.cpta.ab.ca/for-physiotherapists/registration-information/practice-permit-renewal/member-fees/",
+      "file": "alberta_fees.html",
+      "http_status": 200,
+      "sha256": "6bd32c64c74ee9bc0228c9acb08dd70836d8e3dba861d3de439a00b092a76c25",
+      "bytes": 151822,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "bc_fees",
+      "url": "https://chcpbc.org/standards-and-resources/bylaws/fees/",
+      "file": "bc_fees.html",
+      "http_status": 200,
+      "sha256": "3a14fff41bb3ce4172c4c0d42a8f855e2077feffb637974c49b103d362c7556f",
+      "bytes": 171308,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "sk_full",
+      "url": "https://www.scpt.org/site/fullpractice?nav=sidebar",
+      "file": "sk_full.html",
+      "http_status": 200,
+      "sha256": "760ab914019b2cddf59e828ce29dec5d7224ddf05fc1aebfa15ee40536c11c0f",
+      "bytes": 125059,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "sk_provisional",
+      "url": "https://www.scpt.org/site/provisional?nav=sidebar",
+      "file": "sk_provisional.html",
+      "http_status": 200,
+      "sha256": "c1fd065e4c1139b158f38d08a050072978af203e1f428a8adbec66698687ff7b",
+      "bytes": 129305,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "sk_renewal",
+      "url": "https://www.scpt.org/site/individualrenewal?nav=sidebar",
+      "file": "sk_renewal.html",
+      "http_status": 200,
+      "sha256": "06cc169a7e07b008b662a5dfcb2ccb44c8f6e0737e9c3e35d15f08bc2726d370",
+      "bytes": 123131,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "manitoba",
+      "url": "https://manitobaphysio.com/registration/registered-in-canada/",
+      "file": "manitoba.html",
+      "http_status": 200,
+      "sha256": "99e9bf43a4b13fd3ed351f847857585480ad9f7042776704ca417d5f86eecca0",
+      "bytes": 123206,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "ns_fees",
+      "url": "https://nsphysio.com/registration/fees",
+      "retrieval_error": "403 Client Error: Forbidden for url: https://nsphysio.com/registration/fees",
+      "retrieved_on": null
+    },
+    {
+      "key": "ns_transfer",
+      "url": "https://www.nsphysio.com/registration/overview/labour-mobility-registration-pathway",
+      "retrieval_error": "403 Client Error: Forbidden for url: https://www.nsphysio.com/registration/overview/labour-mobility-registration-pathway",
+      "retrieved_on": null
+    },
+    {
+      "key": "pei",
+      "url": "https://www.peicpt.com/registration",
+      "file": "pei.html",
+      "http_status": 200,
+      "sha256": "4ca7c639e42121fb83f8025115388abfed6913cedb651579211985a11720aa48",
+      "bytes": 13356,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "nl",
+      "url": "https://nlcpt.com/new-applicants-registration/",
+      "file": "nl.html",
+      "http_status": 200,
+      "sha256": "87a9f85c2959160021be05e44a8f9d39fe596e9eb4142a508ef04168293de28f",
+      "bytes": 53605,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "qc.pdf",
+      "url": "https://oppq.qc.ca/wp-content/uploads/Grille-tarifaire-2026-2027-Pht-T.phys_.pdf",
+      "file": "qc.pdf",
+      "http_status": 200,
+      "sha256": "526e3ced1ca9575f47e2ba4ebff48cbde80b566eaf832c67b1c3120d2dc07a75",
+      "bytes": 170316,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "qc_initial",
+      "url": "https://oppq.qc.ca/en/become-a-member/quebec-canada-candidates/",
+      "file": "qc_initial.html",
+      "http_status": 200,
+      "sha256": "54d2ca45cb3eddf50627c45b12091d3efcf48dede643234e69f94211d5b430ac",
+      "bytes": 117909,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "qc_international",
+      "url": "https://oppq.qc.ca/devenir-membre/candidats-internationaux/",
+      "file": "qc_international.html",
+      "http_status": 200,
+      "sha256": "7c6faa8f87f6819eb5c704ad7486cfe478cc470c03fd90b30903fc43c4254bfd",
+      "bytes": 153320,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "yukon",
+      "url": "https://yukon.ca/en/doing-business/professional-licensing/apply-physiotherapist-certificate",
+      "file": "yukon.html",
+      "http_status": 200,
+      "sha256": "12a522a9d757ba34bc86a4931c478643eb83da0305145ec74f514431a59f74f2",
+      "bytes": 91968,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "nb.pdf",
+      "url": "https://cptnb.ca/language/en/?mdocs-file=5060",
+      "retrieval_error": "406 Client Error: Not Acceptable for url: https://cptnb.ca/language/en/?mdocs-file=5060",
+      "retrieved_on": null
+    },
+    {
+      "key": "territories",
+      "url": "https://www.cicic.ca/938/physiotherapists.canada?id=53",
+      "file": "territories.html",
+      "http_status": 200,
+      "sha256": "6dad8e4769f91f670442bbcad1a0fd6dc66765e7b107710eb3724ba292f2a4ec",
+      "bytes": 261105,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "capr",
+      "url": "https://alliancept.org/new-comparability-pathway/how-to-apply/fees-payment/",
+      "file": "capr.html",
+      "http_status": 200,
+      "sha256": "6b73ca2e3daba8990bdc153890ffedc2e0ae2d8bdfb22690cefbccd6901846fd",
+      "bytes": 152670,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "cpte",
+      "url": "https://alliancept.org/canadian-physiotherapy-examination/applying-for-the-cpte/dates-and-fees/",
+      "file": "cpte.html",
+      "http_status": 200,
+      "sha256": "f7f5e484a943d5d15f1798a78cd1ad8bb31e4e459e1ea833f3714afe6d2555a8",
+      "bytes": 151037,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "language_policy",
+      "url": "https://alliancept.org/new-comparability-pathway/policies-and-requirements/language-proficiency-policy/",
+      "file": "language_policy.html",
+      "http_status": 200,
+      "sha256": "8389eb0759bbc29c5d8ccce85b22c4fddc2dba730a2ac5f937dd14b05d63934f",
+      "bytes": 152704,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "utoronto",
+      "url": "https://oiepb.utoronto.ca/physiotherapy-practice-within-the-canadian-health-care-context/",
+      "file": "utoronto.html",
+      "http_status": 200,
+      "sha256": "5b131ca14aa96311d3432b0062c7443d3b0e6346ec279bd376a75f0a76bcd5d7",
+      "bytes": 195,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "ualberta",
+      "url": "https://www.ualberta.ca/en/rehabilitation/programs/professional-development/micro-courses/physiotherapy-practice-in-the-canadian-healthcare-system.html",
+      "file": "ualberta.html",
+      "http_status": 200,
+      "sha256": "3813c912c529bdcde209220e3f4e78f820e86dc374d5a5dc2382c556e9b7803c",
+      "bytes": 161489,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "ielts_india",
+      "url": "https://ieltsidpindia.com/information/ielts-test-fee",
+      "retrieval_error": "403 Client Error: Forbidden for url: https://ieltsidpindia.com/information/ielts-test-fee",
+      "retrieved_on": null
+    },
+    {
+      "key": "celpip",
+      "url": "https://www.celpip.ca/take-celpip/overview/",
+      "file": "celpip.html",
+      "http_status": 200,
+      "sha256": "7d1a15e07539830b10fc2c67c238374120495b4425603e30c944cdc028ba1ff1",
+      "bytes": 207022,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "pte",
+      "url": "https://www.pearsonpte.com/test-centers-and-fees/",
+      "file": "pte.html",
+      "http_status": 200,
+      "sha256": "4130f0554c79f8c3e0746f3bea26f5510027e3c23f0b276658e87181f08e26ae",
+      "bytes": 124617,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "loan_forgiveness",
+      "url": "https://www.canada.ca/en/services/benefits/education/student-aid/grants-loans/repay/assistance/student-loan-forgiveness.html",
+      "file": "loan_forgiveness.html",
+      "http_status": 200,
+      "sha256": "c632f6215bc4240ee35b44eb799980322a1b158baa06275a7cc10006554f1149",
+      "bytes": 30626,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "loan_regulation",
+      "url": "https://laws-lois.justice.gc.ca/eng/regulations/SOR-95-329/section-28.html",
+      "file": "loan_regulation.html",
+      "http_status": 200,
+      "sha256": "19be614d6dca6f8672a0b6d8811d0ea2231b637e14f74c3425dc4bd1be346ec0",
+      "bytes": 30446,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "bc_incentives",
+      "url": "https://pea.org/news-programs/pea-news/recruitment-and-retention-incentives-extended-to-march-31-2027/",
+      "file": "bc_incentives.html",
+      "http_status": 200,
+      "sha256": "2d92c2a50574d99cdc96016d4abaf9ec5b2bdba789c38cdfb0f6aa101a55beee",
+      "bytes": 76090,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "sha",
+      "url": "https://www.saskhealthauthority.ca/careers-volunteering/careers/career-profiles/physical-therapist-career-profile",
+      "file": "sha.html",
+      "http_status": 200,
+      "sha256": "7ef38605e8564f47cb7c5830478655551e7829c4fcae48c4c18781a8a101cd4c",
+      "bytes": 276760,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "sk_exclusion",
+      "url": "https://www.saskatchewan.ca/residents/health/health-human-resources/incentives-for-healthcare-professionals/saskatchewan-rural-and-remote-recruitment-incentive",
+      "file": "sk_exclusion.html",
+      "http_status": 200,
+      "sha256": "cf74695c6ea5fe812a315158395a132a65cdd4d49437d9e566fdc2853cc0d0f3",
+      "bytes": 68471,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "hearst",
+      "url": "https://www.ndh.on.ca/physiotherapist/",
+      "retrieval_error": "403 Client Error: Forbidden for url: https://www.ndh.on.ca/physiotherapist/",
+      "retrieved_on": null
+    },
+    {
+      "key": "bc_hospital",
+      "url": "https://bchealthcareers.ca/professions/allied-health-professionals/physiotherapists/",
+      "file": "bc_hospital.html",
+      "http_status": 200,
+      "sha256": "02c13299a10705e4fb656dbef591d25ac7a921b33a39d27907bc6bbbed22e126",
+      "bytes": 134399,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "kenora",
+      "url": "https://www.kenora.ca/living-here/water-and-sewer/paying-your-water-bill/",
+      "file": "kenora.html",
+      "http_status": 200,
+      "sha256": "4fafe7d35448168875d648ae1f0d45733c89365847ffdec8a315d2544dc76536",
+      "bytes": 117218,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "dryden.pdf",
+      "url": "https://www.dryden.ca/media/ud3bqdmf/by-law-2025-75-amend-chapter-259-re-increase-water-and-sewer-rates-online-version.pdf",
+      "file": "dryden.pdf",
+      "http_status": 200,
+      "sha256": "8155ce4e2cd142e572b3e788391baee979597e4839f8f84577b12eff13657aca",
+      "bytes": 95211,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "key": "alberta_report.pdf",
+      "url": "https://open.alberta.ca/dataset/fb9452c6-395e-45a8-8149-645956fd83ac/resource/ad139e3d-f722-4b32-9358-a4e1de216f74/download/alss-apartment-vacancy-rental-cost-survey-2025.pdf",
+      "file": "alberta_report.pdf",
+      "http_status": 200,
+      "sha256": "5a453b6984c472008c06eea847be1ca30cf1f7275bd69e486da20597afcffd23",
+      "bytes": 1671945,
+      "retrieved_on": "2026-10-20"
+    },
+    {
+      "source_file": "ab-rents-20261028.source",
+      "url": "https://regionaldashboard.alberta.ca/export/opendata/Average%20Rent/jsons",
+      "description": "Alberta complete municipal rent feed",
+      "retrieved_on": "2026-10-28",
+      "bytes": 1697371,
+      "sha256": "994158e85712f98172b6cfd70ef2f262b1fd2dea27670543c9a4ff82306d700f"
+    },
+    {
+      "source_file": "pt-wages-20261028.source",
+      "url": "https://www.jobbank.gc.ca/wagereport/occupation/18214",
+      "description": "Job Bank current physiotherapist wage table",
+      "retrieved_on": "2026-10-28",
+      "bytes": 253958,
+      "sha256": "646eaad42913d2a1df141ef4cf5269e0bdf5812b15f646e034c66aeaec4912d8"
+    },
+    {
+      "source_file": "geo-attribute-2021.zip",
+      "url": "https://www12.statcan.gc.ca/census-recensement/2021/geo/aip-pia/attribute-attribs/files-fichiers/2021_92-151_X.zip",
+      "description": "Statistics Canada 2021 Geographic Attribute File",
+      "retrieved_on": "2026-10-28",
+      "bytes": 9832890,
+      "sha256": "918aa8502d9d95b1ae5ce437ed9674e0977ec55977c08b8d01822a9dab6fe5da"
+    }
+  ],
+  "updated_on": "2026-10-28"
+}

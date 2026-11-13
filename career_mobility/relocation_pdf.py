@@ -3,7 +3,16 @@ from django.http import HttpResponse
 
 @require_POST
 def relocation_comparison_pdf(request):
-    """Recalculate a submitted Canadian city comparison; never trust client-side totals."""
+    """Recalculate a submitted Canadian city comparison; never trust client totals."""
+    import json
+    from django.http import JsonResponse
+    try:data=json.loads(request.body)
+    except (ValueError,TypeError):return JsonResponse({'error':'Invalid comparison.'},status=400)
+    return comparison_response(data)
+
+
+def comparison_response(data):
+    """The same report for a downloaded comparison and an owned saved plan."""
     import json
     from decimal import Decimal, InvalidOperation
     from io import BytesIO
@@ -13,7 +22,6 @@ def relocation_comparison_pdf(request):
     from reportlab.lib import colors
     from reportlab.lib.styles import getSampleStyleSheet
     try:
-        data = json.loads(request.body)
         if not isinstance(data, dict):
             raise ValueError("Invalid input")
         origin = str(data.get("origin", "")).strip()[:100]
@@ -40,9 +48,11 @@ def relocation_comparison_pdf(request):
             for side in ("current", "new"):
                 values[side+"-living"] = sum((amount(side+"-"+k) for k in ("utilities", "transport", "groceries", "childcare", "extra")), Decimal("0"))
         net_current, net_new = data.get("current-net"), data.get("new-net")
-        if bool(str(net_current or '').strip()) != bool(str(net_new or '').strip()):
+        has_current=net_current is not None and str(net_current).strip()!=''
+        has_new=net_new is not None and str(net_new).strip()!=''
+        if has_current != has_new:
             raise ValueError("Both take-home figures must be entered")
-        takehome = bool(str(net_current or '').strip())
+        takehome = has_current and has_new
         a = values["current-net"] if takehome else values["current-salary"]/12
         b = values["new-net"] if takehome else values["new-salary"]/12
         current_cost = values["current-rent"] + values["current-living"]
@@ -64,8 +74,8 @@ def relocation_comparison_pdf(request):
             ["Monthly income basis", fmt(a), fmt(b)],
             ["Monthly amount after costs", fmt(a-current_cost), fmt(b-new_cost)]]
     table=Table(rows, colWidths=[200,150,150], repeatRows=1)
-    table.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),colors.HexColor('#12324a')),
-        ('TEXTCOLOR',(0,0),(-1,0),colors.white),('ROWBACKGROUNDS',(0,1),(-1,-1),[colors.white,colors.HexColor('#eef4f7')]),
+    table.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),colors.HexColor('#b62c3a')),
+        ('TEXTCOLOR',(0,0),(-1,0),colors.white),('ROWBACKGROUNDS',(0,1),(-1,-1),[colors.white,colors.HexColor('#f1f3f5')]),
         ('BOTTOMPADDING',(0,0),(-1,-1),10),('TOPPADDING',(0,0),(-1,-1),10)]))
     story.extend([table, Spacer(1, 18), Paragraph("Monthly difference: "+fmt(delta),styles["Heading2"]),
         Paragraph("Annual difference: "+fmt(delta*12),styles["Normal"]),

@@ -1,0 +1,1758 @@
+{
+  "compiled_on": "2026-10-20",
+  "publication_status": "research_only_not_imported",
+  "source_notes": {
+    "scope": "81 proposed research locations across all provinces and territories. Includes regional service centres; not all meet an official rural definition. No Mapbox IDs fabricated."
+  },
+  "records": [
+    {
+      "province_or_territory": "Ontario",
+      "community": "Kenora",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "Kenora, Ontario"
+      ],
+      "national_published_rent_categories": 1,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Ontario",
+      "community": "Dryden",
+      "candidate_cmhc_csd_names": [
+        "Dryden CY"
+      ],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Ontario",
+      "community": "Sioux Lookout",
+      "candidate_cmhc_csd_names": [
+        "Sioux Lookout MU"
+      ],
+      "cmhc_published_rent_categories": 3,
+      "cmhc_good_or_better_rent_categories": 3,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Ontario",
+      "community": "Fort Frances",
+      "candidate_cmhc_csd_names": [
+        "Fort Frances T"
+      ],
+      "cmhc_published_rent_categories": 3,
+      "cmhc_good_or_better_rent_categories": 3,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Ontario",
+      "community": "Red Lake",
+      "candidate_cmhc_csd_names": [
+        "Red Lake MU"
+      ],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Ontario",
+      "community": "Atikokan",
+      "candidate_cmhc_csd_names": [
+        "Atikokan T"
+      ],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Ontario",
+      "community": "Hearst",
+      "candidate_cmhc_csd_names": [
+        "Hearst T"
+      ],
+      "cmhc_published_rent_categories": 5,
+      "cmhc_good_or_better_rent_categories": 5,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Ontario",
+      "community": "Kapuskasing",
+      "candidate_cmhc_csd_names": [
+        "Kapuskasing T"
+      ],
+      "cmhc_published_rent_categories": 4,
+      "cmhc_good_or_better_rent_categories": 4,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Ontario",
+      "community": "Cochrane",
+      "candidate_cmhc_csd_names": [
+        "Cochrane T"
+      ],
+      "cmhc_published_rent_categories": 1,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Ontario",
+      "community": "Temiskaming Shores",
+      "candidate_cmhc_csd_names": [
+        "Temiskaming Shores CY"
+      ],
+      "cmhc_published_rent_categories": 5,
+      "cmhc_good_or_better_rent_categories": 4,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "Temiskaming Shores, Ontario"
+      ],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Ontario",
+      "community": "Elliot Lake",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "Elliot Lake, Ontario"
+      ],
+      "national_published_rent_categories": 4,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Ontario",
+      "community": "Marathon",
+      "candidate_cmhc_csd_names": [
+        "Marathon T"
+      ],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Ontario",
+      "community": "Wawa",
+      "candidate_cmhc_csd_names": [
+        "Wawa MU"
+      ],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Ontario",
+      "community": "Espanola",
+      "candidate_cmhc_csd_names": [
+        "Espanola T"
+      ],
+      "cmhc_published_rent_categories": 1,
+      "cmhc_good_or_better_rent_categories": 1,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "British Columbia",
+      "community": "Smithers",
+      "candidate_cmhc_csd_names": [
+        "Smithers T"
+      ],
+      "cmhc_published_rent_categories": 3,
+      "cmhc_good_or_better_rent_categories": 3,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "British Columbia",
+      "community": "Vanderhoof",
+      "candidate_cmhc_csd_names": [
+        "Vanderhoof DM"
+      ],
+      "cmhc_published_rent_categories": 3,
+      "cmhc_good_or_better_rent_categories": 3,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "British Columbia",
+      "community": "Quesnel",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "Quesnel, British Columbia"
+      ],
+      "national_published_rent_categories": 3,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "British Columbia",
+      "community": "Terrace",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "Terrace, British Columbia"
+      ],
+      "national_published_rent_categories": 2,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "British Columbia",
+      "community": "Kitimat",
+      "candidate_cmhc_csd_names": [
+        "Kitimat DM"
+      ],
+      "cmhc_published_rent_categories": 3,
+      "cmhc_good_or_better_rent_categories": 3,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "British Columbia",
+      "community": "Prince Rupert",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "Prince Rupert, British Columbia"
+      ],
+      "national_published_rent_categories": 4,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "British Columbia",
+      "community": "Dawson Creek",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "Dawson Creek, British Columbia"
+      ],
+      "national_published_rent_categories": 4,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "British Columbia",
+      "community": "Fort St. John",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "Fort St. John, British Columbia"
+      ],
+      "national_published_rent_categories": 4,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "British Columbia",
+      "community": "Fort Nelson",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "British Columbia",
+      "community": "Williams Lake",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "Williams Lake, British Columbia"
+      ],
+      "national_published_rent_categories": 3,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "British Columbia",
+      "community": "100 Mile House",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "British Columbia",
+      "community": "Revelstoke",
+      "candidate_cmhc_csd_names": [
+        "Revelstoke CY"
+      ],
+      "cmhc_published_rent_categories": 3,
+      "cmhc_good_or_better_rent_categories": 2,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Alberta",
+      "community": "High Level",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 4,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Alberta",
+      "community": "Peace River",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 4,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Alberta",
+      "community": "Slave Lake",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 3,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Alberta",
+      "community": "Athabasca",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 4,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Alberta",
+      "community": "Barrhead",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 4,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Alberta",
+      "community": "Claresholm",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 5,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Alberta",
+      "community": "Pincher Creek",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 4,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Alberta",
+      "community": "Crowsnest Pass",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 3,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Alberta",
+      "community": "Rocky Mountain House",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 4,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Alberta",
+      "community": "Lac La Biche",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Saskatchewan",
+      "community": "Meadow Lake",
+      "candidate_cmhc_csd_names": [
+        "Meadow Lake CY"
+      ],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Saskatchewan",
+      "community": "Melfort",
+      "candidate_cmhc_csd_names": [
+        "Melfort CY"
+      ],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Saskatchewan",
+      "community": "Nipawin",
+      "candidate_cmhc_csd_names": [
+        "Nipawin T"
+      ],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Saskatchewan",
+      "community": "Tisdale",
+      "candidate_cmhc_csd_names": [
+        "Tisdale T"
+      ],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Saskatchewan",
+      "community": "Humboldt",
+      "candidate_cmhc_csd_names": [
+        "Humboldt CY"
+      ],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Saskatchewan",
+      "community": "Estevan",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "Estevan, Saskatchewan"
+      ],
+      "national_published_rent_categories": 4,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Saskatchewan",
+      "community": "Weyburn",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Saskatchewan",
+      "community": "La Ronge",
+      "candidate_cmhc_csd_names": [
+        "La Ronge T"
+      ],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Manitoba",
+      "community": "Thompson",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "Thompson, Manitoba"
+      ],
+      "national_published_rent_categories": 4,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Manitoba",
+      "community": "The Pas",
+      "candidate_cmhc_csd_names": [
+        "The Pas T"
+      ],
+      "cmhc_published_rent_categories": 5,
+      "cmhc_good_or_better_rent_categories": 5,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Manitoba",
+      "community": "Flin Flon",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Manitoba",
+      "community": "Dauphin",
+      "candidate_cmhc_csd_names": [
+        "Dauphin CY"
+      ],
+      "cmhc_published_rent_categories": 3,
+      "cmhc_good_or_better_rent_categories": 3,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Manitoba",
+      "community": "Swan River",
+      "candidate_cmhc_csd_names": [
+        "Swan River T"
+      ],
+      "cmhc_published_rent_categories": 3,
+      "cmhc_good_or_better_rent_categories": 3,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Manitoba",
+      "community": "Neepawa",
+      "candidate_cmhc_csd_names": [
+        "Neepawa T"
+      ],
+      "cmhc_published_rent_categories": 2,
+      "cmhc_good_or_better_rent_categories": 1,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Manitoba",
+      "community": "Virden",
+      "candidate_cmhc_csd_names": [
+        "Virden T"
+      ],
+      "cmhc_published_rent_categories": 2,
+      "cmhc_good_or_better_rent_categories": 1,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Quebec",
+      "community": "Baie-Comeau",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "Baie-Comeau, Quebec"
+      ],
+      "national_published_rent_categories": 4,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Quebec",
+      "community": "Sept-Îles",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "Sept-Îles, Quebec"
+      ],
+      "national_published_rent_categories": 4,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Quebec",
+      "community": "Amos",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "Amos, Quebec"
+      ],
+      "national_published_rent_categories": 3,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Quebec",
+      "community": "Val-d’Or",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "Val-d'Or, Quebec"
+      ],
+      "national_published_rent_categories": 4,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Quebec",
+      "community": "Chibougamau",
+      "candidate_cmhc_csd_names": [
+        "Chibougamau V"
+      ],
+      "cmhc_published_rent_categories": 5,
+      "cmhc_good_or_better_rent_categories": 5,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Quebec",
+      "community": "Rouyn-Noranda",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "Rouyn-Noranda, Quebec"
+      ],
+      "national_published_rent_categories": 4,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Nova Scotia",
+      "community": "Antigonish",
+      "candidate_cmhc_csd_names": [
+        "Antigonish T"
+      ],
+      "cmhc_published_rent_categories": 4,
+      "cmhc_good_or_better_rent_categories": 3,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Nova Scotia",
+      "community": "Amherst",
+      "candidate_cmhc_csd_names": [
+        "Amherst T"
+      ],
+      "cmhc_published_rent_categories": 3,
+      "cmhc_good_or_better_rent_categories": 3,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Nova Scotia",
+      "community": "Yarmouth",
+      "candidate_cmhc_csd_names": [
+        "Yarmouth MD",
+        "Yarmouth T"
+      ],
+      "cmhc_published_rent_categories": 3,
+      "cmhc_good_or_better_rent_categories": 3,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "Yarmouth, Nova Scotia"
+      ],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Nova Scotia",
+      "community": "New Glasgow",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "New Glasgow, Nova Scotia"
+      ],
+      "national_published_rent_categories": 3,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Nova Scotia",
+      "community": "Truro",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "Truro, Nova Scotia"
+      ],
+      "national_published_rent_categories": 4,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "New Brunswick",
+      "community": "Campbellton",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "Campbellton, New Brunswick part, New Brunswick/Quebec"
+      ],
+      "national_published_rent_categories": 3,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "New Brunswick",
+      "community": "Bathurst",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "Bathurst, New Brunswick"
+      ],
+      "national_published_rent_categories": 4,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "New Brunswick",
+      "community": "Edmundston",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "Edmundston, New Brunswick"
+      ],
+      "national_published_rent_categories": 4,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "New Brunswick",
+      "community": "Miramichi",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "Miramichi, New Brunswick"
+      ],
+      "national_published_rent_categories": 2,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "New Brunswick",
+      "community": "Woodstock",
+      "candidate_cmhc_csd_names": [
+        "Woodstock TV"
+      ],
+      "cmhc_published_rent_categories": 4,
+      "cmhc_good_or_better_rent_categories": 4,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Newfoundland and Labrador",
+      "community": "Gander",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "Gander, Newfoundland and Labrador"
+      ],
+      "national_published_rent_categories": 3,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Newfoundland and Labrador",
+      "community": "Grand Falls-Windsor",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "Grand Falls-Windsor, Newfoundland and Labrador"
+      ],
+      "national_published_rent_categories": 2,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Newfoundland and Labrador",
+      "community": "Stephenville",
+      "candidate_cmhc_csd_names": [
+        "Stephenville T"
+      ],
+      "cmhc_published_rent_categories": 4,
+      "cmhc_good_or_better_rent_categories": 4,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Newfoundland and Labrador",
+      "community": "Happy Valley-Goose Bay",
+      "candidate_cmhc_csd_names": [
+        "Happy Valley-Goose Bay T"
+      ],
+      "cmhc_published_rent_categories": 3,
+      "cmhc_good_or_better_rent_categories": 2,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Newfoundland and Labrador",
+      "community": "Labrador City",
+      "candidate_cmhc_csd_names": [
+        "Labrador City T"
+      ],
+      "cmhc_published_rent_categories": 3,
+      "cmhc_good_or_better_rent_categories": 3,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Prince Edward Island",
+      "community": "Summerside",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "Summerside, Prince Edward Island"
+      ],
+      "national_published_rent_categories": 3,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Prince Edward Island",
+      "community": "Souris",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Prince Edward Island",
+      "community": "Montague",
+      "candidate_cmhc_csd_names": [
+        "Montague T"
+      ],
+      "cmhc_published_rent_categories": 2,
+      "cmhc_good_or_better_rent_categories": 2,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Yukon",
+      "community": "Whitehorse",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "Whitehorse, Yukon"
+      ],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Yukon",
+      "community": "Dawson",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Northwest Territories",
+      "community": "Yellowknife",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [
+        "Yellowknife, Northwest Territories"
+      ],
+      "national_published_rent_categories": 4,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Northwest Territories",
+      "community": "Inuvik",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": false,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Nunavut",
+      "community": "Iqaluit",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": true,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    },
+    {
+      "province_or_territory": "Nunavut",
+      "community": "Rankin Inlet",
+      "candidate_cmhc_csd_names": [],
+      "cmhc_published_rent_categories": 0,
+      "cmhc_good_or_better_rent_categories": 0,
+      "alberta_published_rent_categories": 0,
+      "national_source_area_candidates": [],
+      "national_published_rent_categories": 0,
+      "northern_food_price_available": true,
+      "geography_status": "Name-normalized candidates only; CSD boundaries and economic-region mapping require review",
+      "remaining": [
+        "Current asking-rent availability",
+        "Utilities/heating",
+        "Transport",
+        "Childcare",
+        "PT job/offer and wage-region mapping"
+      ],
+      "priority_reason": "Research shortlist of rural, remote and regional service centres; not evidence of PTJC client hiring or official rural-program eligibility"
+    }
+  ]
+}

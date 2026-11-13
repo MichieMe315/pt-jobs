@@ -17,13 +17,14 @@ class InternationalSignupV25Tests(TestCase):
             'canadian_immigration_status': 'none',
             'graduation_year': 2020,
             'registered_in_education_country': 'yes',
+            'application_history': 'new',
         }
         payload.update(changes)
         return payload
 
     def test_signup_creates_private_profile_and_logs_in(self):
         response = self.client.post(reverse('mobility_international_signup'), self.details())
-        self.assertRedirects(response, reverse('mobility_international_dashboard'))
+        self.assertRedirects(response, reverse('mobility_verify_pending'))
         profile = InternationalProfile.objects.get(user__email='international@example.com')
         self.assertEqual(profile.citizenship_country, 'Sri Lanka')
         self.assertEqual(profile.residence_country, 'Qatar')

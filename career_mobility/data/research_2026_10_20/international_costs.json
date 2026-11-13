@@ -1,0 +1,141 @@
+{
+  "compiled_on": "2026-10-20",
+  "publication_status": "research_only_not_imported",
+  "source_notes": {
+    "scope": "Educational cost research only. CAPR route eligibility is separate from immigration eligibility; Quebec uses its own equivalence process. Course alternatives are not cumulative."
+  },
+  "records": [
+    {
+      "category": "pap",
+      "amount": 900,
+      "currency": "CAD",
+      "description": "Eligible pre-approved application",
+      "source_url": "https://alliancept.org/new-comparability-pathway/how-to-apply/fees-payment/",
+      "reviewed_on": "2026-10-20",
+      "kind": "fee"
+    },
+    {
+      "category": "qa",
+      "amount": 550,
+      "currency": "CAD",
+      "description": "Qualifications assessment",
+      "source_url": "https://alliancept.org/new-comparability-pathway/how-to-apply/fees-payment/",
+      "reviewed_on": "2026-10-20",
+      "kind": "fee"
+    },
+    {
+      "category": "pet",
+      "amount": 900,
+      "currency": "CAD",
+      "description": "Initial physiotherapy evaluation tool",
+      "source_url": "https://alliancept.org/new-comparability-pathway/how-to-apply/fees-payment/",
+      "reviewed_on": "2026-10-20",
+      "kind": "fee"
+    },
+    {
+      "category": "pet_reattempt",
+      "amount": 675,
+      "currency": "CAD",
+      "description": "PET subsequent attempt after a Not Comparable result",
+      "source_url": "https://alliancept.org/new-comparability-pathway/how-to-apply/fees-payment/",
+      "reviewed_on": "2026-10-20",
+      "kind": "fee"
+    },
+    {
+      "category": "pet_optional_retake",
+      "amount": 900,
+      "currency": "CAD",
+      "description": "Optional PET retake",
+      "source_url": "https://alliancept.org/new-comparability-pathway/how-to-apply/fees-payment/",
+      "reviewed_on": "2026-10-20",
+      "kind": "fee"
+    },
+    {
+      "category": "pet_refund_before_deadline",
+      "amount": 810,
+      "currency": "CAD",
+      "description": "Refund before PET application deadline",
+      "source_url": "https://alliancept.org/new-comparability-pathway/how-to-apply/fees-payment/",
+      "reviewed_on": "2026-10-20",
+      "kind": "refund"
+    },
+    {
+      "category": "pet_refund_over_48h",
+      "amount": 450,
+      "currency": "CAD",
+      "description": "Refund after deadline more than 48 hours before PET",
+      "source_url": "https://alliancept.org/new-comparability-pathway/how-to-apply/fees-payment/",
+      "reviewed_on": "2026-10-20",
+      "kind": "refund"
+    },
+    {
+      "category": "pet_cannot_test",
+      "amount": 250,
+      "currency": "CAD",
+      "description": "Cannot-test fee for applicant-side issues",
+      "source_url": "https://alliancept.org/new-comparability-pathway/how-to-apply/fees-payment/",
+      "reviewed_on": "2026-10-20",
+      "kind": "fee"
+    },
+    {
+      "category": "reconsideration",
+      "amount": 410,
+      "currency": "CAD",
+      "description": "Credential assessment reconsideration",
+      "source_url": "https://alliancept.org/new-comparability-pathway/how-to-apply/fees-payment/",
+      "reviewed_on": "2026-10-20",
+      "kind": "fee"
+    },
+    {
+      "category": "appeal",
+      "amount": 410,
+      "currency": "CAD",
+      "description": "Credential assessment appeal",
+      "source_url": "https://alliancept.org/new-comparability-pathway/how-to-apply/fees-payment/",
+      "reviewed_on": "2026-10-20",
+      "kind": "fee"
+    },
+    {
+      "category": "cpte_standard",
+      "amount": 2500,
+      "currency": "CAD",
+      "description": "Standard Canadian Physiotherapy Examination",
+      "source_url": "https://alliancept.org/canadian-physiotherapy-examination/applying-for-the-cpte/dates-and-fees/",
+      "reviewed_on": "2026-10-20",
+      "applies_to": "All other 2026 candidates; all 2027 dates"
+    },
+    {
+      "category": "cpte_transition",
+      "amount": 1800,
+      "currency": "CAD",
+      "description": "Transition examination discount",
+      "source_url": "https://alliancept.org/canadian-physiotherapy-examination/applying-for-the-cpte/dates-and-fees/",
+      "reviewed_on": "2026-10-20",
+      "applies_to": "Passed PCE written in 2025; February–December 2026 CPTE only",
+      "expires_on": "2026-12-31",
+      "alternative_to": "cpte_standard"
+    },
+    {
+      "category": "context_course",
+      "amount": 550,
+      "currency": "CAD",
+      "description": "University of Alberta Canadian healthcare context course",
+      "source_url": "https://www.ualberta.ca/en/rehabilitation/programs/professional-development/micro-courses/physiotherapy-practice-in-the-canadian-healthcare-system.html",
+      "reviewed_on": "2026-11-04",
+      "tax": "plus GST",
+      "alternative_group": "context_course"
+    },
+    {
+      "category": "context_course",
+      "amount": 500,
+      "currency": "CAD",
+      "description": "University of Toronto alternative context course",
+      "source_url": "https://oiepb.utoronto.ca/physiotherapy-practice-within-the-canadian-health-care-context/",
+      "reviewed_on": "2026-11-04",
+      "prior_review_amount_cad": 500,
+      "status": "published_course_fee",
+      "notes": "Winter 2027 course fee is $500. Confirm the registration checkout total and any administrative fee; do not add both university alternatives.",
+      "alternative_group": "context_course"
+    }
+  ]
+}

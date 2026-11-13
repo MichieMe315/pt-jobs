@@ -1,0 +1,19 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<p><a href="{% url 'admin:career_mobility_digitalproduct_catalogue' %}">← Digital products</a></p>
+<p>Set quantities for eligible new accounts. Enter 0 to turn off a starter allowance. Account eligibility and publication are managed on each product.</p>
+<form method="post">{% csrf_token %}
+{% if can_edit %}<p><button type="submit" class="button default">Save allowances</button></p>{% endif %}
+<table>
+<thead><tr><th scope="col">Product</th><th scope="col">Status</th><th scope="col">Audience</th><th scope="col">Counted as</th><th scope="col">Starter quantity</th></tr></thead>
+<tbody>
+{% for product,unit,editable in rows %}
+<tr><th scope="row"><a href="{% url 'admin:career_mobility_digitalproduct_change' product.pk %}">{{ product.title }}</a></th>
+<td>{{ product.is_published|yesno:"Published,Draft" }}</td><td>{{ product.get_audience_display }}</td>
+<td>{{ unit|default:"Not supported" }}</td>
+<td>{% if unit %}{% if editable %}<input type="number" name="quantity_{{ product.pk }}" min="0" max="32767" required value="{{ product.starter_quantity }}" aria-label="{{ product.title }} starter quantity">{% else %}{{ product.starter_quantity }}{% endif %}{% else %}—{% endif %}</td></tr>
+{% empty %}<tr><td colspan="5">No products.</td></tr>{% endfor %}
+</tbody></table>
+{% if can_edit %}<p><button type="submit" class="button default">Save allowances</button></p>{% endif %}
+</form>
+{% endblock %}

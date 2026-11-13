@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PTJC Planning Editor</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#272b30;color:#f4f5f6;font:15px/1.5 system-ui,sans-serif}main{max-width:1180px;margin:auto;padding:clamp(16px,4vw,48px)}h1{font-size:clamp(1.8rem,4vw,2.7rem);line-height:1.13;margin:.5rem 0}h2{font-size:1.35rem;margin:.1rem 0}.muted{color:#d2d8df}a{color:#a9cbff}.actions{display:flex;gap:.55rem;flex-wrap:wrap;align-items:stretch;margin:1rem 0}button,.button,input,select{font:inherit;color:inherit}button,.button{background:#343b43;border:1px solid #788591;border-radius:5px;padding:.55rem .85rem;min-height:44px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}.primary{background:#a92430;border-color:#a92430;color:white;font-weight:650}button[aria-pressed=true]{background:#f3f5f7;color:#272b30;border-color:#f3f5f7}input,select{min-height:40px;padding:.4rem .55rem;border:1px solid #83919f;border-radius:4px;background:#282f37}input{width:100%}.table-wrap{overflow:auto;background:#333a42;border:1px solid #64717e;border-radius:6px;max-width:100%}table{border-collapse:collapse;width:100%;text-align:left}th,td{padding:.55rem .6rem;border-bottom:1px solid #64717e;vertical-align:top}thead{background:#242a30}td input{min-width:8rem}td:last-child button{white-space:nowrap}.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}.day,.weekday{background:#343b43;border:1px solid #64717e;padding:.35rem;min-width:0}.weekday{text-align:center}.day{min-height:84px}.day textarea{box-sizing:border-box;width:100%;resize:vertical;background:#282f37;color:#fff;border:1px solid #83919f;border-radius:3px;min-height:48px;font:inherit}.context{display:flex;gap:1rem;flex-wrap:wrap;align-items:center;margin-block:.7rem}.context label{display:grid;gap:.25rem}.context input{width:auto}#summary{font-weight:650}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #a9cbff;outline-offset:2px}[hidden]{display:none!important}
+@media(max-width:600px){.calendar{grid-template-columns:1fr}.calendar .weekday,.calendar .spacer{display:none}.day{min-height:0;display:grid;grid-template-columns:7ch minmax(0,1fr);align-items:center;gap:.5rem}}
+@media print{body{background:white;color:#111}.actions,header a,.context,.row-remove,#status{display:none!important}main{padding:0}.table-wrap{overflow:visible;border:0;background:white}.calendar,.day,.weekday,thead{background:white;color:#111}.day textarea,td input{background:transparent;color:#111;border:0;min-width:0;padding:0}.demo main::before{content:'PREVIEW';font-size:18pt;font-weight:bold}}
+</style></head><body><main>
+<header><a id="back" href="/career-resources/shop/">Digital products</a><h1 id="title"></h1><p class="muted" id="description"></p></header>
+<nav class="actions" id="tabs" aria-label="Planning sections"></nav>
+<h2 id="heading"></h2><div id="context" class="context"></div><p id="summary" role="status"></p>
+<section id="grid" aria-labelledby="heading"></section>
+<div class="actions"><button id="add" type="button">Add row</button><button id="csv" type="button">Export section CSV</button><button class="primary" id="print" type="button">Print section / Save PDF</button><a class="button primary" id="options" hidden>Print and export</a></div>
+<p class="muted" id="status" role="status">Edits are kept in this browser tab. Export a copy before closing it.</p>
+</main>
+<script id="config" type="application/json">__CONFIG__</script>
+<script>
+'use strict';
+const config=JSON.parse(document.querySelector('#config').textContent),spec=config.planner,$=id=>document.getElementById(id);
+const el=(tag,t)=>{const n=document.createElement(tag);if(t!==undefined)n.textContent=t;return n};
+const storage='ptjc-planning:'+config.id+':'+(config.storageScope||config.productUrl||'default');
+const sheets=Object.keys(spec.sheets),calendar='Monthly calendar',canExport=!config.demo||!!config.canExport;
+const state={rows:{},notes:{},month:0,funds:'',...read()};
+let current=spec.calendar?calendar:sheets[0],csvRows=[],csvLabels=[];
+function read(){try{return JSON.parse(sessionStorage.getItem(storage)||'{}')}catch{return {}}}
+function persist(){try{sessionStorage.setItem(storage,JSON.stringify(state))}catch{$('status').textContent='This browser could not keep your edits. Export before leaving.'}}
+const money=n=>Number(n).toLocaleString('en-CA',{style:'currency',currency:'CAD'});
+const num=x=>String(x??'').trim()===''?null:Number(x), real=x=>Number.isFinite(x);
+const sum=(rows,fn)=>rows.reduce((total,row)=>total+(fn(row)||0),0);
+function cost(r){const q=num(r[2]),p=num(r[3]),rate=num(r[5]),extra=num(r[6]),month=num(r[7]);return r[0]&&[q,p,rate].every(real)&&q>=0&&p>=0&&rate>0&&Number.isInteger(month)&&month>=1&&month<=12&&(extra===null||real(extra))?q*p*rate+(extra||0):null}
+function estimate(r){if(!r[0])return null;if(r[1]==='Salary')return num(r[5]);const factors=r.slice(2,5).map(num);return r[1]==='Hourly'&&factors.length===3&&factors.every(real)?factors.reduce((a,b)=>a*b,1):null}
+const computed={
+ 'Budget':[['CAD total','Entry status'],r=>[cost(r)===null?'':money(cost(r)),r[0]?(cost(r)===null?'Incomplete':'Complete'):'']],
+ 'Placements':[['Record flag'],r=>[r[0]?(state.rows.Placements.filter(x=>x[0]===r[0]).length>1?'Duplicate ID':num(r[5])===null?'Hours missing':!r[6]?'Evidence missing':'Recorded'):'']],
+ 'Study Plan':[['Difference'],r=>[num(r[3])!==null&&num(r[4])!==null?num(r[4])-num(r[3]):'']],
+ 'Offer Compare':[['Annual estimate CAD'],r=>[real(estimate(r))?money(estimate(r)):'']],
+};
+const monthTitle=m=>new Date(spec.calendar,m,1).toLocaleDateString('en-CA',{month:'long'});
+function control(label,node,fn){const wrap=el('label',label);wrap.append(node);node.oninput=fn;$('context').append(wrap)}
+function addRow(){if(state.rows[current].length>=100)return;state.rows[current].push(spec.sheets[current].map(()=>''));persist();table();$('grid').querySelector('tbody tr:last-child input,tbody tr:last-child select')?.focus()}
+function renderCalendar(){
+ const m=state.month, select=el('select');
+ for(let i=0;i<12;i++){const o=el('option',monthTitle(i));o.value=i;select.append(o)}select.value=m;
+ control('Month',select,()=>{state.month=Number(select.value);persist();render()});
+ $('heading').textContent=monthTitle(m)+' '+spec.calendar;
+ const grid=el('div');grid.className='calendar';const weekdays=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+ for(const d of weekdays){const n=el('div',d);n.className='weekday';grid.append(n)}
+ const first=new Date(spec.calendar,m,1).getDay(),last=new Date(spec.calendar,m+1,0).getDate();
+ for(let i=0;i<first;i++){const n=el('div');n.className='spacer';grid.append(n)}
+ csvLabels=['Date','Notes'];csvRows=[];
+ for(let i=1;i<=last;i++){
+  const key=[spec.calendar,String(m+1).padStart(2,'0'),String(i).padStart(2,'0')].join('-'), n=el('label',String(i)),input=el('textarea');
+  n.className='day';input.maxLength=240;input.setAttribute('aria-label',monthTitle(m)+' '+i+' notes');input.value=state.notes[key]||'';
+  const row=[key,input.value];csvRows.push(row);
+  input.oninput=()=>{state.notes[key]=input.value;row[1]=input.value;persist()};n.append(input);grid.append(n);
+ }
+ $('grid').append(grid);
+}
+function table(){
+ const rows=state.rows[current] ||= current==='Cash Plan'?Array.from({length:12},(_,i)=>[String(i+1),'','']):[spec.sheets[current].map(()=>'')];
+ const fixed=current==='Cash Plan';const [extra,calculate]=computed[current]||[fixed?['Opening CAD','Budget costs CAD','Closing CAD','Action']:[],()=>[]];
+ csvLabels=[...spec.sheets[current],...extra];
+ const w=el('div'),t=el('table'),head=el('thead'),header=el('tr'),body=el('tbody');w.className='table-wrap';
+ for(const col of [...csvLabels,...(fixed?[]:['Row actions'])]){const th=el('th',col);th.scope='col';header.append(th)}
+ head.append(header);t.append(head,body);w.append(t);$('grid').replaceChildren(w);
+ const results=[];
+ for(const [i,row] of rows.entries()){
+  const tr=el('tr');body.append(tr);
+  for(const [j,col] of spec.sheets[current].entries()){
+   const td=el('td');tr.append(td);
+   if(fixed&&j===0){td.textContent=row[j];continue}
+   const choices=col==='Pay basis'?['Hourly','Salary','Split or commission']:null;
+   const input=el(choices?'select':'input');input.setAttribute('aria-label',col+' · row '+(i+1));
+   if(choices)for(const choice of ['',...choices])input.append(el('option',choice));
+   if(!choices){input.maxLength=300;if(/date/i.test(col)&&!col.includes('source'))input.type='date';else if(/CAD|quantity|minutes|hours\/|weeks\/|unit price|documented hours|^hours$|^month$/i.test(col)&&!col.includes('Quote')){input.type='number';input.step='any'}}
+   input.value=row[j]||'';input.oninput=()=>{row[j]=input.value;persist();refresh()};td.append(input);
+  }
+  results.push(extra.map(()=>{const td=el('td');tr.append(td);return td}));
+  if(!fixed){const td=el('td'),b=el('button','Remove');b.type='button';b.className='row-remove';b.setAttribute('aria-label','Remove row '+(i+1));b.onclick=()=>{rows.splice(i,1);persist();table()};td.append(b);tr.append(td)}
+ }
+ function refresh(){
+  let cash=num(state.funds);
+  csvRows=rows.map((row,i)=>{
+   let values=calculate(row);
+   if(fixed){const costs=sum((state.rows.Budget||[]).filter(r=>num(r[7])===i+1),cost),opening=cash;if(real(cash))cash+= (num(row[1])||0)-(num(row[2])||0)-costs;values=[real(opening)?money(opening):'',money(costs),real(cash)?money(cash):'',!real(cash)?'Enter starting funds':cash<0?'Funding gap':'Review assumptions']}
+   values.forEach((v,j)=>{results[i][j].textContent=v});return [...row,...values];
+  });
+  $('summary').textContent=current==='Budget'?'Complete costs: '+money(sum(rows,cost))+' · '+rows.filter(r=>r[0]&&cost(r)===null).length+' incomplete':current==='Placements'?'Entered hours: '+sum(rows,r=>num(r[5])):current==='Study Plan'?'Completed minutes: '+sum(rows,r=>num(r[4])):fixed&&real(cash)?'Closing funds after month 12: '+money(cash):'';
+ }
+ if(fixed){$('context').replaceChildren();const f=el('input');f.type='number';f.step='.01';f.value=state.funds;control('Starting funds CAD',f,()=>{state.funds=f.value;persist();refresh()})}
+ refresh();
+}
+function render(){
+ $('heading').textContent=current;$('context').replaceChildren();$('grid').replaceChildren();$('summary').textContent='';
+ $('add').hidden=current===calendar||current==='Cash Plan';
+ for(const b of $('tabs').children)b.setAttribute('aria-pressed',String(b.textContent===current));
+ if(current===calendar)renderCalendar();else table();
+}
+function exportCsv(authorized=false){
+ if(!canExport&&!authorized)return;
+ const cell=x=>{let s=String(x??'');if(/^\s*[=+\-@]/.test(s)&&!/^[-+]?\d+(\.\d+)?$/.test(s))s="'"+s;return '"'+s.replaceAll('"','""')+'"'};
+ const u=URL.createObjectURL(new Blob(['\uFEFF'+[csvLabels,...csvRows].map(r=>r.map(cell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}));
+ const a=el('a');a.href=u;a.download=config.id+'-'+current.toLowerCase().replaceAll(' ','-')+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(u),2000);
+}
+$('title').textContent=spec.title;$('description').textContent=spec.description;document.title=spec.title;
+if(config.shopUrl)$('back').href=config.shopUrl;if(config.shopLabel)$('back').textContent=config.shopLabel;
+if(!canExport){document.body.classList.add('demo');$('print').hidden=true;$('csv').hidden=true;if(config.productUrl){$('options').href=config.productUrl;$('options').hidden=false}}
+for(const sheet of [...(spec.calendar?[calendar]:[]),...sheets]){const b=el('button',sheet);b.type='button';b.onclick=()=>{current=sheet;render()};$('tabs').append(b)}
+$('add').onclick=addRow;$('csv').onclick=exportCsv;$('print').onclick=()=>{if(canExport)window.print()};render();
+</script></body></html>

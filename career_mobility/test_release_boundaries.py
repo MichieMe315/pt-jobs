@@ -1,3 +1,4 @@
+from django.utils import timezone
 import json
 from unittest.mock import patch
 from django.contrib.auth import get_user_model
@@ -44,7 +45,7 @@ class ReleaseBoundaryTests(TestCase):
         self.assertEqual(self.client.get(reverse('mobility_canadian_full'),{'saved':plan.pk}).status_code,404)
     def test_international_isolation(self):
         intl=get_user_model().objects.create_user(username='release-intl')
-        InternationalProfile.objects.create(user=intl,country_of_education='India')
+        InternationalProfile.objects.create(email_verified_at=timezone.now(),user=intl,country_of_education='India')
         self.client.force_login(intl)
         self.assertFalse(JobSeeker.objects.filter(user=intl).exists())
         for route in ['mobility_canadian_full','jobseeker_dashboard','mobility_relocation_comparisons']:
@@ -55,7 +56,7 @@ class ReleaseBoundaryTests(TestCase):
         product=DigitalProduct.objects.create(title='Guide',slug='release-guide',price_cad='19.99',is_published=True)
         order=ProductOrder.objects.create(user=self.user,product=product,stripe_session_id='release-session')
         self.assertEqual(self.client.get(reverse('mobility_product_download',args=[product.pk])).status_code,403)
-        event={'type':'checkout.session.completed','data':{'object':{'id':'release-session','payment_status':'paid'}}}
+        event={'type':'checkout.session.completed','data':{'object':{'id':'release-session','payment_status':'paid','amount_total':1999,'currency':'cad'}}}
         with patch.dict('os.environ',{'PT_MOBILITY_STRIPE_WEBHOOK_SECRET':'test-secret'}),patch('stripe.Webhook.construct_event',return_value=event):
             for _ in range(2):
                 self.assertEqual(self.client.post(reverse('mobility_stripe_webhook'),data=b'{}',content_type='application/json').status_code,200)

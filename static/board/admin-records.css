@@ -1,0 +1,45 @@
+.pt-editor{--panel-border:var(--hairline-color,#52616e);--panel-bg:var(--body-bg,#252b31);max-width:1560px}
+.pt-editor-header{display:flex;align-items:start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin:0 0 1rem}
+.pt-editor-header h1{margin:.5rem 0 .2rem;font-size:clamp(1.5rem,3vw,2.15rem);color:var(--body-fg)}
+.pt-editor-header p{margin:0;color:var(--body-quiet-color)}
+.pt-editor-header .object-tools{float:none;margin:0;display:flex;gap:.45rem;flex-wrap:wrap}
+.pt-editor-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:1rem}
+.pt-editor-grid-aside{grid-template-columns:minmax(0,1fr) minmax(230px,320px)}
+.pt-editor-nav{display:flex;gap:.5rem 1rem;flex-wrap:wrap;margin:0 0 1rem;padding:.8rem 1rem;border:1px solid var(--panel-border);border-radius:8px}
+.pt-editor-section,.pt-editor-related,.pt-editor-activity section,.pt-editor-banner{margin:0 0 1rem;border:1px solid var(--panel-border);border-radius:8px;background:var(--panel-bg);scroll-margin-top:1rem;min-width:0}
+.pt-editor-section fieldset.module{margin:0;border:0}
+.pt-editor-section fieldset.module>h2,.pt-editor-section fieldset.module>details>summary{background:var(--darkened-bg);color:var(--body-fg);padding:.8rem 1rem;border-radius:8px 8px 0 0;font-size:.95rem}
+.pt-editor-related{overflow:auto}
+.pt-editor-actions{margin-top:1rem;background:var(--panel-bg);padding:.35rem;border:1px solid var(--panel-border);border-radius:8px}
+.pt-editor-actions .submit-row{margin:0;border:0}
+.pt-editor-activity section,.pt-editor-banner{padding:1rem}
+.pt-editor-activity h2{margin:0 0 .6rem;font-size:1rem}
+.pt-editor-activity small{display:block;color:var(--body-quiet-color)}
+@media(max-width:950px){.pt-editor-grid-aside{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){.pt-editor-actions{position:static}.pt-editor-header .object-tools{width:100%}}
+.pt-list{max-width:1560px}.pt-list-body{min-width:0;border:1px solid var(--hairline-color);border-radius:10px;overflow:hidden}
+#changelist.pt-list-body{display:block;float:none;width:auto}
+#changelist.pt-list-body .pt-list-controls{background:var(--darkened-bg);padding:12px 16px;border-bottom:1px solid var(--hairline-color)}
+#changelist.pt-list-body #toolbar{border:0;padding:0;background:transparent;margin:0 0 .75rem}
+#changelist.pt-list-body #changelist-filter{position:static;float:none;width:auto;margin:0;padding:.65rem 0;flex-wrap:wrap;background:transparent;display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:10px}
+#changelist.pt-list-body #changelist-filter details{min-width:0;margin:0}
+#changelist.pt-list-body #changelist-filter-extra-actions{grid-column:1/-1;display:flex;gap:1rem}
+.pt-list-filters>summary{cursor:pointer;font-weight:650}
+.pt-list-table{overflow:auto;min-width:0}
+#changelist.pt-list-body .results{margin:0}
+#changelist.pt-list-body .actions{display:flex;align-items:center;flex-wrap:wrap;gap:.4rem;padding:.7rem .9rem}
+#changelist.pt-list-body .paginator{padding:.7rem .9rem}
+.pt-history,.pt-confirm,.pt-admin-auth{max-width:880px}
+.pt-history table{width:100%}.pt-history .pt-list-table{margin:1rem 0}
+.pt-confirm .pt-editor-banner{margin-top:1rem}
+.pt-confirm .pt-confirm-actions{display:flex;gap:.7rem;align-items:center;flex-wrap:wrap;margin-top:1rem}
+.pt-admin-auth{max-width:460px;margin:clamp(16px,6vh,70px) auto;padding:1.5rem;border:1px solid var(--hairline-color);border-radius:10px;background:var(--body-bg)}
+.pt-admin-auth label{display:block;margin:.85rem 0 .35rem;font-weight:650}.pt-admin-auth input:not([type=hidden]){box-sizing:border-box;width:100%}.pt-admin-auth .pt-auth-submit{margin-top:1.15rem}.pt-admin-auth h1{margin:0 0 .55rem}
+
+.pt-data-transfer .form-row{padding:.65rem 0}.pt-data-transfer .button{margin-top:.5rem}.pt-data-transfer .import-preview{min-width:680px}.pt-model-directory .pt-task-card h2{font-size:1rem;margin:0 0 .4rem}.pt-model-directory .pt-task-card p{margin:.2rem 0;display:flex;justify-content:space-between;gap:.5rem}.pt-model-add{font-size:.82rem}
+
+.pt-editor-actions .submit-row{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem}
+.pt-editor-actions .submit-row :is(input,a,button){float:none;margin:0;max-width:100%;white-space:normal}
+#changelist.pt-list-body .actions{box-sizing:border-box;max-width:100%}
+#changelist.pt-list-body #changelist-search>div{display:flex;align-items:center;flex-wrap:wrap;gap:.45rem;min-width:0;max-width:100%}
+#changelist.pt-list-body #searchbar{box-sizing:border-box;min-width:0;width:min(440px,100%);max-width:100%}

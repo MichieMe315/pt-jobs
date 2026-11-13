@@ -1,0 +1,58 @@
+{
+  "compiled_on": "2026-10-20",
+  "publication_status": "research_only_not_imported",
+  "source_notes": {
+    "scope": "CAPR fee subsets; never display as total cost to become licensed in Canada."
+  },
+  "records": [
+    {
+      "name": "Comparability pathway CAPR fees only",
+      "components_cad": {
+        "qa": 550,
+        "pet": 900,
+        "cpte_standard": 2500
+      },
+      "total_cad": 3950,
+      "source_urls": [
+        "https://alliancept.org/new-comparability-pathway/how-to-apply/fees-payment/",
+        "https://alliancept.org/canadian-physiotherapy-examination/applying-for-the-cpte/dates-and-fees/"
+      ],
+      "excluded": [
+        "language test",
+        "Canadian context course",
+        "provincial application and registration",
+        "insurance",
+        "documents",
+        "translations",
+        "travel",
+        "retakes",
+        "immigration"
+      ],
+      "eligibility_status": "must be checked individually; not a guaranteed route or total"
+    },
+    {
+      "name": "Eligible pre-approved pathway CAPR fees only",
+      "components_cad": {
+        "pap": 900,
+        "cpte_standard": 2500
+      },
+      "total_cad": 3400,
+      "source_urls": [
+        "https://alliancept.org/new-comparability-pathway/how-to-apply/fees-payment/",
+        "https://alliancept.org/canadian-physiotherapy-examination/applying-for-the-cpte/dates-and-fees/"
+      ],
+      "excluded": [
+        "language test",
+        "Canadian context course",
+        "provincial application and registration",
+        "insurance",
+        "documents",
+        "translations",
+        "travel",
+        "retakes",
+        "immigration"
+      ],
+      "eligibility_status": "must be checked individually; not a guaranteed route or total"
+    }
+  ]
+}

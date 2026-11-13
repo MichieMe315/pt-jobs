@@ -1,0 +1,36 @@
+{
+  "compiled_on": "2026-10-20",
+  "publication_status": "research_only_not_imported",
+  "source_notes": {},
+  "records": [
+    {
+      "test": "IELTS Academic or General Training",
+      "country": "India",
+      "currency": "INR",
+      "amount": 19000,
+      "tax": "Confirm booking total; provider central 2026 fee page",
+      "source_url": "https://ieltsidpindia.com/information/ielts-test-fee",
+      "reviewed_on": "2026-10-20",
+      "status": "central_2026_fee; older city pages may show 18000; no CAD conversion"
+    },
+    {
+      "test": "CELPIP General (four skills)",
+      "country": "Canada",
+      "currency": "CAD",
+      "amount": 299,
+      "tax": "plus applicable tax",
+      "source_url": "https://www.celpip.ca/take-celpip/overview/",
+      "reviewed_on": "2026-10-20",
+      "status": "Current overview used; older sources show 290 or 295. Confirm booking total."
+    },
+    {
+      "test": "PTE Core",
+      "country": "country-specific",
+      "currency": null,
+      "amount": null,
+      "source_url": "https://www.pearsonpte.com/test-centers-and-fees/",
+      "reviewed_on": "2026-10-20",
+      "status": "Quote exact country/centre; do not guess exchange rate or price"
+    }
+  ]
+}

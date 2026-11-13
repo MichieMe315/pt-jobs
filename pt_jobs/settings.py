@@ -248,3 +248,7 @@ STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "").strip()
 
 # Unfinished career planners/shop are local-only unless explicitly enabled.
 CAREER_TOOLS_PREVIEW = env_bool("CAREER_TOOLS_PREVIEW", "1" if DEBUG else "0")
+
+INSTALLED_APPS += ["ptjc_resumes"]
+MIDDLEWARE.append("career_mobility.email_verification.InternationalVerificationMiddleware")
+INTERNATIONAL_PLANNER_ENABLED = env_bool("INTERNATIONAL_PLANNER_ENABLED", "1")

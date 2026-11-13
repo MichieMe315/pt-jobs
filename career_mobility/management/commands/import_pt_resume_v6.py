@@ -6,7 +6,7 @@ Prices remain 0 and products remain unpublished until admin review.
 """
 from pathlib import Path
 from django.core.files import File
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand,CommandError
 from django.utils.text import slugify
 from career_mobility.models import DigitalProduct
 
@@ -20,7 +20,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if not ASSETS.exists():
-            raise RuntimeError(f'Missing product import assets: {ASSETS}')
+            raise CommandError('Product import assets are missing.')
         items = []
         for p in sorted(ASSETS.glob('0*.zip')):
             label = p.stem.split('_', 1)[1].replace('_', ' ')
@@ -33,10 +33,13 @@ class Command(BaseCommand):
             ('PT_Resume_Complete_Collection.zip', 'Complete PT Resume Collection', 'Bundle of all nine PT resume specializations, examples, guides and brand assets.'),
         ]:
             items.append((ASSETS / filename, title, desc))
+        missing=[path.name for path,_,_ in items if not path.is_file()]
+        if missing:raise CommandError('Missing product import files: '+', '.join(missing))
         for path, title, description in items:
+            category=('International resumes' if 'International' in path.stem else 'Canadian resumes') if path.stem[:2].isdigit() else 'Resume bundles' if 'Complete_Collection' in path.stem else 'Brand assets' if 'Graphics' in path.stem else 'Application guides'
             slug = 'pt-v6-' + slugify(path.stem)[:40]
             product, created = DigitalProduct.objects.get_or_create(slug=slug, defaults={
-                'title': title, 'description': description, 'is_published': False,
+                'title': title, 'description': description, 'category':category, 'is_published': False,
             })
             if created or options['update_files'] or not product.download:
                 with path.open('rb') as f:

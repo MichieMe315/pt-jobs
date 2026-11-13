@@ -1,0 +1,26 @@
+{% extends 'career_mobility/base_tool.html' %}
+{% block tool_content %}
+<p><a href="{% url 'ptjc_canadian_resumes:canadian_index' %}">← Saved Canadian resumes</a></p>
+<header class="resource-heading"><p class="eyebrow">Canadian résumé studio</p><h1>Build your physiotherapy résumé</h1><p>Tailor one draft per role. A practice focus changes your writing prompts; your own details and experience are what appear in the PDF.</p></header>
+<nav aria-label="Draft actions"><a href="{% url 'ptjc_canadian_resumes:canadian_preview' draft.pk %}" target="_blank" rel="noopener">Preview last saved version ↗</a>{% if paid %} · <a href="{% url 'ptjc_canadian_resumes:canadian_download' draft.pk %}">Download saved PDF</a>{% endif %}</nav>
+<form class="canadian-resume-form" method="post">{% csrf_token %}<section class="panel"><h2>Profile and design</h2><aside class="panel" aria-live="polite"><strong>What to highlight for this role</strong><p id="practice-prompt">Use examples from your own work. Leave out any patient identifiers.</p></aside>{{ form.as_p }}
+{{ track_prompts|json_script:"practice-prompts" }}
+<script>const focusSelect=document.getElementById("id_practice_track"), prompts=JSON.parse(document.getElementById("practice-prompts").textContent); function updatePrompt(){document.getElementById("practice-prompt").textContent=prompts[focusSelect.value]||prompts.general;} focusSelect.addEventListener("change",updatePrompt);updatePrompt();</script></section>
+{% for label, group in sections %}<section class="panel"><h2>{{ label }}</h2>{{ group.management_form }}{{ group.non_form_errors }}
+{% for entry in group %}<details {% if forloop.first or entry.initial or entry.errors %}open{% endif %}><summary>{{ label }} {{ forloop.counter }}</summary>{{ entry.as_p }}</details>{% endfor %}</section>{% endfor %}
+<button class="btn btn-primary">Save resume</button></form>
+<p><a href="{% url 'ptjc_canadian_resumes:canadian_preview' draft.pk %}" target="_blank" rel="noopener">Open saved preview ↗</a>
+{% if paid %} · <a href="{% url 'ptjc_canadian_resumes:canadian_download' draft.pk %}">Download selected design</a>{% endif %}</p>
+{% include 'ptjc_resumes/_offers.html' %}
+<form method="post" action="{% url 'ptjc_canadian_resumes:canadian_delete' draft.pk %}" onsubmit="return confirm('Delete this resume draft?');">{% csrf_token %}<button>Delete draft</button></form>
+<style>
+.canadian-resume-form {max-width: 850px}
+.canadian-resume-form section {padding:clamp(16px,3vw,28px);margin:18px 0}
+.canadian-resume-form p label {display:block;font-weight:650;margin-bottom:4px}
+.canadian-resume-form input,.canadian-resume-form select,.canadian-resume-form textarea {width:100%;max-width:100%;box-sizing:border-box}
+.canadian-resume-form .helptext {display:block;font-size:.9rem;margin-top:4px}
+.canadian-resume-form details {border-top:1px solid #87918e;padding:12px 0}
+.canadian-resume-form summary {cursor:pointer;font-weight:650}
+.canadian-resume-form aside.panel {border-left:4px solid #58aa9c}
+</style>
+{% endblock %}

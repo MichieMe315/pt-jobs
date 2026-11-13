@@ -10,10 +10,10 @@ urlpatterns = [path('', include('board.urls')), path('career-resources/', includ
 @override_settings(ROOT_URLCONF=__name__)
 class FirstReleaseRoutesTests(TestCase):
     def test_public_pages_render_without_draft_routes(self):
-        for route in ('mobility_home','mobility_salary_comparison'):
+        for route in ('mobility_home','mobility_salary_comparison','mobility_shop'):
             self.assertEqual(self.client.get(reverse(route)).status_code,200)
     def test_unfinished_endpoints_are_not_published(self):
-        for url in ('/career-resources/canadian/','/career-resources/canadian/full/','/career-resources/international/','/career-resources/international/register/','/career-resources/shop/','/shop/','/career-resources/salary-comparison/clinic-offer-guide/'):
+        for url in ('/career-resources/canadian/','/career-resources/canadian/full/','/career-resources/international/','/career-resources/international/register/','/shop/'):
             with self.assertRaises(Resolver404):resolve(url)
     def test_dashboard_does_not_reverse_unpublished_links(self):
         user=get_user_model().objects.create_user(username='release-route-candidate')

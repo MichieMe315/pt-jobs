@@ -1,0 +1,54 @@
+{% extends 'career_mobility/base_tool.html' %}
+{% load static %}
+{% block title %}Résumé, business card and printable previews | Physiotherapy Jobs Canada{% endblock %}
+{% block tool_content %}
+<header class="resource-heading"><h1>Career resource previews</h1><p>See the designs before you create an account.</p></header>
+<nav class="preview-nav" aria-label="Preview collections"><a href="#resume">Résumés</a><a href="#cards">Business cards</a><a href="#printables">Worksheets, journal and calendar</a></nav>
+<section id="resume" class="preview-section">
+<h2>Canadian Educated Resume Builder</h2><p>See how each layout handles real sections like clinical experience, registration and education. The examples are fictional.</p>
+<div class="preview-grid">
+{% for layout, focus, label in resumes %}
+<article class="panel">
+{% if focus %}{% static 'ptjc_resumes/designs/focus-'|add:focus|add:'.png' as thumb %}{% else %}{% static 'ptjc_resumes/designs/canadian-'|add:layout|add:'.png' as thumb %}{% endif %}
+<a href="{% url 'mobility_public_resume_preview' layout %}?audience=canadian{% if focus %}&amp;focus={{ focus }}{% endif %}" target="_blank" rel="noopener">
+<img class="resume-thumb" src="{{ thumb }}" alt="" loading="lazy"><span>{{ label }} · Open example PDF ↗</span></a>
+</article>
+{% endfor %}
+</div>
+{% url 'ptjc_canadian_resumes:canadian_index' as resume_builder %}{% if resume_builder %}<p><a class="btn btn-primary" href="{{ resume_builder }}">Build my résumé</a> Sign in to save your work.</p>{% endif %}
+</section>
+<section id="cards" class="preview-section">
+<h2>Business Card Studio</h2><p>Four editable designs. Customize the text in the studio and preview both sides before exporting a print PDF.</p>
+<div class="preview-grid">
+{% for design, label in designs %}<article class="panel"><h3>{{ label }}</h3>
+<figure><img src="{% url 'mobility_public_card_preview' design 'front' %}" alt="{{ label }} business card front" loading="lazy"><figcaption>Front</figcaption></figure>
+<figure><img src="{% url 'mobility_public_card_preview' design 'back' %}" alt="{{ label }} business card back" loading="lazy"><figcaption>Back</figcaption></figure><a href="{% url 'mobility_try_cards' %}?design={{ design }}">Try this design →</a></article>{% endfor %}
+</div>
+<p><a class="btn btn-primary" href="{% url 'mobility_try_cards' %}" target="_blank" rel="noopener">Open the business card editor ↗</a></p>
+</section>
+<section id="printables" class="preview-section">
+<h2>Worksheets, journals and planners</h2><p>Make a journal or photo calendar with your own branding, or open the fillable worksheets and practice planner.</p>
+<h3>2027 Physiotherapy Photo Wall Calendar</h3><p>Add your logo, colours and a different photo for each month. Try the January editor without signing in.</p>
+<p><a class="btn btn-primary" href="{% url 'mobility_editable_preview' editable_calendar %}">Try the editable wall calendar →</a></p>
+<h3>Editable specialty journals</h3><p>Choose a specialty, then try the cover and a planning page. Full templates include all pages and work offline.</p>
+<ul class="preview-grid">
+{% for key, edition in journals %}<li><a href="{% url 'mobility_editable_preview' key %}">{{ edition.0 }} Journal →</a></li>{% endfor %}
+</ul>
+<h3>Fillable PDF worksheets and practice planner</h3>
+<div class="preview-grid">
+{% for slug,title,description in products %}
+<article class="panel">
+{% static 'career_mobility/product-previews/'|add:slug|add:'.png' as cover %}
+<a href="{{ cover }}" target="_blank" rel="noopener"><img src="{{ cover }}" alt="{{ title }} cover and inside page" loading="lazy"></a>
+<h3>{{ title }}</h3><p>{{ description }}</p>
+<details><summary>Look inside</summary>{% static 'career_mobility/product-previews/'|add:slug|add:'-inside.png' as inside %}<a href="{{ inside }}" target="_blank" rel="noopener"><img src="{{ inside }}" alt="{{ title }} inside page" loading="lazy">Open larger preview ↗</a></details>
+</article>{% endfor %}
+</div></section>
+<style>
+.preview-nav{display:flex;flex-wrap:wrap;gap:1.25rem;margin:1.2rem 0}.preview-section{margin:2.5rem 0;scroll-margin-top:5rem}
+.preview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,235px),1fr));gap:1rem}
+.preview-grid .panel{margin:0;min-width:0;padding:1rem}.preview-grid h3{font-size:1.1rem}.preview-grid figure{margin:0 0 .7rem}
+.preview-grid figcaption{font-size:.85rem;margin-top:.3rem}.preview-grid img{display:block;width:100%;height:auto;margin-bottom:.5rem;border-radius:6px}
+.preview-grid .resume-thumb{aspect-ratio:8.5/11;object-fit:contain;background:#eef0ed}.preview-grid summary{cursor:pointer}
+</style>
+{% endblock %}

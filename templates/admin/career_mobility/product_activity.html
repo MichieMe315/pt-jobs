@@ -1,0 +1,13 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<p><a href="{% url 'admin:career_mobility_digitalproduct_catalogue' %}">← Digital products</a></p>
+<form method="get" class="product-actions">
+<label>Period <select name="days"><option value="7"{% if days == '7' %} selected{% endif %}>7 days</option><option value="30"{% if days == '30' %} selected{% endif %}>30 days</option><option value="90"{% if days == '90' %} selected{% endif %}>90 days</option></select></label>
+<label>Account <select name="role"><option value="">All accounts</option>{% for key,label in accounts %}<option value="{{ key }}"{% if key == role %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+<label>Product <select name="product"><option value="">All products</option>{% for p in products %}<option value="{{ p.pk }}"{% if p.pk|stringformat:'s' == selected_product %} selected{% endif %}>{{ p.title }}</option>{% endfor %}</select></label>
+<button type="submit">Apply filters</button></form>
+<p>Print requested counts clicks on the print button. It does not confirm that a page was printed.</p>
+<table><thead><tr><th>Product</th><th>Account</th><th>Activity</th><th>Count</th></tr></thead><tbody>
+{% for row in rows %}<tr><td>{{ row.product__title }}</td><td>{{ row.account|capfirst }}</td><td>{{ row.event|capfirst }}</td><td>{{ row.total }}</td></tr>{% empty %}<tr><td colspan="4">No activity in this view.</td></tr>{% endfor %}
+</tbody></table>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends 'career_mobility/standalone.html' %}{% load static %}
+{% block title %}{{ country.name }} to {{ plan.destination }} | PTJC International{% endblock %}
+{% block tool_content %}
+{% include 'career_mobility/_international_mobile.html' %}
+<link rel="stylesheet" href="{% static 'career_mobility/route-overview.css' %}">
+<script>if(location.hash==="#route-results"){history.replaceState(history.state,"",location.pathname+location.search)}</script>
+<div class="ptjc-route-page">
+<a class="route-edit" href="{% url 'mobility_international' %}?country={{ country.name|urlencode }}&province={{ answers.province|urlencode }}&applied={{ answers.applied }}&registration={{ answers.registration }}">← Edit my answers</a>
+<header class="route-intro">
+<p class="eyebrow">Your physiotherapy registration plan</p>
+<div class="route-visual" aria-label="{{ country.name }} to Canada">{% if plan.flag_code %}<img src="{% static 'career_mobility/flags/' %}{{ plan.flag_code }}.svg" alt="{{ country.name }}">{% else %}<span>{{ country.name }}</span>{% endif %}<span aria-hidden="true">→</span><img src="{% static 'career_mobility/flags/CA.svg' %}" alt="Canada"></div>
+<h1>{{ country.name }} → {{ plan.destination }}</h1>
+<div class="route-pathway"><span>ASSESSMENT PATHWAY</span><p class="route-name">{{ plan.route }}</p></div>
+<p>{{ plan.explanation.conditions }}</p>
+<nav class="route-shortcuts" aria-label="On this plan">
+<a href="#route-steps">Registration steps</a><a href="#budget">Estimated costs</a><a href="#save-plan">Save this plan</a><a href="{% url 'mobility_country_resources' country.slug %}?{{ request.GET.urlencode }}">Country resources</a>
+</nav>
+</header>
+<ol id="route-steps" class="route-sequence" aria-label="Registration steps">
+<li class="panel"><h2>Prepare your records in {{ country.name }}</h2>
+{% if country.generic %}<p>We don’t have school-specific instructions for this country. Check the assessor’s requirements for your institution before paying for records.</p>{% endif %}
+{% if country.action_guide and plan.route_code == 'comparability' or country.action_guide and plan.route_code == 'preapproved' %}<h3>{{ country.action_guide.heading }}</h3><p>{{ country.action_guide.prepare }}</p><p><strong>Document delivery:</strong> {{ country.action_guide.delivery }}</p><a href="{{ country.action_guide.source }}" target="_blank" rel="noopener noreferrer">Official instructions for these records ↗</a>{% else %}<p>{{ plan.country_note }}</p>{% endif %}
+{% if plan.route_code == 'comparability' and country.school_internship_required %}
+<div class="route-request"><strong>Request from your physiotherapy school</strong><ul><li>Degree and official transcript: check the delivery requirements for your institution before requesting a copy.</li><li>School-issued internship completion certificate: keep a copy to upload to CAPR. A hospital-issued certificate or employer letter does not replace this certificate.</li></ul></div>
+{% endif %}
+{% if country.slug == 'philippines' and plan.route_code == 'comparability' and answers.registration == 'yes' %}<p><strong>Keep your Philippine registration record separate.</strong> It is evidence of registration, not academic training. Ask the receiving authority if it needs professional standing and who should send it before ordering a report.</p>{% endif %}
+</li>
+<li class="panel"><h2>{{ plan.route }}</h2><p>{{ plan.explanation.intro }}</p>
+{% for item in plan.document_tasks %}<div class="route-record"><h3>{{ item.title }}</h3><p>{{ item.action }}</p><p><strong>Who sends it:</strong> {{ item.sender }}</p>{% if item.source %}<a href="{{ item.source }}" target="_blank" rel="noopener noreferrer">Official instructions ↗</a>{% endif %}</div>{% endfor %}
+{% for step in plan.explanation.steps %}<details><summary>{{ step.title }}</summary><p>{{ step.detail }}</p></details>{% endfor %}
+{% if plan.language_policy %}<p>For physiotherapy education completed in {{ country.name }}, plan for an accepted language test unless another CAPR exemption applies. Have the testing agency send the results directly to CAPR.</p><details class="document-task"><summary>Language test scores, if you need a test</summary><p>Meet every skill requirement in one sitting. CAPR accepts an eligible IELTS One Skill Retake. Official results must reach CAPR within two years; results received before an application must still be valid when you apply. {% if plan.destination == "Manitoba" %}Manitoba has additional language-policy provisions.{% endif %}</p><div style="overflow-x:auto;max-width:100%"><table class="language-score-table"><thead><tr><th>Test</th><th>Reading</th><th>Writing</th><th>Listening</th><th>Speaking</th></tr></thead><tbody>{% for test,scores in plan.language_policy.minimum_scores.items %}<tr><th>{{ test }}</th><td>{{ scores.reading }}</td><td>{{ scores.writing }}</td><td>{{ scores.listening }}</td><td>{{ scores.speaking }}</td></tr>{% endfor %}</tbody></table></div><p><a href="{{ plan.language_policy.source_url }}" target="_blank" rel="noopener noreferrer">Official language policy ↗</a></p></details>{% endif %}
+</li>
+<li class="panel"><h2>{% if plan.authority %}Apply to practise in {{ plan.destination }}{% else %}Confirm your destination requirements{% endif %}</h2>
+{% if plan.authority %}<p><strong>{{ plan.authority.name }}</strong> handles the destination requirements. Follow its instructions for your category before choosing a start date.</p><a href="{{ plan.authority.url }}" target="_blank" rel="noopener noreferrer">Destination authority ↗</a>{% endif %}
+{% for step in steps %}{% if step.stage == 'Destination registration' %}<div class="route-record"><h3>{{ step.label }}</h3><p>{{ step.detail }}</p>{% if step.source_url %}<a href="{{ step.source_url }}" target="_blank" rel="noopener noreferrer">Official instructions ↗</a>{% endif %}</div>{% endif %}{% endfor %}
+<p>Professional registration and permission to work in Canada are separate. Confirm both before starting work.</p>
+</li></ol>
+<details class="panel"><summary>View the full checklist</summary>{% regroup steps by stage as task_stages %}{% for stage in task_stages %}<h3>{{ stage.grouper }}</h3><ol class="route-task-list">{% for step in stage.list %}<li><details><summary>{{ step.label }}</summary><p>{{ step.detail }}</p><p><strong>Keep:</strong> {{ step.evidence }}</p>{% if step.source_url %}<a href="{{ step.source_url }}" target="_blank" rel="noopener noreferrer">Official instructions ↗</a>{% endif %}</details></li>{% endfor %}</ol>{% endfor %}</details>
+<section id="budget" aria-label="Estimated costs">{% include 'career_mobility/_budget.html' %}</section>
+<section class="panel" id="save-plan"><h2>Save your plan</h2><p>Keep this route and mark your steps complete as you go.</p>
+<form method="post" action="{% url 'mobility_international_capture' %}" class="route-save-bar">{% csrf_token %}<input type="hidden" name="country" value="{{ answers.country }}"><input type="hidden" name="province" value="{{ answers.province }}"><input type="hidden" name="applied" value="{{ answers.applied }}"><input type="hidden" name="registration" value="{{ answers.registration }}"><div class="actions"><button>{% if profile %}Use this route in my dashboard{% else %}Create account and save this route{% endif %}</button>{% if not profile %}<button name="account_action" value="login" class="secondary">Sign in and save this route</button>{% endif %}</div></form>
+<p><a href="{% url 'mobility_country_resources' country.slug %}?{{ request.GET.urlencode }}">{{ country.name }} resources and downloads →</a></p></section>
+{% include 'career_mobility/_disclaimer.html' %}
+</div>
+{% include 'ptjc_resumes/_ad.html' with resume_ad=international_ad only %}{% endblock %}

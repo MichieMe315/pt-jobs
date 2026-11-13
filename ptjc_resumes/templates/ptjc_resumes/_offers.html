@@ -1,0 +1,11 @@
+{% if resume_offers and user.is_authenticated %}
+<div class="resume-pdf-options">
+  {% for offer in resume_offers %}
+  <form method="post" action="{% url 'mobility_product_checkout' offer.product.pk %}" class="resume-pdf-option">
+    {% csrf_token %}
+    <label>Discount code (optional)<input name="discount_code" maxlength="50" autocomplete="off"></label>
+    <button class="btn btn-primary" type="submit">{{ offer.label }} · CAD ${{ offer.price }}</button>
+  </form>
+  {% endfor %}
+</div>
+{% endif %}

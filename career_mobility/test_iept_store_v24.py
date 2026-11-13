@@ -1,3 +1,4 @@
+from django.utils import timezone
 from decimal import Decimal
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -7,15 +8,15 @@ from .models import DigitalProduct, InternationalProfile, ProductOrder
 class IEPTStoreTests(TestCase):
     def setUp(self):
         self.user = get_user_model().objects.create_user(username="iept-shop@example.test", email="iept-shop@example.test", password="StrongTestPassword123!")
-        InternationalProfile.objects.create(user=self.user, country_of_education="India", citizenship_country="India", residence_country="India", graduation_year=2023, canadian_immigration_status="none", registered_in_education_country="yes")
+        InternationalProfile.objects.create(email_verified_at=timezone.now(),user=self.user, country_of_education="India", citizenship_country="India", residence_country="India", graduation_year=2023, canadian_immigration_status="none", registered_in_education_country="yes")
         self.product = DigitalProduct.objects.create(title="Transition workbook", slug="transition-workbook", description="Editable workbook", price_cad=Decimal("19.00"), is_published=True)
         self.bundle = DigitalProduct.objects.create(title="Transition kit bundle", slug="transition-kit-bundle", description="Complete bundle", price_cad=Decimal("49.00"), is_published=True)
         self.client.force_login(self.user)
-    def test_dashboard_shows_individual_and_bundle(self):
+    def test_dashboard_hides_products_without_editors(self):
         response = self.client.get(reverse("mobility_international_dashboard"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Transition workbook")
-        self.assertContains(response, "Transition kit bundle")
+        self.assertNotContains(response, "Transition workbook")
+        self.assertNotContains(response, "Transition kit bundle")
     def test_owned_item_moves_to_library(self):
         ProductOrder.objects.create(user=self.user, product=self.product, stripe_session_id="sess_test_v24", paid=True)
         response = self.client.get(reverse("mobility_international_dashboard"))

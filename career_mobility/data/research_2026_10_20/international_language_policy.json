@@ -1,0 +1,77 @@
+{
+  "compiled_on": "2026-10-20",
+  "publication_status": "research_only_not_imported",
+  "source_notes": {},
+  "records": [
+    {
+      "policy_revised_on": "2026-10-08",
+      "source_url": "https://alliancept.org/new-comparability-pathway/policies-and-requirements/language-proficiency-policy/",
+      "validity_years": 2,
+      "scores_from_one_sitting": true,
+      "exception": "IELTS One Skill Retake may be used if minimum scores are met",
+      "minimum_scores": {
+        "CELPIP General": {
+          "reading": 9,
+          "writing": 8,
+          "listening": 8,
+          "speaking": 8
+        },
+        "IELTS General Training": {
+          "reading": 7,
+          "writing": 6.5,
+          "listening": 7,
+          "speaking": 6.5
+        },
+        "IELTS Academic": {
+          "reading": 7,
+          "writing": 6.5,
+          "listening": 7,
+          "speaking": 6.5
+        },
+        "PTE Core": {
+          "reading": 78,
+          "writing": 79,
+          "listening": 71,
+          "speaking": 76
+        },
+        "TEF after 2023-12-10": {
+          "reading": 503,
+          "writing": 472,
+          "listening": 462,
+          "speaking": 494
+        },
+        "TEF 2019-10-01 to 2023-12-10": {
+          "reading": 533,
+          "writing": 500,
+          "listening": 500,
+          "speaking": 500
+        },
+        "TCF": {
+          "reading": 524,
+          "writing": 12,
+          "listening": 503,
+          "speaking": 12
+        }
+      },
+      "approved_french_variants": [
+        "TEF Canada",
+        "TEF Quebec",
+        "TEF 5 épreuves",
+        "TCF Canada",
+        "TCF Quebec",
+        "TCF Tout Public"
+      ],
+      "education_exemption_countries": [
+        "Australia",
+        "United States of America",
+        "New Zealand",
+        "Republic of Ireland",
+        "United Kingdom",
+        "France"
+      ],
+      "exemption_conditions": "Entry-to-practice PT classroom AND clinical education in listed country; or entire primary and secondary education in Canada. Do not infer solely from citizenship.",
+      "province_exception": "Manitoba has different policy components; check its regulator.",
+      "pathway_warning": "Pre-approved credential pathway eligibility does not automatically waive language testing."
+    }
+  ]
+}

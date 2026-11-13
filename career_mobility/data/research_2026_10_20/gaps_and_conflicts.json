@@ -1,0 +1,93 @@
+{
+  "compiled_on": "2026-10-20",
+  "publication_status": "research_only_not_imported",
+  "source_notes": {},
+  "records": [
+    {
+      "priority": 1,
+      "topic": "Current rental availability",
+      "gap": "Survey averages are historical occupied-stock averages; no live asking-rent or available-unit feed.",
+      "next_action": "Collect dated local property listings and hospital/staff accommodation terms; retain bedroom type, included utilities, deposit, source and availability."
+    },
+    {
+      "priority": 1,
+      "topic": "CMHC suppression",
+      "gap": "252 of 458 source CSDs have no published rent in any category. All 18 Saskatchewan CSDs in this workbook have suppressed rent.",
+      "next_action": "Leave null. Obtain local evidence; never replace with a nearby city by default."
+    },
+    {
+      "priority": 1,
+      "topic": "Geographic mapping",
+      "gap": "CSD names/suffixes, economic regions, MBM areas and Mapbox places are different geographies.",
+      "next_action": "Review exact geographic crosswalks and boundaries; preserve source geography and confidence."
+    },
+    {
+      "priority": 1,
+      "topic": "Banff vacancy",
+      "gap": "2025 Alberta workbook says 0%; final report says 11.3%.",
+      "next_action": "Hold Banff vacancy null until Alberta confirms; retain source values and rent."
+    },
+    {
+      "priority": 1,
+      "topic": "Provincial fee completeness",
+      "gap": "PEI fee split/effective date unclear; NL prorating/renewal transition needs confirmation.",
+      "next_action": "Confirm with current regulator schedule; do not invent amounts or total mutually exclusive alternatives.",
+      "resolved_on": "2026-10-28",
+      "resolved_item": "New Brunswick fees confirmed from the regulator PDF revised January 2026; current figures are in licensing_fees. Manitoba 2026 initial and register-specific fees confirmed from the College registration process page."
+    },
+    {
+      "priority": 1,
+      "topic": "International route costs",
+      "gap": "Translations, school/regulator documents, assessment add-ons, insurance and any prescribed training vary by applicant; Toronto context price needs reconfirmation.",
+      "next_action": "Price route-specific components with dated sources; keep Quebec route separate and CAPR subset scenarios labelled."
+    },
+    {
+      "priority": 2,
+      "topic": "Rural food outside NNC",
+      "gap": "No local grocery basket for most southern rural towns; MBM regional food threshold is a basic-needs reference, not a measured household bill.",
+      "next_action": "Compile dated comparable baskets with quantities and household composition."
+    },
+    {
+      "priority": 2,
+      "topic": "Utilities and climate",
+      "gap": "Only two partial municipal water tariff examples; heating, electricity, waste, broadband and included-rent utilities incomplete.",
+      "next_action": "Use actual utility tariffs and defined usage, dwelling/fuel type and season; annualize rather than copy a winter bill."
+    },
+    {
+      "priority": 2,
+      "topic": "Transport",
+      "gap": "No complete rural vehicle, insurance, fuel, winter-tire, maintenance, parking, transit or fly-in budget.",
+      "next_action": "Build assumption-based scenarios with local tariff and dated fuel/insurance evidence; do not treat all costs as household averages."
+    },
+    {
+      "priority": 2,
+      "topic": "Childcare",
+      "gap": "No provider-level licensed fee, availability or wait-list evidence.",
+      "next_action": "Collect age, care schedule, subsidy eligibility, provider tariff and wait-list status; headline programme fees do not prove a space exists."
+    },
+    {
+      "priority": 2,
+      "topic": "After-tax comparison",
+      "gap": "No verified integrated province-specific 2026 tax/CPP/EI and benefit model in this package.",
+      "next_action": "Research CRA/provincial rules and employee/contractor assumptions separately before presenting take-home pay."
+    },
+    {
+      "priority": 2,
+      "topic": "Employment costs and offers",
+      "gap": "Professional liability quotes, union dues, pension, benefits, contractor overhead, PD and guaranteed caseload are not universal.",
+      "next_action": "Use actual employer offers/insurance quotes and explain exclusions. Do not convert hospital ranges into a regional median."
+    },
+    {
+      "priority": 2,
+      "topic": "Incentive eligibility",
+      "gap": "Community, FTE, service period and repayment rules vary; some advertised health-worker grants exclude PT.",
+      "next_action": "Verify actual position and postal-code eligibility and employer terms; do not subtract grants from everyone’s recurring budget."
+    },
+    {
+      "priority": 3,
+      "topic": "Publication integration",
+      "gap": "Research JSON is not loaded into public tools or database.",
+      "next_action": "Review record-level evidence and geography; then build an explicit reviewed import and source dates in the UI. Keep unfinished planners behind preview."
+    }
+  ]
+}

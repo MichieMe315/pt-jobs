@@ -6,3 +6,6 @@
 @media print{.ptjc-site-header,.ptjc-site-footer{display:none!important}}
 .ptjc-site-header .career-nav-dropdown>button{font-weight:600}
 @media(max-width:760px){.ptjc-site-header .navbar-brand{font-size:clamp(.9rem,3.9vw,1.15rem);max-width:calc(100% - 60px);white-space:normal;margin-right:8px;line-height:1.25}.ptjc-site-header .navbar-brand img{max-width:32px}.ptjc-site-header .navbar-toggler{min-width:44px;min-height:40px;padding:6px 10px}.ptjc-site-header .navbar-collapse{flex-basis:100%}.ptjc-site-header .career-nav-dropdown .dropdown-menu{position:static;max-width:none;box-shadow:none}}
+
+.ptjc-site-header .header-resume-menu summary{display:list-item;font-weight:700;cursor:pointer}
+.ptjc-site-header .header-resume-menu .dropdown-item{padding-inline-start:1.9rem}

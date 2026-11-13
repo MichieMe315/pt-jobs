@@ -1,0 +1,26 @@
+<style>
+.ptjc-international-hero{background:linear-gradient(125deg,#253140,#303c4b);border:1px solid #586477;border-left:5px solid #bb334b;border-radius:14px;padding:clamp(1rem,4vw,2.25rem);margin:0 0 1rem}
+.ptjc-international-hero h1{margin:.25rem 0 .65rem}.ptjc-international-hero p:last-child{margin-bottom:0}
+.ptjc-route-actions{padding-left:1.5rem}.ptjc-route-actions li{padding:.65rem .75rem;margin-bottom:.65rem;border-left:3px solid #bb334b;background:rgba(127,127,127,.09);border-radius:6px;overflow-wrap:anywhere}.ptjc-route-actions p{margin:.35rem 0}
+@media(max-width:650px){
+#international-planner-form .grid,.ptjc-international-hero~.grid.three{grid-template-columns:minmax(0,1fr)}
+#international-planner-form select,#international-planner-form button,.route-save-bar button,.tabs button{min-height:44px;font-size:16px;max-width:100%}
+#international-planner-form select,#international-planner-form button,.route-save-bar button{width:100%;box-sizing:border-box}
+.route-save-bar .actions{display:grid;grid-template-columns:minmax(0,1fr);gap:.55rem}
+.tabs[data-tabs]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.4rem}
+.tabs[data-tabs] button{white-space:normal;overflow-wrap:anywhere;padding:.5rem}
+#overview,#checklist,#documents,#budget{min-width:0;overflow-wrap:anywhere}
+.budget-line{gap:.5rem;flex-wrap:wrap}
+}
+</style><style>
+.ptjc-route-page{max-width:840px;margin-inline:auto;overflow-wrap:anywhere}
+.route-intro{padding:1rem 0}.route-name{font-size:1.25rem;font-weight:700}
+.route-sequence{list-style:none;padding:0;counter-reset:route-step}
+.route-sequence>li{counter-increment:route-step;margin-bottom:1rem}
+.route-sequence>li>h2::before{content:counter(route-step) ". ";color:#ff9aab}
+.route-record{padding:.8rem 0;border-top:1px solid #5d6978}.route-record h3{margin:.2rem 0 .5rem}
+.route-request{border-left:3px solid #bb334b;padding:.75rem 1rem;margin:.8rem 0}
+.ptjc-route-page summary{min-height:44px;display:list-item;padding:.65rem 0}
+.ptjc-route-page select{width:100%;min-height:44px;max-width:100%;font-size:16px}
+@media(max-width:650px){.ptjc-route-page h1{font-size:1.65rem}.ptjc-route-page h2{font-size:1.25rem}.ptjc-route-page .panel{padding:1rem}.international-top nav{flex-wrap:wrap}.international-top nav a{min-height:44px;display:inline-flex;align-items:center}}
+</style>

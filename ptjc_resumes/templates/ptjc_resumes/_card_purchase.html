@@ -1,0 +1,9 @@
+{% if product.is_published and price > 0 %}
+<form method="post" action="{% url 'mobility_product_checkout' product.pk %}" style="display:flex;flex-wrap:wrap;align-items:end;gap:.75rem;margin-block:1rem;">
+  {% csrf_token %}
+  <label>Discount code (optional)<input name="discount_code" maxlength="50" autocomplete="off"></label>
+  <button class="btn btn-primary" type="submit">Unlock card PDFs · CAD ${{ price }}</button>
+</form>
+{% else %}
+<p>You can save and preview drafts. Purchasing PDF access is currently unavailable.</p>
+{% endif %}

@@ -1,0 +1,14 @@
+<article class="shop-card" id="{% if studio.key == 'canadian-resume' %}resume{% else %}{{ studio.key }}{% endif %}">
+  <div class="shop-listing-image">{% if studio.product.preview_image %}{% include 'career_mobility/_product_cover.html' with item=studio.product %}{% else %}<img src="{{ studio.image }}" alt="" loading="lazy">{% endif %}</div>
+  <h2>{{ studio.title }}</h2>
+  {% if studio.description %}<p>{{ studio.description|truncatewords:35 }}</p>{% endif %}
+  <div class="shop-card-actions">
+  {% if studio.product and studio.key != 'printables' %}
+  <a class="btn btn-primary" href="{{ studio.href }}">Open builder</a>
+  {% elif studio.key == 'printables' %}
+  <form action="{% url 'mobility_choose_journal' %}" method="get">{% if shop_audience == "international" %}<input type="hidden" name="audience" value="international">{% endif %}<label for="journal-edition">Specialty</label>
+  <select name="edition" id="journal-edition" required><option value="">Choose a specialty</option>{% for key, edition in journals %}<option value="{{ key }}">{{ edition.0 }}</option>{% endfor %}</select>
+  <button class="btn btn-primary">{{ studio.button }}</button></form>
+  {% else %}<a class="btn btn-primary" href="{{ studio.href }}">Open builder</a>{% endif %}
+  </div>
+</article>

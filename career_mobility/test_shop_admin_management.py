@@ -21,10 +21,9 @@ class DigitalShopManagementTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn("download", form.errors)
 
-    def test_cannot_publish_without_positive_price(self):
+    def test_can_publish_free_finished_product(self):
         form = DigitalProductAdminForm(data={"title":"Guide", "slug":"guide-test", "description":"Offer tips", "price_cad":"0", "is_published":"on"}, files={"download":SimpleUploadedFile("guide.pdf", b"%PDF-1.4\n", content_type="application/pdf")})
-        self.assertFalse(form.is_valid())
-        self.assertIn("price_cad", form.errors)
+        self.assertTrue(form.is_valid(),form.errors)
 
     def test_unpublished_can_be_saved_without_file(self):
         form = DigitalProductAdminForm(data={"title":"Coming soon", "slug":"coming-soon", "description":"", "price_cad":"2.49"})

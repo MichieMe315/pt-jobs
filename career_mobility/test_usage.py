@@ -109,6 +109,9 @@ class CalculatorUsageTests(TestCase):
             if find('board/admin-shell.css'):
                 self.assertContains(response,'board/admin-shell.css')
             self.assertNotContains(response,'same-session')
+        all_time=self.client.get(url,{'days':'all'})
+        self.assertEqual(all_time.context_data['cards'][0]['value'],4)
+        self.assertEqual(all_time.context_data['rows'][-1]['day'],today-timedelta(days=40))
         response=self.client.get(url,{'days':'invalid'})
         self.assertEqual(response.context_data['days'],30)
         self.assertContains(self.client.get('/admin/'),'Calculator usage')

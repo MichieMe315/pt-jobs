@@ -3,3 +3,5 @@ class CareerMobilityConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "career_mobility"
     verbose_name = "Career Mobility & Resources"
+    def ready(self):
+        from . import activity_signals

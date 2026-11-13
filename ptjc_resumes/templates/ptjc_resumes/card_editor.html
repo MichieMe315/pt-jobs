@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Business card editor | Physiotherapy Jobs Canada{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'ptjc_resumes/builder.css' %}?v=47">{% endblock %}
+{% block content %}{% if staff_demo %}<a class="btn btn-outline-secondary" href="{% url 'admin:career_mobility_digitalproduct_change' product.pk %}">Back to product settings</a>{% else %}<a class="btn btn-outline-secondary" href="{% url 'mobility_shop' %}">Digital products</a>{% endif %}
+{% load related_digital_products %}{% include 'ptjc_resumes/_card_workspace.html' %}{% related_digital_products True "cards" %}{% endblock %}

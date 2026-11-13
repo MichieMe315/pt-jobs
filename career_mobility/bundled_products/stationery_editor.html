@@ -1,0 +1,52 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Practice stationery editor</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#272b30;color:#f1f2f4;font:16px/1.5 system-ui,sans-serif}main{max-width:1160px;margin:auto;padding:clamp(16px,4vw,46px)}header{margin-bottom:1.6rem}header h1{margin:.4rem 0;font-size:clamp(1.75rem,5vw,2.55rem)}header p{margin:.35rem 0;color:#d7dce1}.workspace{display:grid;grid-template-columns:minmax(240px,330px) minmax(0,1fr);gap:clamp(16px,3vw,40px);align-items:start}.controls{background:#32383e;padding:1.15rem;border:1px solid #545e69;border-radius:8px}.fields{display:grid;gap:.75rem}.field{display:grid;gap:.2rem}input,select,textarea,button,.action{font:inherit;color:inherit}input,select,textarea{width:100%;padding:.55rem .7rem;min-height:42px;border-radius:4px;border:1px solid #7a8591;background:#272b30}textarea{min-height:5rem}input[type=color]{padding:.2rem;height:42px}.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem}.actions{display:flex;flex-wrap:wrap;gap:.6rem;margin-block:1rem;align-items:stretch}button,.action{cursor:pointer;display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:.5rem .8rem;text-decoration:none;border-radius:4px;background:#272b30;border:1px solid #7a8591}.primary{background:#a92430;border-color:#a92430;color:white;font-weight:700}a{color:#9bc4ff}:focus-visible{outline:3px solid #9bc4ff;outline-offset:3px}.paper{width:100%;max-width:660px;container-type:inline-size;background:var(--paper);color:var(--ink);aspect-ratio:var(--ratio);position:relative;overflow:hidden;box-shadow:0 6px 16px #0004;margin:0 auto 1.25rem}.paper-inner{height:100%;display:flex;flex-direction:column;justify-content:center;padding:6cqw;gap:1.3cqw;font-size:3.1cqw;overflow-wrap:anywhere}.paper h2{font-size:6.7cqw;line-height:1.08;margin:0}.paper p{margin:0;white-space:pre-wrap}.paper img{max-width:24%;max-height:23%;object-fit:contain;align-self:flex-start}.paper .lines{display:grid;gap:1.4cqw;margin-block:1cqw}.paper .line{display:grid;grid-template-columns:25% 1fr;gap:1cqw;align-items:baseline}.paper .line i{border-bottom:1px solid currentColor;opacity:.55}.community .paper-inner{border:1.5cqw solid var(--ink);border-radius:2cqw}.editorial h2{font-family:Georgia,serif;font-weight:400}.split .paper-inner{border-left:12cqw solid var(--ink)}.preview-note{max-width:660px;margin:0 auto}.demo .paper::after{content:'PREVIEW';position:absolute;inset:auto 3% 2%;font:700 2.3cqw system-ui;letter-spacing:.18em;text-align:right;opacity:.6}[hidden]{display:none!important}
+@media(max-width:760px){.workspace{grid-template-columns:minmax(0,1fr)}}@media print{body{background:white}header,.controls,.preview-note,.actions{display:none!important}main,.workspace{display:block;margin:0;padding:0}.paper{width:var(--width);height:var(--height);max-width:none;margin:0;box-shadow:none;print-color-adjust:exact;break-after:page}.paper:last-of-type{break-after:auto}}
+.paper[data-font=serif] h2{font-family:Georgia,serif}.paper[data-font=sans] h2{font-family:system-ui,sans-serif}.paper[data-font=mono] h2{font-family:monospace}.community:not(:has(.lines)) .paper-inner{text-align:center;align-items:center}.community:not(:has(.lines)) img{align-self:center}.split.with-image .paper-inner{display:grid;align-content:center;grid-template-columns:minmax(0,1fr) 28%;border-left:0}.split.with-image img{grid-column:2;grid-row:1/span 4;max-width:100%;max-height:100%;align-self:center}.split.with-image :is(h2,p){grid-column:1}.clinical h2{text-transform:uppercase;font-size:5.4cqw;letter-spacing:.04em}
+</style></head><body><main><header><a id="back" href="/career-resources/shop/">Digital products</a><h1 id="title"></h1><p id="intro"></p></header><div class="workspace"><section class="controls" aria-label="Design settings"><div class="fields" id="fields">
+<label class="field">Design<select id="design"></select></label><div class="two"><label class="field">Paper<input id="paper" type="color" value="#fffaf4"></label><label class="field">Text<input id="ink" type="color" value="#302727"></label></div>
+<label class="field">Typeface<select id="font"><option value="design">Design default</option><option value="serif">Book serif</option><option value="sans">Clean sans</option><option value="mono">Monospaced</option></select></label>
+<label class="field">Logo or photo<input id="image" type="file" accept="image/png,image/jpeg,image/webp"></label></div>
+<div class="actions"><button id="remove" type="button" hidden>Remove image</button></div><p id="status" role="status"></p></section>
+<section aria-label="Live print preview"><div id="proof"></div><div class="preview-note"><p id="size"></p><div class="actions"><button class="primary" id="print" type="button" hidden>Print / Save PDF</button><a class="action primary" id="options" hidden>Print and export</a></div></div></section></div></main>
+<script id="config" type="application/json">__CONFIG__</script>
+<script>
+'use strict';
+const config=JSON.parse(document.getElementById('config').textContent),spec=config.stationery,$=id=>document.getElementById(id);
+const make=(tag,text,cls)=>{const n=document.createElement(tag);n.textContent=text||'';if(cls)n.className=cls;return n};
+const storage='ptjc-stationery:'+config.id+':'+(config.storageScope||config.productUrl||'default');
+const defaults=Object.fromEntries(spec.fields.map(([key,,value])=>[key,value]));
+let saved={};try{saved=JSON.parse(sessionStorage.getItem(storage)||'{}')}catch{}
+const state={...defaults,design:spec.designs[0][0],ink:'#302727',paper:'#fffaf4',font:'design',image:'',...saved};
+const [w,h]=spec.size;const canPrint=!config.demo||config.canExport;
+$('title').textContent=spec.title;
+$('intro').textContent='Edit the wording, add your branding and check the size in the live preview.';
+$('size').textContent=w+' × '+h+' in. Print at Actual size on regular paper or compatible cardstock.';
+if(!canPrint)document.body.classList.add('demo');
+if(config.shopUrl)$('back').href=config.shopUrl;
+if(config.shopLabel)$('back').textContent=config.shopLabel;
+if(config.productUrl&&!canPrint){$('options').href=config.productUrl;$('options').hidden=false;}
+$('print').hidden=!canPrint;$('print').onclick=()=>{if(canPrint)window.print()};
+const page=make('style','@page { size: '+w+'in '+h+'in; margin: 0 }');document.head.append(page);
+function draw(back){
+ const paper=make('article','', 'paper '+state.design);paper.style.cssText='--ratio:'+w+'/'+h+';--width:'+w+'in;--height:'+h+'in';
+ paper.style.setProperty('--paper',state.paper);paper.style.setProperty('--ink',state.ink);paper.dataset.font=state.font;
+ if(state.image&&!back)paper.classList.add('with-image');
+ const body=make('div','','paper-inner');paper.append(body);
+ if(state.image&&!back){const img=make('img');img.alt='Your uploaded branding';img.src=state.image;body.append(img)}
+ if(!back){body.append(make('h2',state.heading));if(state.name)body.append(make('p',state.name))}
+ if(config.id==='appointment-card-designs'){const lines=make('div','','lines');for(const key of ['date','time','with'])if(state[key]){const row=make('div','','line');row.append(make('span',state[key]),make('i'));lines.append(row)}body.append(lines)}
+ if(state.body&&(back||config.id!=='practice-postcards'))body.append(make('p',state.body));
+ if(state.note&&(back||config.id!=='practice-postcards'))body.append(make('p',state.note));
+ return paper;
+}
+function update(){const proof=$('proof');proof.replaceChildren(draw(false));if(config.id==='practice-postcards')proof.append(draw(true));$('remove').hidden=!state.image;try{sessionStorage.setItem(storage,JSON.stringify(state))}catch{$('status').textContent='This browser could not keep your edits when the page closes.'}}
+for(const [key,label] of spec.fields){const control=make(key==='body'?'textarea':'input');control.maxLength=key==='body'?420:92;control.value=state[key];control.addEventListener('input',()=>{state[key]=control.value;update()});const l=make('label',label,'field');l.append(control);$('fields').append(l)}
+for(const [key,label] of spec.designs){const opt=make('option',label);opt.value=key;$('design').append(opt)}
+for(const key of ['design','ink','paper','font']){$(key).value=state[key];$(key).oninput=()=>{state[key]=$(key).value;update()}}
+$('image').onchange=async()=>{const f=$('image').files[0];if(!f)return;
+ try{if(f.size>8e6||!/^image\/(png|jpeg|webp)$/.test(f.type))throw Error();const bmp=await createImageBitmap(f);const c=make('canvas'),s=Math.min(1,900/Math.max(bmp.width,bmp.height));c.width=Math.max(1,Math.round(s*bmp.width));c.height=Math.max(1,Math.round(s*bmp.height));c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);bmp.close();state.image=c.toDataURL('image/webp',.82);$('status').textContent='Image added.';update()}
+ catch{$('status').textContent='Choose a PNG, JPEG or WebP image under 8 MB.'}};
+$('remove').onclick=()=>{state.image='';$('image').value='';update()};
+update();
+</script></body></html>

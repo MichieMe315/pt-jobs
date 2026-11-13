@@ -1,0 +1,86 @@
+{
+  "compiled_on": "2026-10-20",
+  "publication_status": "research_only_not_imported",
+  "source_notes": {
+    "scope": "Primary government, employer and union sources. Eligibility and offer terms must be checked; not a subtraction from every household cost estimate."
+  },
+  "records": [
+    {
+      "program": "Canada Student Loan Forgiveness – physiotherapists",
+      "maximum_cad": 30000,
+      "annual_maxima_cad": [
+        4000,
+        5000,
+        6000,
+        7000,
+        8000
+      ],
+      "effective_on": "2025-12-31",
+      "source_url": "https://www.canada.ca/en/services/benefits/education/student-aid/grants-loans/repay/assistance/student-loan-forgiveness.html",
+      "legal_source_url": "https://laws-lois.justice.gc.ca/eng/regulations/SOR-95-329/section-28.html",
+      "conditions": [
+        "Eligible rural area or population centre no more than 30,000; verify postal code",
+        "12-month period and at least 400 in-person service hours",
+        "Apply within 90 days of period end",
+        "Federal student-loan balance in good standing; not private or provincial debt"
+      ],
+      "budget_treatment": "Loan reduction; not salary or a relocation cash grant"
+    },
+    {
+      "program": "BC PRRI retention",
+      "maximum_cad": 8000,
+      "period": "annual maximum paid quarterly; FTE prorating",
+      "expires_on": "2027-03-31",
+      "source_url": "https://pea.org/news-programs/pea-news/recruitment-and-retention-incentives-extended-to-march-31-2027/",
+      "conditions": [
+        "Eligible position and community; PT listed",
+        "Verify offer and program combination rules"
+      ],
+      "budget_treatment": "Conditional employment incentive; not guaranteed base pay"
+    },
+    {
+      "program": "BC RRRI recruitment",
+      "maximum_cad": 30000,
+      "outside_northern_health_maximum_cad": 20000,
+      "expires_on": "2027-03-31",
+      "source_url": "https://pea.org/news-programs/pea-news/recruitment-and-retention-incentives-extended-to-march-31-2027/",
+      "conditions": [
+        "Eligible difficult-to-fill position/community",
+        "FTE prorating",
+        "24-month service commitment; repayment rules on early exit",
+        "Combined incentives capped at applicable recruitment maximum"
+      ],
+      "budget_treatment": "Conditional; obtain written offer terms"
+    },
+    {
+      "program": "Saskatchewan Health Authority PT recruitment",
+      "maximum_cad": 20000,
+      "regina_saskatoon_maximum_cad": 15000,
+      "source_url": "https://www.saskhealthauthority.ca/careers-volunteering/careers/career-profiles/physical-therapist-career-profile",
+      "conditions": [
+        "Location and offer dependent",
+        "Verify service commitment, prorating and repayment"
+      ],
+      "budget_treatment": "Potential recruitment amount, not universal entitlement"
+    },
+    {
+      "program": "Saskatchewan Health Authority relocation",
+      "maximum_cad": 3000,
+      "source_url": "https://www.saskhealthauthority.ca/careers-volunteering/careers/career-profiles/physical-therapist-career-profile",
+      "conditions": [
+        "May be available by location; verify reimbursable expenses and offer"
+      ],
+      "budget_treatment": "Conditional relocation assistance"
+    },
+    {
+      "program": "Saskatchewan rural and remote general incentive",
+      "advertised_maximum_cad": 50000,
+      "pt_eligible": false,
+      "source_url": "https://www.saskatchewan.ca/residents/health/health-human-resources/incentives-for-healthcare-professionals/saskatchewan-rural-and-remote-recruitment-incentive",
+      "conditions": [
+        "Published eligible classifications do not include physiotherapists"
+      ],
+      "budget_treatment": "EXCLUDE from PT budget; do not confuse with SHA PT recruitment"
+    }
+  ]
+}

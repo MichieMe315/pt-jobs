@@ -1,0 +1,9 @@
+{% extends 'career_mobility/standalone.html' %}
+{% block title %}Jobs open to international candidates | Physiotherapy Jobs Canada{% endblock %}
+{% block tool_content %}
+<h1>Jobs open to international candidates</h1>
+{% for job in page %}<article class="panel"><h2><a href="{{ job.get_absolute_url }}">{{ job.title }}</a></h2><p>{{ job.employer.company_name }}{% if job.location %} · {{ job.location }}{% endif %}</p><p>{{ job.get_international_stage_display }}{% if job.international_support %} · {{ job.get_international_support_display }}{% endif %}</p></article>
+{% empty %}<p>No current postings. Check back for new jobs.</p>{% endfor %}
+<nav aria-label="Job pages">{% if page.has_previous %}<a href="?page={{ page.previous_page_number }}">Previous</a>{% endif %}{% if page.has_next %} <a href="?page={{ page.next_page_number }}">Next</a>{% endif %}</nav>
+{% include 'ptjc_resumes/_ad.html' with resume_ad=international_ad only %}
+{% endblock %}

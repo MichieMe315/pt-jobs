@@ -1,3 +1,3 @@
-{% load static %}{% firstof sitesettings.mapbox_token '' as career_mapbox_token %}
+{% load static %}{% firstof career_public_mapbox_token '' as career_mapbox_token %}
 {{ career_mapbox_token|json_script:"career-mapbox-config" }}
 <script src="{% static 'career_mobility/place-lookup.js' %}" defer></script>

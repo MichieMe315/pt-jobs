@@ -1,0 +1,11 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<p><a href="{% url 'admin:career_mobility_digitalproduct_catalogue' %}">← Product catalogue</a></p>
+<p>This report flags matching records for review. Compare the price, audience and purchase history before changing publication.</p>
+{% for group in groups %}
+<h2>{{ group.reason }}</h2>
+<table><thead><tr><th>Product</th><th>Slug</th><th>Audience</th><th>Price</th><th>Status</th></tr></thead><tbody>
+{% for product in group.products %}<tr><td><a href="{% url 'admin:career_mobility_digitalproduct_change' product.pk %}">{{ product.title }}</a></td><td>{{ product.slug }}</td><td>{{ product.get_audience_display }}</td><td>CAD {{ product.price_cad }}</td><td>{{ product.is_published|yesno:"Published,Draft" }}</td></tr>{% endfor %}
+</tbody></table>
+{% empty %}<p>No matching records were found.</p>{% endfor %}
+{% endblock %}

@@ -1,0 +1,62 @@
+<style>@media print{body.ptjc-metered:not(.ptjc-print-authorized){display:none!important}}</style>
+<script>
+(() => {
+  const cfg = JSON.parse(document.getElementById('config').textContent);
+  let edited = false;
+  document.addEventListener('input', () => {
+    if (edited) return;
+    edited = true;
+    fetch(cfg.activityUrl, {method:'POST', headers:{'X-CSRFToken':cfg.csrf},
+      body:new URLSearchParams({event:'edited'})}).catch(() => {});
+  });
+  document.body.classList.add('ptjc-metered');
+  if (!cfg.exportUrl) return;
+  const print = document.getElementById('print'), csv = document.getElementById('csv');
+  const status = document.createElement('p');
+  status.setAttribute('role', 'status');
+  if (print) print.after(status);
+  let busy = false, remaining = cfg.starter;
+  const update = () => {
+    if (!cfg.canExport) status.textContent = remaining + ' starter exports remaining.';
+    for (const button of [print, csv]) if (button) {
+      button.hidden = false;
+      button.disabled = busy || (!cfg.canExport && !remaining);
+    }
+  };
+  const protect = (button, event, action) => {
+    if (!button) return;
+    button.onclick = async () => {
+      if (busy) return;
+      busy = true; update();
+      try {
+        const response = await fetch(cfg.exportUrl, {method:'POST',
+          headers:{'X-CSRFToken':cfg.csrf}, body:new URLSearchParams({event})});
+        const data = await response.json();
+        if (!response.ok) throw Error(data.error || 'Export unavailable.');
+        remaining = data.remaining;
+        action();
+        update();
+      } catch (error) {
+        status.textContent = error.message || 'Export unavailable.';
+      } finally {
+        busy = false;
+        for (const control of [print, csv]) if (control) control.disabled = !cfg.canExport && !remaining;
+      }
+    };
+  };
+  protect(print, 'editor_print', () => {
+    document.body.classList.add('ptjc-print-authorized');
+    const wasDemo = document.body.classList.contains('demo');
+    document.body.classList.remove('demo');
+    try { window.print(); }
+    finally {
+      document.body.classList.remove('ptjc-print-authorized');
+      if (wasDemo) document.body.classList.add('demo');
+    }
+  });
+  if (csv && typeof exportCsv === 'function') {
+    protect(csv, 'editor_csv', () => exportCsv(true));
+  }
+  update();
+})();
+</script>
