@@ -1,182 +1,25 @@
-{% extends "base.html" %}
-
-{% block title %}Admin Dashboard – PT Jobs{% endblock %}
-
+{% extends "admin/base_site.html" %}
+{% block topbar_title %}Reports{% endblock %}
+{% block content_title %}{% endblock %}
 {% block content %}
-<div class="container mt-4">
-
-  <h1 class="mb-4">Admin Dashboard</h1>
-
-  <form method="get" class="row g-2 align-items-end mb-4">
-    <div class="col-md-3">
-      <label class="form-label">Period</label>
-      <select name="period" class="form-select">
-        <option value="today" {% if period == "today" %}selected{% endif %}>Today</option>
-        <option value="7" {% if period == "7" %}selected{% endif %}>Last 7 Days</option>
-        <option value="30" {% if period == "30" %}selected{% endif %}>Last 30 Days</option>
-        <option value="custom" {% if period == "custom" %}selected{% endif %}>Custom</option>
-      </select>
-    </div>
-
-    <div class="col-md-3">
-      <label class="form-label">Start</label>
-      <input type="date" name="start" value="{{ start|date:'Y-m-d' }}" class="form-control" />
-    </div>
-
-    <div class="col-md-3">
-      <label class="form-label">End</label>
-      <input type="date" name="end" value="{{ end|date:'Y-m-d' }}" class="form-control" />
-    </div>
-
-    <div class="col-md-3 mt-4">
-      <button class="btn btn-primary w-100">Update</button>
-    </div>
-  </form>
-
-  <div class="row g-3 mb-4">
-    <div class="col-md-4">
-      <div class="card border-light">
-        <div class="card-body">
-          <h5 class="card-title">Jobs Posted</h5>
-          <p class="display-6 mb-0">{{ jobs_posted }}</p>
-          <small class="text-muted">
-            {{ start|date:"M j" }} – {{ end|date:"M j" }}
-          </small>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-4">
-      <div class="card border-light">
-        <div class="card-body">
-          <h5 class="card-title">Applications Sent</h5>
-          <p class="display-6 mb-0">{{ applications_sent }}</p>
-          <small class="text-muted">
-            {{ start|date:"M j" }} – {{ end|date:"M j" }}
-          </small>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-4">
-      <div class="card border-light">
-        <div class="card-body">
-          <h5 class="card-title">Sales (Paid)</h5>
-          <p class="display-6 mb-0">${{ sales_total|floatformat:2 }}</p>
-          <small class="text-muted">
-            {{ sales_count }} invoice{{ sales_count|pluralize }}
-          </small>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="row g-3 mb-4">
-    <div class="col-md-4">
-      <div class="card border-light">
-        <div class="card-body">
-          <h5 class="card-title">New Employers</h5>
-          <p class="display-6 mb-0">{{ employers_new }}</p>
-          <small class="text-muted">{{ start|date:"M j" }} – {{ end|date:"M j" }}</small>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-4">
-      <div class="card border-light">
-        <div class="card-body">
-          <h5 class="card-title">New Job Seekers</h5>
-          <p class="display-6 mb-0">{{ jobseekers_new }}</p>
-          <small class="text-muted">{{ start|date:"M j" }} – {{ end|date:"M j" }}</small>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-4">
-      <div class="card border-light">
-        <div class="card-body">
-          <h5 class="card-title">Job Alerts Created</h5>
-          <p class="display-6 mb-0">{{ alerts_created }}</p>
-          <small class="text-muted">{{ start|date:"M j" }} – {{ end|date:"M j" }}</small>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="row g-3 mb-4">
-    <div class="col-lg-6">
-      <div class="card border-light h-100">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="h5 mb-0">Employers awaiting approval</h2>
-            <a href="{% url 'admin:board_employer_changelist' %}?is_approved__exact=0" class="btn btn-sm btn-outline-primary">View all</a>
-          </div>
-          {% if pending_employers %}
-            <div class="list-group list-group-flush">
-              {% for employer in pending_employers %}
-                <a href="{% url 'admin:board_employer_change' employer.id %}" class="list-group-item list-group-item-action d-flex justify-content-between gap-3">
-                  <span>{{ employer.company_name|default:employer.email }}</span>
-                  <small>{{ employer.created_at|date:"M j, g:i a" }}</small>
-                </a>
-              {% endfor %}
-            </div>
-          {% else %}
-            <p class="text-muted mb-0">No employers are waiting for approval.</p>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-
-    <div class="col-lg-6">
-      <div class="card border-light h-100">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="h5 mb-0">Job seekers awaiting approval</h2>
-            <a href="{% url 'admin:board_jobseeker_changelist' %}?is_approved__exact=0" class="btn btn-sm btn-outline-primary">View all</a>
-          </div>
-          {% if pending_jobseekers %}
-            <div class="list-group list-group-flush">
-              {% for jobseeker in pending_jobseekers %}
-                <a href="{% url 'admin:board_jobseeker_change' jobseeker.id %}" class="list-group-item list-group-item-action d-flex justify-content-between gap-3">
-                  <span>{{ jobseeker.first_name }} {{ jobseeker.last_name }}{% if not jobseeker.first_name and not jobseeker.last_name %}{{ jobseeker.email }}{% endif %}</span>
-                  <small>{{ jobseeker.created_at|date:"M j, g:i a" }}</small>
-                </a>
-              {% endfor %}
-            </div>
-          {% else %}
-            <p class="text-muted mb-0">No job seekers are waiting for approval.</p>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card border-light mb-4">
-    <div class="card-body">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="h5 mb-0">Recent paid orders</h2>
-        <a href="{% url 'admin:board_invoice_changelist' %}?status__exact=paid" class="btn btn-sm btn-outline-primary">View invoices</a>
-      </div>
-      {% if recent_paid_invoices %}
-        <div class="table-responsive">
-          <table class="table table-sm align-middle mb-0">
-            <thead><tr><th>Employer</th><th>Amount</th><th>Date</th></tr></thead>
-            <tbody>
-              {% for invoice in recent_paid_invoices %}
-                <tr>
-                  <td><a href="{% url 'admin:board_invoice_change' invoice.id %}">{{ invoice.employer.company_name|default:invoice.employer.email }}</a></td>
-                  <td>{{ invoice.amount_display }}</td>
-                  <td>{{ invoice.order_date|date:"M j, Y g:i a" }}</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      {% else %}
-        <p class="text-muted mb-0">No paid invoices yet.</p>
-      {% endif %}
-    </div>
-  </div>
-
+<div class="ops-shell">
+<header class="pt-dashboard-heading"><div><h1>Performance Reports</h1><p>Job board activity and sales for {{ start|date:"M j, Y" }}–{{ end|date:"M j, Y" }}.</p></div></header>
+<form method="get" class="ops-panel ops-filters">
+<div class="ops-field"><label for="report-period">Period</label><select id="report-period" name="period">
+<option value="today"{% if period == 'today' %} selected{% endif %}>Today</option>
+<option value="7"{% if period == '7' %} selected{% endif %}>Last 7 days</option>
+<option value="30"{% if period == '30' %} selected{% endif %}>Last 30 days</option>
+<option value="custom"{% if period == 'custom' %} selected{% endif %}>Custom</option>
+</select></div>
+<div class="ops-field"><label for="report-start">Custom start</label><input id="report-start" type="date" name="start" value="{{ start|date:'Y-m-d' }}"></div>
+<div class="ops-field"><label for="report-end">Custom end</label><input id="report-end" type="date" name="end" value="{{ end|date:'Y-m-d' }}"></div>
+<div class="ops-filter-actions"><button class="ops-button ops-primary">Run report</button></div>
+</form>
+<section class="pt-dashboard-panel pt-today"><header><h2>Activity in this period</h2></header><div class="pt-mini-metrics">{% for item in metrics %}<div><strong>{{ item.value }}</strong><span>{{ item.label }}</span></div>{% endfor %}</div></section>
+{% if show_sales %}<section class="pt-dashboard-panel"><header><h2>Recent Paid Orders</h2><a href="{% url 'admin:board_invoice_changelist' %}?status__exact=paid">View invoices →</a></header>
+<div class="pt-dashboard-table-wrap"><table class="pt-dashboard-table"><thead><tr><th>Invoice</th><th>Employer</th><th>Amount</th><th>Date</th></tr></thead><tbody>
+{% for invoice in recent_paid_invoices %}<tr><td><a href="{% url 'admin:board_invoice_change' invoice.pk %}">#{{ invoice.pk }}</a></td><td>{{ invoice.employer.company_name }}</td><td>{{ invoice.amount_display }} {{ invoice.currency }}</td><td>{{ invoice.order_date|date:"M j, Y g:i a" }}</td></tr>
+{% empty %}<tr><td colspan="4">No paid orders in this period.</td></tr>{% endfor %}
+</tbody></table></div></section>{% endif %}
 </div>
 {% endblock %}

@@ -1,0 +1,13 @@
+{% extends "admin/base_site.html" %}
+{% block content_title %}{% endblock %}
+{% block content %}
+<div class="ops-shell">
+<header class="pt-dashboard-heading"><div><h1>Import &amp; Export</h1><p>Download records as CSV or preview a CSV before importing it.</p></div></header>
+<section class="pt-dashboard-panel" aria-label="Record types"><div class="pt-dashboard-table-wrap">
+<table class="pt-dashboard-table"><thead><tr><th scope="col">Records</th><th scope="col">Import</th><th scope="col">Export</th></tr></thead>
+<tbody>{% for item in datasets %}<tr><th scope="row">{{ item.label }}</th>
+<td>{% if item.import_url %}<a class="ops-button" href="{{ item.import_url }}">Import CSV</a>{% else %}—{% endif %}</td>
+<td>{% if item.export_url %}<a class="ops-button" href="{{ item.export_url }}">Export CSV</a>{% else %}—{% endif %}</td></tr>{% endfor %}</tbody></table>
+</div></section>
+</div>
+{% endblock %}

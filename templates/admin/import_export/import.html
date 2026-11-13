@@ -1,0 +1,34 @@
+{% extends "admin/import_export/base.html" %}
+{% load admin_urls import_export_tags static %}
+{% block transfer_title %}Import {{ opts.verbose_name_plural }}{% endblock %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'import_export/import.css' %}">{% endblock %}
+{% block extrahead %}{{ block.super }}<script src="{% url 'admin:jsi18n' %}"></script>{% if confirm_form %}{{ confirm_form.media }}{% else %}{{ form.media }}{% endif %}{% endblock %}
+{% block transfer_body %}
+{% if not confirm_form %}
+<section class="pt-editor-banner"><h2>Choose a file</h2>
+<form method="post" enctype="multipart/form-data">{% csrf_token %}
+{% include "admin/import_export/resource_fields_list.html" with import_or_export="import" %}
+{% block import_form_additional_info %}{% endblock %}
+{{ form.non_field_errors }}{% for field in form.hidden_fields %}{{ field }}{% endfor %}
+{% for field in form.visible_fields %}<div class="form-row">{{ field.errors }}{{ field.label_tag }}{% if field.field.widget.attrs.readonly %}{{ field.value }}{{ field.as_hidden }}{% else %}{{ field }}{% endif %}{% if field.help_text %}<p class="help">{{ field.help_text|safe }}</p>{% endif %}</div>{% endfor %}
+<button type="submit" class="button">Preview import</button></form>
+</section>
+{% endif %}
+{% if result %}
+{% if result.has_errors or result.has_validation_errors %}
+<section class="pt-editor-banner"><h2>Correct these issues before importing</h2>
+<ul>{% for error in result.base_errors %}<li>{{ error.error }}</li>{% endfor %}
+{% for line, errors in result.row_errors %}{% for error in errors %}<li>Row {{ line }}: {{ error.error }}</li>{% endfor %}{% endfor %}
+{% for row in result.invalid_rows %}<li>Row {{ row.number }}: {% for field, errors in row.field_specific_errors.items %}{{ field }}: {{ errors|join:", " }}; {% endfor %}{{ row.non_field_specific_errors|join:", " }}</li>{% endfor %}</ul>
+</section>
+{% else %}
+<section class="pt-editor-banner"><h2>Review the changes</h2><p>Check what will be added or updated before confirming.</p>
+<div class="pt-list-table"><table class="import-preview"><thead><tr><th>Action</th>{% for field in result.diff_headers %}<th>{{ field }}</th>{% endfor %}</tr></thead><tbody>
+{% for row in result.valid_rows %}<tr class="{{ row.import_type }}"><th scope="row">{{ row.import_type|capfirst }}</th>{% for field in row.diff %}<td>{{ field }}</td>{% endfor %}</tr>{% endfor %}
+</tbody></table></div></section>
+{% endif %}
+{% endif %}
+{% if confirm_form %}
+<form action="{% url opts|admin_urlname:'process_import' %}" method="post" class="pt-editor-actions">{% csrf_token %}{{ confirm_form.as_p }}<button type="submit" name="confirm" class="button">Confirm import</button><a class="button" href="{% url opts|admin_urlname:'changelist' %}">Cancel</a></form>
+{% endif %}
+{% endblock %}

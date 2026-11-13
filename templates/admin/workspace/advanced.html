@@ -1,0 +1,9 @@
+{% extends "admin/base_site.html" %}
+{% block content_title %}{% endblock %}
+{% block content %}
+<div class="ops-shell">
+<header class="pt-dashboard-heading"><div><a href="{% url 'admin:index' %}">← Overview</a><h1>{{ title }}</h1><p>All records and settings available to your staff account.</p></div></header>
+<p><a class="ops-button" href="{% url 'admin:operations_search' %}">Search records</a> <a class="ops-button" href="{% url 'admin:operations' %}">Data quality and duplicate review</a></p>
+{% include 'admin/workspace/model_directory.html' %}
+</div>
+{% endblock %}

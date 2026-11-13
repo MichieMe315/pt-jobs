@@ -1,3 +1,4 @@
+from . import admin_sections
 # board/urls.py
 from django.contrib.auth import views as auth_views
 from django.urls import path
@@ -6,6 +7,9 @@ from . import views as v
 from .seo_pages import career_hub, career_landing
 
 urlpatterns = [
+    path("pages/<slug:slug>/", admin_sections.website_page, name="website_page"),
+    path("affiliates/", admin_sections.affiliate_apply, name="affiliate_apply"),
+    path("refer/<slug:code>/", admin_sections.affiliate_link, name="affiliate_link"),
     path("physiotherapy-careers/", career_hub, name="career_hub"),
     path("physiotherapy-careers/<slug:slug>/", career_landing, name="career_landing"),
     path("job-alerts/unsubscribe/<str:token>/", v.job_alert_unsubscribe, name="job_alert_unsubscribe"),

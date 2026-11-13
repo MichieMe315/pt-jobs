@@ -195,7 +195,7 @@ def filtered_records(request, kind):
 
 
 def params(request, **updates):
-    values={key:request.GET[key] for key in ('q','status','quality','start','end','sort','kind') if request.GET.get(key)}
+    values={key:request.GET[key] for key in ('q','status','quality','start','end','sort','kind','per_page') if request.GET.get(key)}
     values.update(updates)
     return urlencode(values)
 
@@ -220,7 +220,13 @@ def records(request,kind):
                 values.append(value)
             writer.writerow(values)
         return response
-    page=Paginator(qs,30).get_page(request.GET.get('page'));rows=[]
+    page_sizes=(25,50,100)
+    raw=request.GET.get('per_page','')
+    pref_key='ptjc_operations_page_size_'+kind
+    per_page=int(raw) if raw in tuple(map(str,page_sizes)) else request.session.get(pref_key,25)
+    if raw in tuple(map(str,page_sizes)):
+        request.session[pref_key]=per_page
+    page=Paginator(qs,per_page).get_page(request.GET.get('page'));rows=[]
     for obj in page:
         values=[]
         for field in fields:
@@ -231,7 +237,17 @@ def records(request,kind):
             values.append(value)
         rows.append({'values':values,'url':record_url(request,obj),'id':obj.pk})
     headings=[{'label':LABELS.get(field,field),'query':params(request,sort=('-' if sort==field else '')+field)} for field in fields]
-    context={**admin.site.each_context(request),'title':label,'kind':kind,'ops_nav':navigation(request.user),'rows':rows,'headings':headings,'page_obj':page,'filter_form':form,'model_list_url':reverse(f'admin:{model._meta.app_label}_{model._meta.model_name}_changelist'),'previous_query':params(request,page=page.previous_page_number()) if page.has_previous() else '', 'next_query':params(request,page=page.next_page_number()) if page.has_next() else ''}
+    model_admin=admin.site._registry.get(model)
+    add_url=reverse(f'admin:{model._meta.app_label}_{model._meta.model_name}_add') if model_admin and model_admin.has_add_permission(request) else ''
+    import_url=''
+    if kind in ('employers','candidates','jobs') and model_admin and model_admin.has_add_permission(request) and model_admin.has_change_permission(request):
+        from django.urls import NoReverseMatch
+        try:
+            import_url=reverse(f'admin:{model._meta.app_label}_{model._meta.model_name}_import')
+        except NoReverseMatch:
+            pass
+    context={**admin.site.each_context(request),'title':label,'kind':kind,'ops_nav':navigation(request.user),'rows':rows,
+             'page_sizes':page_sizes,'per_page':per_page,'add_url':add_url,'import_url':import_url,'sort':sort,'headings':headings,'page_obj':page,'filter_form':form,'model_list_url':reverse(f'admin:{model._meta.app_label}_{model._meta.model_name}_changelist'),'previous_query':params(request,page=page.previous_page_number()) if page.has_previous() else '', 'next_query':params(request,page=page.next_page_number()) if page.has_next() else ''}
     return render(request,'admin/operations/records.html',context)
 
 
@@ -301,9 +317,14 @@ def duplicates(request):
 
 def install_operations_urls():
     if getattr(admin.site,'_pt_operations_installed',False):return
+    from . import admin_workspaces, admin_review
     original=admin.site.get_urls
     def get_urls():
         return [
+            path('workspaces/<slug:key>/',admin.site.admin_view(admin_workspaces.workspace),name='task_workspace'),
+            path('data-tools/',admin.site.admin_view(admin_workspaces.data_tools),name='data_tools'),
+            path('advanced/',admin.site.admin_view(admin_workspaces.advanced),name='task_advanced'),
+            path('review/',admin.site.admin_view(admin_review.queue),name='profile_review_queue'),
             path('operations/',admin.site.admin_view(workspace),name='operations'),
             path('operations/search/',admin.site.admin_view(global_search),name='operations_search'),
             path('operations/duplicates/',admin.site.admin_view(duplicates),name='operations_duplicates'),

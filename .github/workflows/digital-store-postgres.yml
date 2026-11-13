@@ -1,0 +1,35 @@
+name: Digital store PostgreSQL checks
+on:
+  pull_request:
+  push:
+    branches: [release/ptjc-digital-launch]
+jobs:
+  payment-and-access:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ptjc
+          POSTGRES_PASSWORD: local-ci-only
+          POSTGRES_DB: ptjc
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 10s
+          --health-timeout 5s --health-retries 5
+    env:
+      DATABASE_URL: postgres://ptjc:local-ci-only@localhost:5432/ptjc
+      DJANGO_DEBUG: '1'
+      DEBUG: '1'
+      CAREER_TOOLS_PREVIEW: '0'
+      EMAIL_BACKEND: django.core.mail.backends.locmem.EmailBackend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: python -m pip install -r requirements.txt
+      - run: python manage.py check
+      - run: python manage.py makemigrations --check --dry-run
+      - run: python manage.py test board.test_admin_shell board.test_admin_sections board.test_admin_data board.test_admin_seo board.test_marketing_workspace board.test_employer_job_submissions board.test_payment_concurrency career_mobility.test_online_builder_purchase career_mobility.test_appointment_editor career_mobility.test_catalogue_allowances career_mobility.test_site_design_consistency --noinput

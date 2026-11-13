@@ -1,0 +1,17 @@
+{% extends "admin/base_site.html" %}
+{% load admin_urls %}
+{% block content_title %}{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+{% block content %}
+<section id="content-main" class="pt-history">
+<header class="pt-editor-header"><div><a href="{% url opts|admin_urlname:'change' object.pk|admin_urlquote %}">← Back to record</a><h1>Change history</h1><p>{{ object }}</p></div></header>
+{% if action_list %}
+<div id="change-history" class="pt-list-table"><table><thead><tr><th scope="col">When</th><th scope="col">Staff account</th><th scope="col">Change</th></tr></thead><tbody>
+{% for action in action_list %}<tr><td>{{ action.action_time|date:"DATETIME_FORMAT" }}</td><td>{{ action.user.get_full_name|default:action.user.get_username }}</td><td>{{ action.get_change_message }}</td></tr>{% endfor %}
+</tbody></table></div>
+{% if pagination_required %}<nav class="ops-pager" aria-label="History pages">
+{% for i in page_range %}{% if i == action_list.paginator.ELLIPSIS %}{{ i }}{% elif i == action_list.number %}<span aria-current="page">{{ i }}</span>{% else %}<a href="?{{ page_var }}={{ i }}">{{ i }}</a>{% endif %}{% endfor %}
+</nav>{% endif %}
+{% else %}<p>No changes have been logged for this record.</p>{% endif %}
+</section>
+{% endblock %}

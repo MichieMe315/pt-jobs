@@ -1,0 +1,14 @@
+{% extends "admin/base_site.html" %}
+{% block content_title %}{% endblock %}
+{% block content %}
+<div class="ops-shell pt-task-workspace">
+<p><a href="{% url 'admin:index' %}">← Overview</a></p>
+<header class="pt-dashboard-heading"><div><h1>{{ workspace.title }}</h1><p>{{ workspace.description }}</p></div></header>
+{% if queues %}<div class="pt-task-grid pt-task-queues">{% for queue in queues %}<section class="pt-task-card"><h2>{{ queue.title }} · {{ queue.count }}</h2>{% for row in queue.rows %}<p>{% if row.url %}<a href="{{ row.url }}">{{ row.name }}</a>{% else %}{{ row.name }}{% endif %} <small>{{ row.date|date:"M j, Y" }}</small></p>{% endfor %}<a href="{{ queue.url }}">Open list →</a></section>{% endfor %}</div>{% endif %}
+{% for group in groups %}
+<section class="pt-workspace-group"><h2>{{ group.title }}</h2>{% include "admin/workspace/task_links_grid.html" with links=group.links only %}</section>
+{% empty %}
+{% include "admin/workspace/task_links_grid.html" with links=workspace.links only %}
+{% endfor %}
+</div>
+{% endblock %}

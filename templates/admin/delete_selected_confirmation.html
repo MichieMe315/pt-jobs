@@ -1,0 +1,16 @@
+{% extends "admin/base_site.html" %}
+{% load l10n admin_urls static %}
+{% block extrahead %}{{ block.super }}{{ media }}<script src="{% static 'admin/js/cancel.js' %}" async></script>{% endblock %}
+{% block content_title %}{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+{% block content %}
+<section class="pt-confirm">
+<header class="pt-editor-header"><div><a href="{% url opts|admin_urlname:'changelist' %}">← Back to records</a><h1>Delete selected {{ objects_name }}</h1></div></header>
+{% if perms_lacking or protected %}
+<section class="pt-editor-banner"><h2>These records can’t be deleted</h2>{% if perms_lacking %}<p>Your account cannot delete these related records:</p><ul>{{ perms_lacking|unordered_list }}</ul>{% endif %}{% if protected %}<p>These related records protect the selection from deletion:</p><ul>{{ protected|unordered_list }}</ul>{% endif %}</section>
+{% else %}
+<section class="pt-editor-banner"><h2>Review what will be deleted</h2>{% include "admin/includes/object_delete_summary.html" %}{% for entry in deletable_objects %}<ul>{{ entry|unordered_list }}</ul>{% endfor %}</section>
+<form method="post" class="pt-confirm-actions">{% csrf_token %}{% for obj in queryset %}<input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk|unlocalize }}">{% endfor %}<input type="hidden" name="action" value="delete_selected"><input type="hidden" name="post" value="yes"><input type="submit" class="deletelink" value="Delete selected records"><a href="{% url opts|admin_urlname:'changelist' %}" class="button cancel-link">Cancel</a></form>
+{% endif %}
+</section>
+{% endblock %}

@@ -585,10 +585,12 @@ def job_alert_signup(request: HttpRequest) -> HttpResponse:
 def employer_signup(request: HttpRequest) -> HttpResponse:
     ss = _sitesettings()
     form = EmployerSignUpForm(request.POST or None, request.FILES or None)
+    from .admin_sections import signup_questions, save_signup
+    extra = signup_questions(form, "employer")
 
     if request.method == "POST" and form.is_valid():
         try:
-            user = form.save()
+            user = save_signup(request, form, extra, allow_referral=True)
         except IntegrityError:
             # Prevent 500 on duplicate email (show error only on submit)
             form.add_error(
@@ -611,6 +613,10 @@ def employer_signup(request: HttpRequest) -> HttpResponse:
             request,
             "Your account has been created. You will be notified via email when admin approves your account.",
         )
+        next_url = request.GET.get("next", "")
+        if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+            from urllib.parse import urlencode
+            return redirect(reverse("login") + "?" + urlencode({"next": next_url}))
         return redirect("login")
 
     return render(request, "board/employer_signup.html", {"sitesettings": ss, "form": form})
@@ -650,17 +656,24 @@ def employer_detail(request: HttpRequest, employer_id: int) -> HttpResponse:
 def jobseeker_signup(request: HttpRequest) -> HttpResponse:
     ss = _sitesettings()
     form = JobSeekerSignUpForm(request.POST or None, request.FILES or None)
+    from .admin_sections import signup_questions, save_signup
+    extra = signup_questions(form, "jobseeker")
+    next_url = request.GET.get("next", "")
+    from ptjc_resumes.offers import signup_pdf_price
+    context = {"sitesettings": ss, "form": form}
+    if url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+        context["resume_signup_price"] = signup_pdf_price(next_url, "canadian")
 
     if request.method == "POST" and form.is_valid():
         try:
-            user = form.save()
+            user = save_signup(request, form, extra, allow_referral=False)
         except IntegrityError:
             # Prevent 500 on duplicate email (show error only on submit)
             form.add_error(
                 "email",
                 "An account with this email already exists. Please log in or use a different email.",
             )
-            return render(request, "board/jobseeker_signup.html", {"sitesettings": ss, "form": form})
+            return render(request, "board/jobseeker_signup.html", context)
 
         admin_emails = _admin_emails()
         send_templated_email("admin_new_jobseeker", admin_emails, {"email": user.email,
@@ -672,9 +685,14 @@ def jobseeker_signup(request: HttpRequest) -> HttpResponse:
         )
 
         messages.success(request, "Account created. Your job seeker account requires admin approval before login.")
+        if request.GET.get("next") and url_has_allowed_host_and_scheme(
+            request.GET["next"], allowed_hosts={request.get_host()}, require_https=request.is_secure()
+        ):
+            from urllib.parse import urlencode
+            return redirect(reverse("login") + "?" + urlencode({"next": request.GET["next"]}))
         return redirect("login")
 
-    return render(request, "board/jobseeker_signup.html", {"sitesettings": ss, "form": form})
+    return render(request, "board/jobseeker_signup.html", context)
 
 
 
@@ -1965,21 +1983,26 @@ def admin_dashboard(request: HttpRequest) -> HttpResponse:
         order_date__lt=end_dt,
     )
 
+    from django.contrib import admin
+    from .operations import can_view
+    visible = [(model, label) for model, label in (
+        (Job, 'Jobs posted'), (Application, 'Applications sent'),
+        (Employer, 'New employers'), (JobSeeker, 'New job seekers'),
+        (JobAlert, 'Job alerts created'),
+    ) if can_view(request.user, model)]
+    can_view_sales = can_view(request.user, Invoice)
+    if not visible and not can_view_sales:
+        raise PermissionDenied
+    metrics = [{'label': label, 'value': model.objects.filter(
+        created_at__gte=start_dt, created_at__lt=end_dt).count()} for model, label in visible]
+    if can_view_sales:
+        amount = paid_invoices.filter(currency='CAD').aggregate(total=Sum('amount'))['total'] or 0
+        metrics.append({'label': 'Paid sales · CAD', 'value': f'${Decimal(amount) / 100:,.2f}'})
     context = {
-        "sitesettings": _sitesettings(),
-        "period": period,
-        "start": start,
-        "end": end,
-        "jobs_posted": Job.objects.filter(created_at__gte=start_dt, created_at__lt=end_dt).count(),
-        "applications_sent": Application.objects.filter(created_at__gte=start_dt, created_at__lt=end_dt).count(),
-        "sales_count": paid_invoices.count(),
-        "sales_total": (paid_invoices.aggregate(total=Sum("amount"))["total"] or 0) / 100,
-        "employers_new": Employer.objects.filter(created_at__gte=start_dt, created_at__lt=end_dt).count(),
-        "jobseekers_new": JobSeeker.objects.filter(created_at__gte=start_dt, created_at__lt=end_dt).count(),
-        "alerts_created": JobAlert.objects.filter(created_at__gte=start_dt, created_at__lt=end_dt).count(),
-        "pending_employers": Employer.objects.filter(is_approved=False).order_by("-created_at", "-id")[:10],
-        "pending_jobseekers": JobSeeker.objects.filter(is_approved=False).order_by("-created_at", "-id")[:10],
-        "recent_paid_invoices": Invoice.objects.filter(status="paid").select_related("employer").order_by("-order_date", "-id")[:10],
+        **admin.site.each_context(request),
+        'title': 'Reports', 'period': period, 'start': start, 'end': end, 'metrics': metrics,
+        'show_sales': can_view_sales,
+        'recent_paid_invoices': paid_invoices.select_related('employer').order_by('-order_date', '-id')[:10] if can_view_sales else (),
     }
     return render(request, "admin/dashboard.html", context)
 

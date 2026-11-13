@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Affiliate program | Physiotherapy Jobs Canada{% endblock %}
+{% block content %}
+<section class="mx-auto py-4" style="max-width:44rem">
+  <h1>Affiliate program</h1>
+  {% if partner %}
+    <p>Application status: {{ partner.get_status_display }}</p>
+    {% if partner.status == 'approved' %}
+      <label for="affiliate-link">Your employer referral link</label>
+      {% url 'affiliate_link' partner.code as referral_path %}
+      <input class="form-control" id="affiliate-link" readonly value="{{ request.scheme }}://{{ request.get_host }}{{ referral_path }}">
+    {% endif %}
+  {% elif program.applications_open and program.terms %}
+    <h2>Program terms</h2>
+    {{ program.terms|linebreaks }}
+    <form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary" type="submit">Apply</button></form>
+  {% else %}
+    <p>Applications are currently closed.</p>
+  {% endif %}
+</section>
+{% endblock %}

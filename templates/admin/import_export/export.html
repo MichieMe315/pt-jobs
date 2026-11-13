@@ -1,0 +1,19 @@
+{% extends "admin/import_export/base.html" %}
+{% load import_export_tags %}
+{% block transfer_title %}Export {{ opts.verbose_name_plural }}{% endblock %}
+{% block extrahead %}{{ block.super }}<script src="{% url 'admin:jsi18n' %}"></script>{{ form.media }}{% endblock %}
+{% block transfer_body %}
+<section class="pt-editor-banner"><h2>Choose a format and columns</h2>
+<form action="{{ export_url }}" method="post">{% csrf_token %}
+{% if form.initial.export_items %}<p>Exporting {{ form.initial.export_items|length }} selected record{{ form.initial.export_items|length|pluralize }}.</p>{% endif %}
+{% if not form.is_selectable_fields_form %}{% include "admin/import_export/resource_fields_list.html" with import_or_export="export" %}{% endif %}
+{{ form.non_field_errors }}{% for field in form.hidden_fields %}{{ field }}{% endfor %}
+{% for field in form.visible_fields %}<div {% if field.field.is_selectable_field %}class="selectable-field-export-row" resource-index="{{ field.field.resource_index }}"{% else %}class="form-row aligned"{% endif %}>
+{% if field.field.initial_field %}<p>Columns available for this format:</p>{% endif %}{{ field.errors }}
+{% if not field.field.is_selectable_field %}{{ field.label_tag }}{% endif %}
+{% if field.field.widget.attrs.readonly %}{{ field.value }}{{ field.as_hidden }}{% else %}{{ field }}{% endif %}
+{% if field.field.is_selectable_field %}{{ field.label_tag }}{% endif %}
+{% if field.help_text %}<p class="help">{{ field.help_text|safe }}</p>{% endif %}</div>{% endfor %}
+<button type="submit" class="button">Download export</button>
+</form></section>
+{% endblock %}

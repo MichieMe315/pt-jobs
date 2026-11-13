@@ -1,0 +1,9 @@
+{% extends "admin/import_export/import.html" %}
+{% block import_form_additional_info %}
+<p>Export a CSV first to get the column names. The next step previews changes before you confirm.</p>
+{% if opts.model_name == "job" %}
+<p>Use an existing employer ID in <code>employer</code>. Leave <code>id</code> blank for a new job; new jobs are inactive until published in admin.</p>
+{% else %}
+<p>Use an existing account ID in <code>user</code>. The import updates or creates that account’s profile. Passwords, approval status and account access are not imported.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "admin/base_site.html" %}
+{% load admin_urls static admin_list %}
+{% block title %}{{ title }} | PTJC Admin{% endblock %}
+{% block content_title %}{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+{% block coltype %}{% endblock %}
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-list pt-record-list{% endblock %}
+{% block extrastyle %}{{ block.super }}
+<link rel="stylesheet" href="{% static 'admin/css/changelists.css' %}">
+<link rel="stylesheet" href="{% static 'board/admin-records.css' %}">
+{% if cl.formset %}<link rel="stylesheet" href="{% static 'admin/css/forms.css' %}">{% endif %}
+{% if cl.formset or action_form %}<script src="{% url 'admin:jsi18n' %}"></script>{% endif %}
+{{ media.css }}
+{% endblock %}
+{% block extrahead %}{{ block.super }}{{ media.js }}<script src="{% static 'admin/js/filters.js' %}" defer></script>{% endblock %}
+{% block content %}
+<div id="content-main" class="pt-list">
+<header class="pt-editor-header">
+<div>{% if not is_popup %}<a href="{% url 'admin:index' %}">← Admin overview</a>{% endif %}<h1>{{ title }}</h1><p>{{ cl.result_count }} matching record{{ cl.result_count|pluralize }}</p></div>
+{% block object-tools %}<ul class="object-tools">{% block object-tools-items %}{% change_list_object_tools %}{% endblock %}</ul>{% endblock %}
+</header>
+{% if posting_tabs %}<nav class="pt-posting-tabs" aria-label="Posting status">{% for tab in posting_tabs %}<a href="{{ tab.url }}"{% if tab.current %} aria-current="page"{% endif %}>{{ tab.label }}</a>{% endfor %}</nav>{% endif %}
+{% if cl.formset and cl.formset.errors %}<p class="errornote" role="alert">Review the highlighted rows before saving.</p>{{ cl.formset.non_form_errors }}{% endif %}
+<div id="changelist" class="pt-list-body">
+<div class="pt-list-controls">
+{% block search %}{% search_form cl %}{% endblock %}
+{% block date_hierarchy %}{% if cl.date_hierarchy %}{% date_hierarchy cl %}{% endif %}{% endblock %}
+{% block filters %}{% if cl.has_filters %}
+<details class="pt-list-filters"{% if cl.has_active_filters %} open{% endif %}><summary>Filters{% if cl.has_active_filters %} · active{% endif %}</summary>
+<nav id="changelist-filter" aria-label="Filter records">
+{% if cl.is_facets_optional or cl.has_active_filters %}<div id="changelist-filter-extra-actions">
+{% if cl.is_facets_optional %}{% if cl.add_facets %}<a href="{{ cl.remove_facet_link }}">Hide counts</a>{% else %}<a href="{{ cl.add_facet_link }}">Show counts</a>{% endif %}{% endif %}
+{% if cl.has_active_filters %}<a href="{{ cl.clear_all_filters_qs }}">Clear filters</a>{% endif %}</div>{% endif %}
+{% for spec in cl.filter_specs %}{% admin_list_filter cl spec %}{% endfor %}
+</nav>
+</details>
+{% endif %}{% endblock %}
+</div>
+<form id="changelist-form" method="post"{% if cl.formset and cl.formset.is_multipart %} enctype="multipart/form-data"{% endif %} novalidate>{% csrf_token %}
+{% if cl.formset %}{{ cl.formset.management_form }}{% endif %}
+{% block result_list %}
+{% if action_form and actions_on_top and cl.show_admin_actions %}{% admin_actions %}{% endif %}
+<div class="pt-list-table">{% result_list cl %}</div>
+{% if action_form and not actions_on_top and actions_on_bottom and cl.show_admin_actions %}{% admin_actions %}{% endif %}
+{% endblock %}
+{% block pagination %}{% pagination cl %}{% endblock %}
+</form>
+</div></div>
+{% endblock %}

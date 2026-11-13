@@ -1,0 +1,17 @@
+{% extends "admin/base_site.html" %}
+{% block title %}Staff sign in | PTJC Admin{% endblock %}
+{% block usertools %}{% endblock %}
+{% block nav-sidebar %}{% endblock %}
+{% block content_title %}{% endblock %}
+{% block nav-breadcrumbs %}{% endblock %}
+{% block content %}
+<section class="pt-admin-auth"><h1>Staff sign in</h1><p>Sign in to manage Physiotherapy Jobs Canada.</p>
+{{ form.non_field_errors }}
+{% if user.is_authenticated %}<p>You’re signed in as {{ username }}. Use a staff account to continue.</p>{% endif %}
+<form action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
+{{ form.username.errors }}{{ form.username.label_tag }}{{ form.username }}
+{{ form.password.errors }}{{ form.password.label_tag }}{{ form.password }}
+<input type="hidden" name="next" value="{{ next }}">
+<button type="submit" class="button pt-auth-submit">Sign in</button>
+</form></section>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "admin/base_site.html" %}{% load static %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'career_mobility/admin-product.css' %}?v=58">{% endblock %}
+{% block content_title %}{% endblock %}
+{% block content %}
+<div class="ops-shell digital-admin">
+  <a href="{% url 'admin:index' %}">← Overview</a>
+  <header><h1>Digital products</h1><p>Manage what customers see, edit and buy.</p></header>
+  {% if resumes %}<section class="digital-admin-feature">
+    <div><h2>Résumé builders</h2><p>Manage Canadian and International designs, previews and PDF purchase options.</p></div>
+    <a class="product-button product-primary" href="{{ resumes.url }}">Manage résumé builders</a>
+  </section>{% endif %}
+  {% if product_page != None %}
+  <section aria-labelledby="manage-products-title">
+    <h2 id="manage-products-title">Manage products</h2>
+    <form method="get" class="digital-admin-filters">
+      <label>Find a product<input type="search" name="q" value="{{ search }}" placeholder="Name, slug or category"></label>
+      <label>Visibility<select name="status"><option value="live"{% if state == 'live' %} selected{% endif %}>Live in store</option><option value="draft"{% if state == 'draft' %} selected{% endif %}>Private drafts</option><option value="all"{% if state == 'all' %} selected{% endif %}>All records</option></select></label>
+      <button class="product-button product-primary" type="submit">Find products</button>
+      {% if can_add_product %}<a class="product-button" href="{% url 'admin:career_mobility_digitalproduct_add' %}">Add product</a>{% endif %}
+      {% if can_reorder %}<a class="product-button" href="{% url 'admin:career_mobility_digitalproduct_order' %}">Reorder storefront</a>{% endif %}
+      <a class="product-button" href="{% url 'admin:career_mobility_digitalproduct_allowances' %}">Starter allowances</a>
+      {% if discounts %}<a class="product-button" href="{{ discounts.url }}">Discounts</a>{% endif %}
+    </form>
+    <div class="digital-admin-table">
+    <table>
+      <thead><tr><th scope="col">Product</th><th scope="col">Visibility</th><th scope="col">Price (CAD)</th><th scope="col">Manage</th></tr></thead>
+      <tbody>{% for product in product_page %}
+      <tr>
+        <th scope="row">{{ product.title }}{% if product.category %}<small>{{ product.category }}</small>{% endif %}</th>
+        <td>{% if product.live_in %}{{ product.live_in|join:", " }}{% elif product.is_published %}Published · not listed{% else %}Private draft{% endif %}</td>
+        <td>{% if product.audience != 'international' %}<span>Canadian: {{ product.price_for_canadian|default_if_none:"—" }}</span>{% endif %}{% if product.audience != 'canadian' %}<span>International: {{ product.price_for_international|default_if_none:"—" }}</span>{% endif %}</td>
+        <td><div class="digital-admin-row-actions">{% url 'admin:career_mobility_digitalproduct_change' product.pk as edit %}<a href="{{ edit }}" aria-label="Manage {{ product.title }}">Product settings</a><a href="{{ edit }}#pricing" aria-label="Price and access for {{ product.title }}">Price and access</a></div></td>
+      </tr>{% empty %}<tr><td colspan="4">No products match. Try a different search or visibility filter.</td></tr>{% endfor %}</tbody>
+    </table>
+    </div>
+    {% if product_page.has_other_pages %}<nav class="product-actions" aria-label="Product pages">{% if product_page.has_previous %}<a href="?{{ filter_query }}&amp;page={{ product_page.previous_page_number }}">Previous</a>{% endif %}<span>Page {{ product_page.number }} of {{ product_page.paginator.num_pages }}</span>{% if product_page.has_next %}<a href="?{{ filter_query }}&amp;page={{ product_page.next_page_number }}">Next</a>{% endif %}</nav>{% endif %}
+  </section>
+  {% endif %}
+  {% if storefronts %}<section aria-labelledby="storefront-title">
+    <h2 id="storefront-title">Storefronts</h2>
+    <div class="resume-admin-grid">
+      {% for store in storefronts %}<article class="digital-admin-store">
+        <h3>{{ store.label }}</h3>
+        <div class="product-actions">
+          <a class="product-button product-primary" href="{{ store.url }}">Manage catalogue</a>
+          <a class="product-button" href="{{ store.preview }}">View storefront</a>
+          <a class="product-button" href="{{ store.url }}&amp;status=draft">Private drafts ({{ store.drafts }})</a>
+        </div>
+        <h4>Live listings ({{ store.live }})</h4>
+        <ul class="digital-admin-listings">
+          {% for row in store.rows %}<li><span>{{ row.title }}</span><div>
+            {% if row.edit %}<a href="{{ row.edit }}" aria-label="Edit {{ row.title }}">Edit</a>{% endif %}
+            {% if row.open %}<a href="{{ row.open }}" aria-label="Open {{ row.title }}">Open</a>{% endif %}
+          </div></li>{% empty %}<li>No live listings.</li>{% endfor %}
+        </ul>
+      </article>{% endfor %}
+    </div>
+  </section>{% endif %}
+  {% for group in groups %}
+  <section class="digital-admin-group">
+    <h2>{{ group.title }}</h2>
+    <ul>{% for link in group.links %}<li><a href="{{ link.url }}">{{ link.label }}</a><span>{{ link.description }}</span></li>{% endfor %}</ul>
+  </section>
+  {% endfor %}
+</div>
+{% endblock %}

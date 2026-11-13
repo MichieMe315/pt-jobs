@@ -1,0 +1,11 @@
+{% extends "admin/base_site.html" %}
+{% load admin_urls static %}
+{% block content_title %}{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'admin/css/forms.css' %}">{% endblock %}
+{% block content %}
+<div class="pt-editor pt-data-transfer">
+<header class="pt-editor-header"><div><a href="{% url opts|admin_urlname:'changelist' %}">← {{ opts.verbose_name_plural|capfirst }}</a><h1>{% block transfer_title %}Transfer records{% endblock %}</h1></div></header>
+{% block transfer_body %}{% endblock %}
+</div>
+{% endblock %}

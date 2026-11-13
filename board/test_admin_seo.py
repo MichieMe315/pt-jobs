@@ -33,8 +33,9 @@ class AdminWorkspaceTests(TestCase):
     def test_admin_index_and_workspace_keep_model_directory_and_existing_reports(self):
         for url in ['/admin/','/admin/operations/']:
             response=self.client.get(url);self.assertEqual(response.status_code,200)
-            for value in ['Search','Marketing graphics','Date-based business report']:
-                self.assertContains(response,value)
+            self.assertContains(response, 'Dashboard' if url == '/admin/' else 'Search')
+        self.assertContains(self.client.get(reverse('admin:task_workspace',args=['marketing'])),'Marketing graphics')
+        self.assertContains(self.client.get('/admin/'),reverse('admin_dashboard'))
         self.assertContains(self.client.get('/admin/'),'Recent Job Postings')
     def test_all_record_lists_and_csv_render(self):
         for kind in RECORDS:

@@ -2,7 +2,7 @@
 {% block content_title %}{% endblock %}
 {% block content %}
 <div class="ops-shell pt-product-catalogue">
-  <p><a href="{% url 'admin:career_mobility_digitalproduct_changelist' %}">← Digital products</a></p>
+  <p><a href="{% url 'admin:task_workspace' 'shop' %}">← Digital products</a></p>
   <header class="pt-dashboard-heading"><div><h1>{% if audience == 'international' %}International{% else %}Canadian{% endif %} digital products</h1><p>Published products appear in their assigned storefront. Drafts are private. An editor linked to a draft does not appear in the store. Open “Online editors and visibility” to see which tiles are hidden and why.</p></div>
     {% if can_import %}<a class="ops-button ops-primary" href="{% url 'admin:career_mobility_digitalproduct_add' %}">Add a product</a>{% endif %}
   </header>

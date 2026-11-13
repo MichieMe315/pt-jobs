@@ -1,6 +1,39 @@
-{% extends "admin/base.html" %}{% load i18n static admin_workspace %}
-{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | PT Jobs Administration{% endblock %}
-{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'board/admin-workspace.css' %}"><link rel="stylesheet" href="{% static 'board/admin-shell.css' %}">{% endblock %}
-{% block branding %}<a class="pt-top-brand" href="{% url 'admin:index' %}">Physiotherapy Jobs Canada <span>Administration</span></a>{% endblock %}
-{% block nav-sidebar %}{% if user.is_active and user.is_staff %}{% workspace_navigation %}{% endif %}{% endblock %}
-{% block nav-global %}{% endblock %}
+{% load static i18n admin_workspace %}
+<!doctype html>
+<html lang="{{ LANGUAGE_CODE|default:'en' }}" dir="{{ LANGUAGE_BIDI|yesno:'rtl,ltr,auto' }}">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,noarchive">
+<title>{% block title %}{{ title|default:"Administration" }} · Physiotherapy Jobs Canada{% endblock %}</title>
+<link rel="stylesheet" href="{% static 'admin/css/base.css' %}">
+{% block extrastyle %}<link rel="stylesheet" href="{% static 'board/admin-workspace.css' %}"><link rel="stylesheet" href="{% static 'board/admin-shell.css' %}"><link rel="stylesheet" href="{% static 'board/admin-records.css' %}">{% endblock %}
+<link rel="stylesheet" href="{% static 'board/ptjc-operations.css' %}?v=33">
+{% block extrahead %}<script src="{% static 'board/admin-navigation.js' %}" defer></script>{% endblock %}
+</head>
+<body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}" data-admin-utc-offset="{% now 'Z' %}">
+<a href="#content-start" class="skip-to-content-link">Skip to content</a>
+<div class="admin-shell{% if is_popup or not user.is_staff or not user.is_active %} admin-shell-standalone{% endif %}">
+{% if not is_popup and user.is_active and user.is_staff %}
+{% block nav-sidebar %}{% workspace_navigation %}{% endblock %}
+{% endif %}
+<main id="content-start" class="admin-main" tabindex="-1">
+{% if not is_popup and user.is_staff and user.is_active %}
+<header class="admin-topbar">
+<div>{% block topbar_title %}Administration{% endblock %}</div>
+{% block usertools %}<div class="admin-account">{% block userlinks %}<span>{{ user.email|default:user.get_username }}</span><a href="{% url 'admin:password_change' %}">Password</a>{% endblock %}</div>{% endblock %}
+</header>
+{% endif %}
+<div id="content" class="admin-content {% block coltype %}colM{% endblock %}">
+{% block nav-breadcrumbs %}{% block breadcrumbs %}{% endblock %}{% endblock %}
+{% block messages %}{% if messages %}<div class="flash-stack" aria-live="polite">{% for message in messages %}<div class="flash {{ message.tags }}">{{ message|capfirst }}</div>{% endfor %}</div>{% endif %}{% endblock %}
+{% block pretitle %}{% endblock %}
+{% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %}
+{% block content_subtitle %}{% if subtitle %}<h2>{{ subtitle }}</h2>{% endif %}{% endblock %}
+{% block content %}{% endblock %}
+{% block sidebar %}{% endblock %}
+</div>
+</main>
+</div>
+{% block footer %}{% endblock %}
+</body>
+</html>

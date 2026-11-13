@@ -359,6 +359,21 @@ class Job(models.Model):
         ("url", "URL"),
     )
 
+    INTERNATIONAL_STAGE_CHOICES = (
+        ("any", "Any stage — discuss the role requirements with applicants"),
+        ("pathway", "Working toward Canadian registration"),
+        ("exam_passed", "Passed the Canadian Physiotherapy Examination (CPTE)"),
+        ("registered", "Registered with a Canadian provincial regulator"),
+    )
+    INTERNATIONAL_SUPPORT_CHOICES = (
+        ("discuss", "Open to discussing employer support"),
+        ("available", "Employer support may be available"),
+        ("unavailable", "Employer support is not available"),
+    )
+
+    international_stage = models.CharField(max_length=20, choices=INTERNATIONAL_STAGE_CHOICES, blank=True, default="")
+    international_support = models.CharField(max_length=20, choices=INTERNATIONAL_SUPPORT_CHOICES, blank=True, default="")
+
     employer = models.ForeignKey(Employer, on_delete=models.CASCADE, related_name="jobs")
 
     title = models.CharField(max_length=200)
@@ -687,3 +702,10 @@ class JobPublicationRequest(models.Model):
         ordering = ['-requested_at']
     def __str__(self):
         return f'{self.job_id}: {self.get_status_display()}'
+
+# Marketing organization is kept separate from public employer profile fields.
+from .marketing_models import EmployerMarketingProfile, MarketingSuppression, MarketingAudience, MarketingDraft
+
+# Operations features live in their own module but use the board app migrations.
+from .admin_section_models import (AffiliateCommission, AffiliatePartner, AffiliateProgram,
+    AffiliateReferral, EmailDeliveryLog, SignupAnswer, SignupQuestion, WebsitePage)

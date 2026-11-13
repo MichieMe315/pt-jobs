@@ -1,4 +1,4 @@
-{% load static %}
+{% load static website_pages %}
 <link rel="stylesheet" href="{% static 'css/site-navigation.css' %}?v=3">
 
 <header class="bg-dark border-bottom ptjc-site-header">
@@ -64,6 +64,7 @@
             {% if not request.user.is_authenticated %}<li><a class="dropdown-item" href="{% url 'employer_signup' %}">Create an Employer Account</a></li>{% endif %}
           </ul>
         </li>
+        {% navigation_pages 'header' as managed_header %}{% for page in managed_header %}<li class="nav-item"><a class="nav-link" href="{{ page.get_absolute_url }}">{{ page.title }}</a></li>{% endfor %}
       </ul>
 
       <!-- Right side buttons -->

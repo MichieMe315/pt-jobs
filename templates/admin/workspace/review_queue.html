@@ -1,0 +1,12 @@
+{% extends "admin/base_site.html" %}
+{% block content_title %}{% endblock %}
+{% block content %}
+<div class="ops-shell"><header class="pt-dashboard-heading"><div><a href="{% url 'admin:task_workspace' 'people' %}">← People</a><h1>Account review</h1><p>Open a profile to review it or approve the saved details from this queue.</p></div></header>
+<nav class="ops-nav" aria-label="Account type">{% for tab in tabs %}<a href="?kind={{ tab.key }}"{% if tab.key == kind %} class="current" aria-current="page"{% endif %}>{{ tab.label }} · {{ tab.count }}</a>{% endfor %}</nav>
+<div class="ops-table-wrap"><table class="ops-table"><thead><tr><th>Account</th><th>Location</th><th>Updated</th><th>Decision</th></tr></thead><tbody>
+{% for row in rows %}<tr><td>{% if row.record_url %}<a href="{{ row.record_url }}">{{ row.name|default:row.email }}</a>{% else %}{{ row.name|default:row.email }}{% endif %}{% if row.email %}<br>{{ row.email }}{% endif %}</td><td>{{ row.location|default:"—" }}</td><td>{{ row.updated|date:"M j, Y" }}</td><td>{% if row.approve_url %}<form method="post" action="{{ row.approve_url }}">{% csrf_token %}<input type="hidden" name="return_to" value="review"><button class="button" type="submit">Approve</button></form>{% endif %}</td></tr>
+{% empty %}<tr><td colspan="4">No {{ label|lower }} are waiting for approval.</td></tr>{% endfor %}
+</tbody></table></div>
+<nav class="ops-pager" aria-label="Review pages">{% if page.has_previous %}<a href="?kind={{ kind }}&amp;page={{ page.previous_page_number }}">Previous</a>{% endif %}<span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a href="?kind={{ kind }}&amp;page={{ page.next_page_number }}">Next</a>{% endif %}</nav>
+</div>
+{% endblock %}

@@ -1,0 +1,6 @@
+<section class="pt-task-section" aria-labelledby="pt-task-heading">
+<h2 id="pt-task-heading">Manage the site</h2>
+<div class="pt-task-grid">{% for space in task_spaces %}
+<a class="pt-task-card" href="{{ space.url }}"><strong>{{ space.title }}</strong><span>{{ space.description }}</span><span aria-hidden="true">Open workspace →</span></a>
+{% endfor %}</div>
+</section>

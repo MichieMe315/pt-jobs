@@ -1,0 +1,7 @@
+<div class="pt-task-grid pt-model-directory">
+{% for app in app_list %}
+<section class="pt-task-card"><h2>{{ app.name }}</h2>
+{% for model in app.models %}<p>{% if model.admin_url %}<a href="{{ model.admin_url }}">{{ model.name }}</a>{% else %}{{ model.name }}{% endif %}{% if model.add_url %} <a class="pt-model-add" href="{{ model.add_url }}" aria-label="Add {{ model.name }}">Add</a>{% endif %}</p>{% endfor %}
+</section>
+{% empty %}<p>No records are available to this account.</p>{% endfor %}
+</div>
