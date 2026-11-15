@@ -31,7 +31,26 @@ class AdminDataFlowTests(TestCase):
         self.assertContains(self.client.get(url), self.candidate.created_at.strftime('%b'))
         self.client.post(reverse('admin:board_jobseeker_columns'), {'columns':['registered_at','current_location','nonexistent']})
         page = self.client.get(url)
-        self.assertEqual(tuple(page.context['cl'].list_display)[-3:], ('id','current_location','registered_at'))
+        self.assertEqual(tuple(page.context['cl'].list_display)[-4:], ('id','approval_status','current_location','registered_at'))
+
+    def test_candidate_account_search_and_approval_sort(self):
+        users = get_user_model().objects
+        self.person.email = 'pending@sorting.example'
+        self.person.save(update_fields=['email'])
+        approved = JobSeeker.objects.create(
+            user=users.create_user('approved-record', email='approved@sorting.example'),
+            first_name='Alex', is_approved=True,
+        )
+        url = reverse('admin:board_jobseeker_changelist')
+        response = self.client.get(url, {'q': 'sorting.example'})
+        cl = response.context['cl']
+        column = cl.list_display.index('approval_status')
+        for order, expected in ((str(column), [self.candidate.pk, approved.pk]),
+                                (f'-{column}', [approved.pk, self.candidate.pk])):
+            response = self.client.get(url, {'q': 'sorting.example', 'o': order})
+            self.assertEqual([row.pk for row in response.context['cl'].result_list], expected)
+        response = self.client.get(url, {'q': 'sorting.example', 'approval_status': 'pending'})
+        self.assertEqual([row.pk for row in response.context['cl'].result_list], [self.candidate.pk])
 
     def test_exports_contain_selected_records_and_escape_formulas(self):
         self.employer.company_name = '=1+1'

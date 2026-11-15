@@ -309,12 +309,59 @@ from .marketing.bulk_actions import mark_rural,mark_remote,mark_small_city,mark_
 
 from .admin_data import RecordsDataAdmin, EmployerResource, JobSeekerResource, JobResource
 
+class ApprovalStatusFilter(admin.SimpleListFilter):
+    title = "approval status"
+    parameter_name = "approval_status"
+
+    status_options = (("pending", "Pending"), ("approved", "Approved"))
+
+    def lookups(self, request, model_admin):
+        return self.status_options
+
+    def queryset(self, request, queryset):
+        if self.value() in ("pending", "approved"):
+            return queryset.filter(is_approved=self.value() == "approved")
+        return queryset
+
+
+def status_tabs(request, parameter, choices):
+    current = request.GET.get(parameter, "")
+    query = request.GET.copy()
+    query.pop("p", None)
+    tabs = []
+    for value, label in (("", "All"), *choices):
+        if value:
+            query[parameter] = value
+        else:
+            query.pop(parameter, None)
+        tabs.append({"label": label, "url": "?" + query.urlencode(), "current": value == current})
+    return tabs
+
+
+class ApprovalListMixin:
+    @admin.display(description="Approval status", ordering="is_approved")
+    def approval_status(self, obj):
+        return "Approved" if obj.is_approved else "Pending"
+
+    def get_list_display(self, request):
+        columns = super().get_list_display(request)
+        if "approval_status" not in columns:
+            return (*columns[:1], "approval_status", *columns[1:])
+        return columns
+
+    def changelist_view(self, request, extra_context=None):
+        return super().changelist_view(request, extra_context={
+            **(extra_context or {}),
+            "posting_tabs": status_tabs(request, "approval_status", ApprovalStatusFilter.status_options),
+            "status_label": "Approval status",
+        })
+
+
 @admin.register(Employer)
-class EmployerAdmin(ProfileApprovalMixin, RecordSearchMixin, RecordsDataAdmin):
+class EmployerAdmin(ApprovalListMixin, ProfileApprovalMixin, RecordSearchMixin, RecordsDataAdmin):
     resource_classes = [EmployerResource]
     extra_columns = ("name", "phone", "website", "approved_at")
     list_select_related = ('user',)
-    date_hierarchy = "created_at"
 
     inlines = [PurchasedPackageInline]
     actions = [approve_selected_employers,mark_rural,mark_remote,mark_small_city,mark_clinics,mark_hospitals,save_audience]
@@ -332,13 +379,13 @@ class EmployerAdmin(ProfileApprovalMixin, RecordSearchMixin, RecordsDataAdmin):
         "updated_at",
         "credits",
         "profile_completeness",
-        "is_approved",
+        "approval_status",
         "login_active",
         "created_at",
     )
     list_display_links = ("id", "company_name", "email")
-    search_fields = ("company_name", "name", "email", "phone", "website", "location", "user__username", "marketing_profile__tags", "marketing_profile__city")
-    list_filter = ("is_approved", "login_active", EmployerProvinceFilter, EmployerCommunityFilter, EmployerHiringFilter)
+    search_fields = ("company_name", "name", "email", "phone", "website", "location", "user__email", "user__username", "marketing_profile__tags", "marketing_profile__city")
+    list_filter = (ApprovalStatusFilter, "login_active", EmployerProvinceFilter, EmployerCommunityFilter, EmployerHiringFilter)
     # Employers needing approval/reapproval first; newest profile changes first.
     ordering = ("is_approved", "-updated_at", "-id")
 
@@ -471,7 +518,7 @@ class EmployerAdmin(ProfileApprovalMixin, RecordSearchMixin, RecordsDataAdmin):
 
 
 @admin.register(JobSeeker)
-class JobSeekerAdmin(ProfileApprovalMixin, RecordSearchMixin, RecordsDataAdmin):
+class JobSeekerAdmin(ApprovalListMixin, ProfileApprovalMixin, RecordSearchMixin, RecordsDataAdmin):
     resource_classes = [JobSeekerResource]
     extra_columns = ("updated_at", "approved_at", "opportunity_type", "open_to_relocate", "relocate_where", "seeking_immigration")
     readonly_fields = ("review_possible_duplicates",)
@@ -484,7 +531,6 @@ class JobSeekerAdmin(ProfileApprovalMixin, RecordSearchMixin, RecordsDataAdmin):
     )
 
     list_select_related = ('user',)
-    date_hierarchy = "created_at"
 
     actions = [approve_selected_jobseekers]
 
@@ -497,13 +543,13 @@ class JobSeekerAdmin(ProfileApprovalMixin, RecordSearchMixin, RecordsDataAdmin):
         "current_location",
         "registered_in_canada",
         "require_sponsorship",
-        "is_approved",
+        "approval_status",
         "login_active",
         "registered_at",
     )
     list_display_links = ("id", "email", "first_name")
-    search_fields = ("email", "first_name", "last_name", "position_desired", "current_location")
-    list_filter = ("registered_in_canada", "require_sponsorship", "open_to_relocate", "opportunity_type", "is_approved", "login_active")
+    search_fields = ("email", "user__email", "user__username", "first_name", "last_name", "position_desired", "current_location")
+    list_filter = ("registered_in_canada", "require_sponsorship", "open_to_relocate", "opportunity_type", ApprovalStatusFilter, "login_active")
     # Newest signups first; unapproved records win only when timestamps match.
     ordering = ("-created_at", "is_approved", "-id")
 
@@ -601,7 +647,6 @@ class JobAdmin(RecordSearchMixin, RecordsDataAdmin):
     resource_classes = [JobResource]
     extra_columns = ("job_type", "compensation_type", "compensation_min", "compensation_max", "created_at", "updated_at", "views_count")
     list_select_related = ('employer',)
-    date_hierarchy = "posting_date"
 
     actions = [duplicate_selected_jobs]
 
@@ -612,26 +657,37 @@ class JobAdmin(RecordSearchMixin, RecordsDataAdmin):
         "location",
         "posting_date",
         "expiry_date",
-        "is_active",
+        "posting_status",
         "source",
     )
     list_display_links = ("id", "title")
-    search_fields = ("title", "employer__company_name", "employer__name", "employer__email", "location")
+    search_fields = ("title", "employer__company_name", "employer__name", "employer__email", "location", "description")
     list_filter = (JobLifecycleFilter, "is_active", "job_type", "compensation_type", "source", "international_stage", "international_support")
     ordering = ("-posting_date", "-id")
 
+    def get_queryset(self, request):
+        from django.db.models import Case, IntegerField, Value, When
+        return super().get_queryset(request).annotate(
+            _posting_status=Case(
+                When(expiry_date__lt=timezone.localdate(), then=Value(2)),
+                When(is_active=True, then=Value(0)),
+                default=Value(1), output_field=IntegerField(),
+            )
+        )
+
+    @admin.display(description="Posting status", ordering="_posting_status")
+    def posting_status(self, obj):
+        return ("Active", "Inactive / draft", "Expired")[obj._posting_status]
+
+    def get_list_display(self, request):
+        columns = super().get_list_display(request)
+        return columns if "posting_status" in columns else (*columns[:1], "posting_status", *columns[1:])
+
     def changelist_view(self, request, extra_context=None):
-        current = request.GET.get("posting_status", "")
-        filters = request.GET.copy()
-        filters.pop("p", None)
-        tabs = []
-        for value, label in (("", "All"), *JobLifecycleFilter.status_options):
-            if value:
-                filters["posting_status"] = value
-            else:
-                filters.pop("posting_status", None)
-            tabs.append({"label": label, "url": "?" + filters.urlencode(), "current": current == value})
-        return super().changelist_view(request, extra_context={**(extra_context or {}), "posting_tabs": tabs})
+        return super().changelist_view(request, extra_context={
+            **(extra_context or {}),
+            "posting_tabs": status_tabs(request, "posting_status", JobLifecycleFilter.status_options),
+        })
 
     def _duplicate_source(self, request):
         source_id = request.GET.get('duplicate_from')
