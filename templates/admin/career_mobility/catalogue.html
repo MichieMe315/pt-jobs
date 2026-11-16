@@ -38,13 +38,13 @@
     <a class="ops-button" href="?audience={{ audience }}&amp;status=published"{% if status == "published" %} aria-current="page"{% endif %}>Listed products</a>
     <a class="ops-button" href="?audience={{ audience }}&amp;status=draft"{% if status == "draft" %} aria-current="page"{% endif %}>Private drafts · {{ counts.draft }}</a>
   </nav>
-  <form method="get" class="pt-catalogue-filters">
+  <form method="get" class="pt-grid-toolbar pt-operations-toolbar">
     <label>Product name<input name="q" value="{{ q }}" type="search"></label>
     <label>Category<select name="category"><option value="">All categories</option>{% for value in categories %}<option{% if category == value %} selected{% endif %}>{{ value }}</option>{% endfor %}</select></label>
     <input type="hidden" name="audience" value="{{ audience }}">
     <label>Status<select name="status"><option value="all">All statuses</option><option value="draft"{% if status == 'draft' %} selected{% endif %}>Draft</option><option value="published"{% if status == 'published' %} selected{% endif %}>Published</option></select></label>
     <label>Sort<select name="sort">{% for value,label in sorts.items %}<option value="{{ value }}"{% if sort == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
-    <div class="pt-catalogue-actions"><button class="ops-button ops-primary">Apply filters</button><a href="?audience={{ audience }}">Clear</a></div>
+    <div class="pt-catalogue-actions"><button class="ops-button ops-primary">Filter</button><a class="ops-button" href="?audience={{ audience }}">Clear</a></div>
   </form>
   <p>{{ page.paginator.count }} matching product{{ page.paginator.count|pluralize }}</p>
   <div class="pt-catalogue-grid">

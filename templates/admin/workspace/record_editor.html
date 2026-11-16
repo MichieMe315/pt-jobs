@@ -1,6 +1,7 @@
 {% extends "admin/base_site.html" %}
 {% load i18n admin_urls static admin_modify %}
 {% block title %}{{ title }} | PTJC Admin{% endblock %}
+{% block topbar_title %}{{ opts.verbose_name_plural|capfirst }}{% endblock %}
 {% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-form pt-record-editor{% endblock %}
 {% block content_title %}{% endblock %}
 {% block content_subtitle %}{% endblock %}

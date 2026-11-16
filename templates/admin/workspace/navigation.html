@@ -1,6 +1,7 @@
 {% load static %}
 <aside class="pt-sidebar" aria-label="Administration navigation">
 <a class="admin-brand" href="{% url 'admin:index' %}"><span class="brand-badge">PT</span><span>Physiotherapy Jobs Canada<small>Admin</small></span></a>
+<button type="button" class="pt-mobile-nav-button" hidden aria-expanded="false" aria-controls="admin-navigation">Menu</button>
 <div class="pt-sidebar-visible">
 <nav id="admin-navigation">
 {% for section in sections %}

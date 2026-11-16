@@ -1,14 +1,16 @@
 {% extends "admin/change_list.html" %}
-{% block search %}
-{{ block.super }}
-<section style="margin:12px 0;padding:12px 16px;border:1px solid var(--hairline-color);border-radius:8px">
-  <h2>Columns</h2>
-  <form action="{{ column_save_url }}" method="post" style="margin-top:12px">
+{% block column_link %}<button type="button" class="ops-button" hidden data-columns-toggle aria-controls="visible-columns" aria-expanded="false">Columns</button>{% endblock %}
+{% block column_settings %}
+<section id="visible-columns" class="pt-columns" aria-label="Visible columns">
+  <form action="{{ column_save_url }}" method="post">
     {% csrf_token %}
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px">
+    <input type="hidden" name="list_query" value="{{ request.GET.urlencode }}">
+    <fieldset><legend>Visible columns</legend>
+      <div class="pt-column-options">
       {% for name, label, selected in column_options %}{% if name != 'id' %}<label><input type="checkbox" name="columns" value="{{ name }}"{% if selected %} checked{% endif %}> {{ label }}</label>{% endif %}{% endfor %}
-    </div>
-    <p><button type="submit" class="button">Apply columns</button> <button type="submit" name="reset" value="1" class="button">Reset defaults</button></p>
+      </div>
+    </fieldset>
+    <div class="pt-column-actions"><button type="submit" class="ops-button ops-primary">Apply columns</button> <button type="submit" name="reset" value="1" class="ops-button">Reset defaults</button></div>
   </form>
 </section>
 {% endblock %}

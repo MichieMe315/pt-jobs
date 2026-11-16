@@ -4,7 +4,7 @@
 {% block content %}
 <div class="ops-shell">
 <header class="pt-dashboard-heading"><div><h1>Performance Reports</h1><p>Job board activity and sales for {{ start|date:"M j, Y" }}–{{ end|date:"M j, Y" }}.</p></div></header>
-<form method="get" class="ops-panel ops-filters">
+<form method="get" class="pt-grid-toolbar pt-operations-toolbar">
 <div class="ops-field"><label for="report-period">Period</label><select id="report-period" name="period">
 <option value="today"{% if period == 'today' %} selected{% endif %}>Today</option>
 <option value="7"{% if period == '7' %} selected{% endif %}>Last 7 days</option>

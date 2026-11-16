@@ -139,14 +139,23 @@ def workspace_dashboard(context):
     if can_view(user,Invoice):
         paid=Invoice.objects.filter(status='paid',currency='CAD')
         def money(qs):return '${:,.2f}'.format(Decimal(qs.aggregate(total=Sum('amount'))['total'] or 0)/100)
-        daily.append({'label':'Paid sales · CAD','value':money(paid.filter(order_date__date=today))})
-        metrics.append({'kicker':'LAST 30 DAYS','label':'Revenue · CAD','value':money(paid.filter(order_date__date__gte=since)),'url':records('billing','?status=paid&start='+since.isoformat())})
+        paid_today = paid.filter(order_date__date=today)
+        paid_recent = paid.filter(order_date__date__gte=since)
+        def order_count(qs):
+            count = qs.count()
+            return f'{count} paid order' + ('' if count == 1 else 's')
+        daily.append({'label':'Paid sales · CAD','value':money(paid_today),'detail':order_count(paid_today)})
+        metrics.append({'kicker':'LAST 30 DAYS','label':'Revenue · CAD','value':money(paid_recent),'detail':order_count(paid_recent),'url':records('billing','?status=paid&start='+since.isoformat())})
         secondary.append({'label':'Failed payments · 30 days','value':Invoice.objects.filter(status='failed',order_date__date__gte=since).count()})
     attention.extend(quality_cards(context['request']))
     from career_mobility.models import CalculatorUsageEvent
-    quick_links = [item for item in admin_sections(context['request']) if item['label'] in (
-        'Review accounts', 'Digital products', 'Résumé builders', 'Job posting packages', 'Import & Export', 'Email Marketing',
-        'International')]
+    sections = {item['label']: item for section in admin_sections(context['request'])
+                for item in section.get('children', [section])}
+    quick_links = [sections[label] for label in (
+        'Employer Profiles', 'Job Seeker Profiles', 'Resumes', 'Job Postings', 'Applications',
+        'Job Alerts', 'eCommerce', 'Digital products', 'Résumé builders', 'International',
+    ) if label in sections]
+    quick_links.append({'label': 'All administration', 'url': '#admin-directory'})
     if can_view(user, CalculatorUsageEvent):
         from django.urls import NoReverseMatch
         try:
@@ -157,38 +166,3 @@ def workspace_dashboard(context):
         'recent_jobs':Job.objects.select_related('employer').annotate(application_total=Count('applications')).order_by('-posting_date','-pk')[:8] if can_view(user,Job) else None,
         'recent_orders':Invoice.objects.select_related('employer').order_by('-order_date','-pk')[:6] if can_view(user,Invoice) else None,
         'recent_applications':Application.objects.select_related('job','job__employer','jobseeker').order_by('-created_at','-pk')[:6] if can_view(user,Application) else None}
-
-
-@register.inclusion_tag("admin/workspace/home_cards.html", takes_context=True)
-def admin_home_cards(context):
-    """STJC's section layout, using only the PTJC tools the user can access."""
-    from django.urls import reverse
-    from board.admin_workspaces import visible_workspaces
-
-    request = context["request"]
-    sections = admin_sections(request)
-    links = {item["label"]: item for section in sections
-             for item in section.get("children", [section])}
-    for space in visible_workspaces(request.user):
-        for item in space["links"]:
-            links.setdefault(item["label"], item)
-    definitions = (
-        ("Site Settings & Branding", ("Appearance", "Content", "Settings")),
-        ("Registration & Users", ("Listing Fields", "Users and staff access", "Permission groups", "Review accounts")),
-        ("Employers", ("Employer Profiles", "Employer approvals")),
-        ("Job Seekers & Résumés", ("Job Seeker Profiles", "Job seeker approvals", "Resumes", "Résumé builders")),
-        ("Jobs & Applications", ("Job Postings", "Applications", "Job Alerts")),
-        ("Billing & Employer Products", ("Job posting packages", "Purchased packages", "Invoices", "Job posting discount codes", "Paid job publication")),
-        ("Email Campaigns", ("Email Marketing", "Email Templates", "Email Logs")),
-        ("Affiliate Program", ("Affiliates", "Partner applications", "Commissions and payouts")),
-        ("International", ("International", "International profiles", "Signup activity", "Country resources")),
-        ("Digital Products", ("Digital products", "Digital orders", "Discounts and promotions", "Digital checkout status")),
-        ("Migration & Imports", ("Import & Export", "Advanced")),
-        ("Career Tools", ("Calculator usage",)),
-    )
-    cards = []
-    for title, labels in definitions:
-        visible = [links[label] for label in labels if label in links]
-        if visible:
-            cards.append({"title": title, "links": visible})
-    return {"cards": cards, "website_url": reverse("home")}

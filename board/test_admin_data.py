@@ -33,6 +33,19 @@ class AdminDataFlowTests(TestCase):
         page = self.client.get(url)
         self.assertEqual(tuple(page.context['cl'].list_display)[-4:], ('id','approval_status','current_location','registered_at'))
 
+    def test_record_toolbar_preserves_filters_when_columns_change(self):
+        url = reverse('admin:board_employer_changelist')
+        response = self.client.get(url, {'q': 'Example', 'approval_status': 'pending', 'per_page': 25})
+        self.assertContains(response, 'class="pt-grid-toolbar"')
+        self.assertContains(response, 'data-admin-filter')
+        self.assertEqual(response.context['cl'].list_per_page, 25)
+        response = self.client.post(reverse('admin:board_employer_columns'), {
+            'columns': ['company_name', 'email'],
+            'list_query': 'q=Example&approval_status=pending&per_page=25&o=2&p=2',
+        })
+        self.assertRedirects(response, url + '?q=Example&approval_status=pending&per_page=25',
+                             fetch_redirect_response=False)
+
     def test_candidate_account_search_and_approval_sort(self):
         users = get_user_model().objects
         self.person.email = 'pending@sorting.example'

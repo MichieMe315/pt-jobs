@@ -1,6 +1,7 @@
+from django.contrib.admin.views.main import ChangeList
+from django.http import HttpResponseRedirect, QueryDict
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import redirect
 from django.urls import path, reverse
 from django.views.decorators.http import require_POST
 from import_export import formats, resources
@@ -72,11 +73,30 @@ class SafeCSV(formats.base_formats.CSV):
         return super().export_data(Dataset(*rows, headers=dataset.headers), **kwargs)
 
 
+RECORD_PAGE_SIZES = (25, 50, 100)
+
+
+class RecordsChangeList(ChangeList):
+    def get_filters_params(self, params=None):
+        filters = super().get_filters_params(params)
+        filters.pop("per_page", None)
+        return filters
+
+    def get_results(self, request):
+        rows = request.GET.get("per_page")
+        if rows in {str(size) for size in RECORD_PAGE_SIZES}:
+            self.list_per_page = int(rows)
+        return super().get_results(request)
+
+
 class RecordsDataAdmin(ImportExportModelAdmin):
     formats = [SafeCSV]
     change_list_template = 'admin/board/records_change_list.html'
     import_template_name = 'admin/board/records_import.html'
     extra_columns = ()
+
+    def get_changelist(self, request, **kwargs):
+        return RecordsChangeList
 
     def has_import_permission(self, request):
         return self.has_add_permission(request) and self.has_change_permission(request)
@@ -108,7 +128,7 @@ class RecordsDataAdmin(ImportExportModelAdmin):
                     label = name.replace('_', ' ')
             options.append((name, str(label).capitalize(), name in chosen))
         return super().changelist_view(request, extra_context={
-            **(extra_context or {}), 'column_options':options,
+            **(extra_context or {}), 'column_options':options, 'row_sizes':RECORD_PAGE_SIZES,
             'column_save_url':reverse(f'admin:{self.opts.app_label}_{self.opts.model_name}_columns'),
         })
 
@@ -129,4 +149,8 @@ class RecordsDataAdmin(ImportExportModelAdmin):
             selected = set(request.POST.getlist('columns'))
             request.session[key] = ['id', *(x for x in self.available_columns() if x in selected and x != 'id')]
         messages.success(request, 'Columns updated.')
-        return redirect(f'admin:{self.opts.app_label}_{self.opts.model_name}_changelist')
+        url = reverse(f'admin:{self.opts.app_label}_{self.opts.model_name}_changelist')
+        query = QueryDict(request.POST.get('list_query', ''), mutable=True)
+        for key in ('p', 'o', 'all', 'e'):
+            query.pop(key, None)
+        return HttpResponseRedirect(url + ('?' + query.urlencode() if query else ''))

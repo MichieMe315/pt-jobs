@@ -1,0 +1,9 @@
+/* Main dashboard: keep the STJC summary rows above the work queues. */
+#operational-dashboard .pt-primary-metrics{grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr))}
+#operational-dashboard .pt-primary-metrics>a{border-bottom:1px solid var(--line)}
+#operational-dashboard .pt-primary-metrics strong{white-space:normal;overflow-wrap:anywhere}
+#operational-dashboard .pt-mini-metrics{grid-template-columns:repeat(auto-fit,minmax(min(100%,135px),1fr))}
+#operational-dashboard .metric-attention{background:#fff7e6}
+#operational-dashboard .metric-attention:hover{background:#ffeed0}
+#operational-dashboard .pt-dashboard-heading{margin-bottom:16px}
+#admin-directory{margin-top:24px}

@@ -341,7 +341,10 @@ def status_tabs(request, parameter, choices):
 class ApprovalListMixin:
     @admin.display(description="Approval status", ordering="is_approved")
     def approval_status(self, obj):
-        return "Approved" if obj.is_approved else "Pending"
+        from django.utils.html import format_html
+        return format_html('<span class="pt-status {}">{}</span>',
+                           "success" if obj.is_approved else "warning",
+                           "Approved" if obj.is_approved else "Pending")
 
     def get_list_display(self, request):
         columns = super().get_list_display(request)
@@ -349,18 +352,11 @@ class ApprovalListMixin:
             return (*columns[:1], "approval_status", *columns[1:])
         return columns
 
-    def changelist_view(self, request, extra_context=None):
-        return super().changelist_view(request, extra_context={
-            **(extra_context or {}),
-            "posting_tabs": status_tabs(request, "approval_status", ApprovalStatusFilter.status_options),
-            "status_label": "Approval status",
-        })
-
 
 @admin.register(Employer)
 class EmployerAdmin(ApprovalListMixin, ProfileApprovalMixin, RecordSearchMixin, RecordsDataAdmin):
     resource_classes = [EmployerResource]
-    extra_columns = ("name", "phone", "website", "approved_at")
+    extra_columns = ("name", "phone", "website", "approved_at", "marketing_city", "marketing_province", "community_category", "last_payment", "updated_at", "profile_completeness", "login_active")
     list_select_related = ('user',)
 
     inlines = [PurchasedPackageInline]
@@ -371,17 +367,10 @@ class EmployerAdmin(ApprovalListMixin, ProfileApprovalMixin, RecordSearchMixin, 
         "company_name",
         "email",
         "location",
-        "marketing_city",
-        "marketing_province",
-        "community_category",
-        "active_postings",
-        "last_payment",
-        "updated_at",
-        "credits",
-        "profile_completeness",
-        "approval_status",
-        "login_active",
         "created_at",
+        "approval_status",
+        "active_postings",
+        "credits",
     )
     list_display_links = ("id", "company_name", "email")
     search_fields = ("company_name", "name", "email", "phone", "website", "location", "user__email", "user__username", "marketing_profile__tags", "marketing_profile__city")
@@ -413,7 +402,7 @@ class EmployerAdmin(ApprovalListMixin, ProfileApprovalMixin, RecordSearchMixin, 
         ('Contact', {'fields': (('name','email'),('phone','website'))}),
         ('Account and credits', {'fields': ('user',('is_approved','login_active'),'credits','approved_at')}),
         ('Related records', {'fields': ('view_employer_jobs','view_employer_packages','review_possible_duplicates')}),
-        ('Legacy description', {'fields': ('description',), 'classes': ('collapse',)}),
+        ('Legacy description', {'fields': ('description',)}),
     )
 
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
@@ -549,9 +538,9 @@ class JobSeekerAdmin(ApprovalListMixin, ProfileApprovalMixin, RecordSearchMixin,
     )
     list_display_links = ("id", "email", "first_name")
     search_fields = ("email", "user__email", "user__username", "first_name", "last_name", "position_desired", "current_location")
-    list_filter = ("registered_in_canada", "require_sponsorship", "open_to_relocate", "opportunity_type", ApprovalStatusFilter, "login_active")
-    # Newest signups first; unapproved records win only when timestamps match.
-    ordering = ("-created_at", "is_approved", "-id")
+    list_filter = (ApprovalStatusFilter, "registered_in_canada", "require_sponsorship", "open_to_relocate", "opportunity_type", "login_active")
+    # Match the STJC review queue: pending profiles first, newest within each group.
+    ordering = ("is_approved", "-created_at", "-id")
 
     @admin.display(description='Registered', ordering='created_at')
     def registered_at(self, obj):
@@ -642,7 +631,7 @@ class JobAdmin(RecordSearchMixin, RecordsDataAdmin):
         ('Applications', {'fields': ('apply_via','apply_email','apply_url')}),
         ('International candidates', {'fields': (('international_stage','international_support'),)}),
         ('Publication', {'fields': (('posting_date','expiry_date'),('is_active','is_featured'))}),
-        ('Advanced and legacy', {'fields': ('source','views_count','expiry_email_sent'), 'classes': ('collapse',)}),
+        ('Advanced and legacy', {'fields': ('source','views_count','expiry_email_sent')}),
     )
     resource_classes = [JobResource]
     extra_columns = ("job_type", "compensation_type", "compensation_min", "compensation_max", "created_at", "updated_at", "views_count")
@@ -848,7 +837,7 @@ class ResumeAdmin(RecordSearchMixin, admin.ModelAdmin):
 @admin.register(PostingPackage)
 class PostingPackageAdmin(RecordSearchMixin, admin.ModelAdmin):
     change_form_template = 'admin/workspace/record_editor.html'
-    fieldsets = (('Package', {'fields': (('name','code'),'description','is_active')}), ('Price and posting credits', {'fields': (('price_cents','credits'),('duration_days','package_expires_days'),'allows_featured')}), ('Advanced', {'fields': ('price','is_featured','priority_level','order'), 'classes': ('collapse',)}))
+    fieldsets = (('Package', {'fields': (('name','code'),'description','is_active')}), ('Price and posting credits', {'fields': (('price_cents','credits'),('duration_days','package_expires_days'),'allows_featured')}), ('Advanced', {'fields': ('price','is_featured','priority_level','order')}))
 
     def get_list_display(self, request):
         base = [

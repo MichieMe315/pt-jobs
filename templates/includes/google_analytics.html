@@ -1,0 +1,12 @@
+{% if sitesettings.google_analytics_id and request.resolver_match.url_name != 'password_reset_confirm' and request.resolver_match.url_name != 'mobility_international_password_reset_confirm' and request.resolver_match.url_name != 'mobility_verify_email' %}
+<script async src="https://www.googletagmanager.com/gtag/js?id={{ sitesettings.google_analytics_id|urlencode }}"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '{{ sitesettings.google_analytics_id|escapejs }}', {
+  page_location: window.location.origin + window.location.pathname,
+  page_referrer: document.referrer ? new URL(document.referrer).origin : ''
+});
+</script>
+{% endif %}

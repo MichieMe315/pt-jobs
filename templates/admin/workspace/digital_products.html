@@ -1,5 +1,6 @@
 {% extends "admin/base_site.html" %}{% load static %}
 {% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'career_mobility/admin-product.css' %}?v=58">{% endblock %}
+{% block topbar_title %}Digital products{% endblock %}
 {% block content_title %}{% endblock %}
 {% block content %}
 <div class="ops-shell digital-admin">
@@ -12,10 +13,10 @@
   {% if product_page != None %}
   <section aria-labelledby="manage-products-title">
     <h2 id="manage-products-title">Manage products</h2>
-    <form method="get" class="digital-admin-filters">
+    <form method="get" class="digital-admin-filters pt-grid-toolbar pt-operations-toolbar">
       <label>Find a product<input type="search" name="q" value="{{ search }}" placeholder="Name, slug or category"></label>
       <label>Visibility<select name="status"><option value="live"{% if state == 'live' %} selected{% endif %}>Live in store</option><option value="draft"{% if state == 'draft' %} selected{% endif %}>Private drafts</option><option value="all"{% if state == 'all' %} selected{% endif %}>All records</option></select></label>
-      <button class="product-button product-primary" type="submit">Find products</button>
+      <button class="product-button product-primary" type="submit">Filter</button><a class="ops-button" href="{{ request.path }}">Clear</a>
       {% if can_add_product %}<a class="product-button" href="{% url 'admin:career_mobility_digitalproduct_add' %}">Add product</a>{% endif %}
       {% if can_reorder %}<a class="product-button" href="{% url 'admin:career_mobility_digitalproduct_order' %}">Reorder storefront</a>{% endif %}
       <a class="product-button" href="{% url 'admin:career_mobility_digitalproduct_allowances' %}">Starter allowances</a>

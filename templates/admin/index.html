@@ -1,5 +1,7 @@
 {% extends 'admin/base_site.html' %}
-{% load admin_workspace %}
+{% load admin_workspace static %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'board/admin-dashboard.css' %}">{% endblock %}
+{% block topbar_title %}{% if app_label %}{{ title }}{% else %}Dashboard{% endif %}{% endblock %}
 {% block content_title %}{% endblock %}
 {% block content %}
 <div class="ops-shell">
@@ -7,11 +9,10 @@
     <h1>{{ title }}</h1>
     {% include 'admin/workspace/model_directory.html' %}
   {% else %}
-    {% admin_home_cards %}
     <section id="operational-dashboard" aria-label="Operational dashboard">{% workspace_dashboard %}</section>
-    <section class="native-admin">
+    <section class="native-admin" id="admin-directory">
       <h2>All Administration</h2>
-      {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
+      {% include "admin/workspace/model_directory.html" %}
     </section>
   {% endif %}
 </div>

@@ -1,9 +1,7 @@
-{% load i18n %}
-<section>
-<h3>{% blocktranslate with filter_title=title %}By {{ filter_title }}{% endblocktranslate %}</h3>
-<ul>
-{% for choice in choices %}
-<li{% if choice.selected %} class="selected"{% endif %}><a href="{{ choice.query_string|iriencode }}"{% if choice.selected %} aria-current="true"{% endif %}>{{ choice.display }}</a></li>
-{% endfor %}
-</ul>
-</section>
+<label class="pt-filter-select" hidden>
+  <span>{{ title|capfirst }}</span>
+  <select data-admin-filter>
+    {% for choice in choices %}<option value="{{ choice.query_string }}"{% if choice.selected %} selected{% endif %}>{{ choice.display }}</option>{% endfor %}
+  </select>
+</label>
+<noscript><div class="pt-filter-links"><strong>{{ title|capfirst }}</strong>{% for choice in choices %} <a href="{{ choice.query_string }}"{% if choice.selected %} aria-current="true"{% endif %}>{{ choice.display }}</a>{% endfor %}</div></noscript>

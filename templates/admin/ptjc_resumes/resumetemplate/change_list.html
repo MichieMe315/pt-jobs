@@ -1,5 +1,6 @@
 {% extends "admin/base_site.html" %}{% load static %}
 {% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'career_mobility/admin-product.css' %}?v=55">{% endblock %}
+{% block topbar_title %}Résumé builders{% endblock %}
 {% block content_title %}{% endblock %}
 {% block content %}
 <header class="pt-dashboard-heading"><div><h1>Résumé builders</h1><p>Manage the builder, designs and PDF access for each audience.</p></div></header>
