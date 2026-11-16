@@ -195,6 +195,7 @@ class Employer(models.Model):
 
 
 class JobSeeker(models.Model):
+    marketing_consent = models.BooleanField(default=False)
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="jobseeker")
 
     email = models.EmailField(blank=True, null=True, default="")
@@ -704,7 +705,8 @@ class JobPublicationRequest(models.Model):
         return f'{self.job_id}: {self.get_status_display()}'
 
 # Marketing organization is kept separate from public employer profile fields.
-from .marketing_models import EmployerMarketingProfile, MarketingSuppression, MarketingAudience, MarketingDraft
+from .marketing_models import (EmployerMarketingProfile, MarketingSuppression, MarketingAudience, MarketingDraft,
+                               CandidateCampaign, CandidateCampaignDelivery)
 
 # Operations features live in their own module but use the board app migrations.
 from .admin_section_models import (AffiliateCommission, AffiliatePartner, AffiliateProgram,

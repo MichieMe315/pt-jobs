@@ -49,7 +49,9 @@ def admin_sections(request):
         sections.append(link("Import & Export", "admin:data_tools"))
     if "listing-fields" in spaces:
         sections.append(link("Listing Fields", "admin:task_workspace", "listing-fields"))
-    if request.user.has_perm("board.view_employer"):
+    if allowed("board.CandidateCampaign"):
+        sections.append(link("Email Marketing", "admin:board_candidatecampaign_changelist"))
+    elif request.user.has_perm("board.view_employer"):
         sections.append(link("Email Marketing", "admin:marketing_contacts"))
     if "affiliates" in spaces:
         sections.append(link("Affiliates", "admin:task_workspace", "affiliates"))

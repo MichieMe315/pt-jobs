@@ -79,3 +79,11 @@
   .pt-grid-toolbar .pt-toolbar-search{max-width:100%;flex-basis:100%}
   .pt-grid-toolbar .pt-rows{margin-inline-start:0}
 }
+
+/* Django's dark button fill and admin link colour must not be combined. */
+#content.admin-content a.button,
+#content.admin-content a.button:visited{color:#fff;background:#3546ba}
+#content.admin-content a.button:hover,
+#content.admin-content a.button:focus-visible{color:#fff;background:#2638a2}
+#content.admin-content .pt-editor-header .object-tools a{color:#171b22;background:#fff;border:1px solid #9ca6b5}
+#content.admin-content .pt-editor-header .object-tools a:hover{color:#2638aa;background:#f0f2ff}

@@ -1,0 +1,17 @@
+{% extends "admin/base_site.html" %}
+{% block topbar_title %}Email Marketing{% endblock %}
+{% block content_title %}{% endblock %}
+{% block content %}
+<div class="ops-shell">
+<header class="pt-dashboard-heading"><div><a href="{% url 'admin:board_candidatecampaign_changelist' %}">← Candidate campaigns</a><h1>{{ campaign.name }}</h1><p>{{ campaign.get_audience_display }}</p></div>
+{% if can_send and not campaign.queued_at %}<a class="ops-button" href="{% url 'admin:board_candidatecampaign_change' campaign.pk %}">Edit draft</a>{% endif %}</header>
+<section class="ops-panel"><h2>{{ campaign.subject }}</h2>{{ campaign.body|linebreaks }}
+<p>Each recipient receives an individual email with an unsubscribe link.</p></section>
+<section class="ops-panel"><h2>Delivery</h2>
+{% if campaign.queued_at %}<ul>{% for label, count in counts %}<li>{{ label }}: {{ count }}</li>{% endfor %}</ul>
+{% if pending and can_send %}<form method="post">{% csrf_token %}<button class="ops-button ops-primary" type="submit" name="action" value="send">Send next 25 emails</button></form>{% endif %}
+{% else %}<p><strong>{{ eligible_count }}</strong> eligible email address{{ eligible_count|pluralize:"es" }}.</p>
+{% if can_send and eligible_count %}<form method="post">{% csrf_token %}<button class="ops-button ops-primary" type="submit" name="action" value="queue">Queue recipients</button></form><p>Queuing locks the draft and selects the recipients. It does not send email.</p>{% endif %}
+{% endif %}</section>
+</div>
+{% endblock %}

@@ -1049,6 +1049,7 @@ def job_duplicate(request: HttpRequest, job_id: int) -> HttpResponse:
         "apply_email": original.apply_email,
         "apply_url": original.apply_url,
         "relocation_assistance": "yes" if bool(original.relocation_assistance) else "no",
+        "international_stage": original.international_stage,
         "expiry_date": max_expiry,
     }
 

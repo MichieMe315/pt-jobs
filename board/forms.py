@@ -55,7 +55,9 @@ class StyledFormMixin:
             w = f.widget
             css = w.attrs.get("class", "")
 
-            if isinstance(w, (forms.Select, forms.SelectMultiple)):
+            if isinstance(w, forms.CheckboxInput):
+                add = "form-check-input"
+            elif isinstance(w, (forms.Select, forms.SelectMultiple)):
                 add = "form-select"
             else:
                 add = "form-control"
@@ -154,6 +156,7 @@ OPPORTUNITY_CHOICES = (
 
 
 class JobSeekerSignUpForm(StyledFormMixin, UserCreationForm):
+    marketing_consent = forms.BooleanField(required=False, label="Email me Physiotherapy Jobs Canada news and career updates")
     first_name = forms.CharField(required=True)
     last_name = forms.CharField(required=True)
     email = forms.EmailField(required=True)
@@ -245,6 +248,7 @@ class JobSeekerSignUpForm(StyledFormMixin, UserCreationForm):
             require_sponsorship=require_sponsorship_bool,
             seeking_immigration=seeking_immigration_bool,
             relocate_where=self.cleaned_data.get("relocate_where") or "",
+            marketing_consent=self.cleaned_data.get("marketing_consent", False),
             is_approved=False,  # Contract: must start unapproved
         )
 
@@ -284,7 +288,42 @@ APPLY_VIA_CHOICES = (
 YES_NO_SELECT = (("yes", "Yes"), ("no", "No"))
 
 
-class JobForm(StyledFormMixin, forms.ModelForm):
+class InternationalJobForm(forms.ModelForm):
+    open_to_international = forms.BooleanField(
+        required=False, label="Open to internationally educated candidates",
+        help_text="List this job on International Jobs once it is published.",
+        widget=forms.CheckboxInput(attrs={"data-international-job-opt-in": ""}),
+    )
+    international_stage = forms.ChoiceField(
+        required=False, label="What registration stage can you consider?",
+        choices=[("", "Select a stage")] + list(Job.INTERNATIONAL_STAGE_CHOICES),
+        widget=forms.Select(attrs={"data-international-job-stage": ""}),
+    )
+
+    class Media:
+        js = ("board/international-job-fields.js",)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if "open_to_international" in self.fields:
+            self.initial.setdefault("open_to_international", bool(self.initial.get(
+                "international_stage", self.instance.international_stage)))
+
+    def clean(self):
+        data = super().clean()
+        if not {"open_to_international", "international_stage"} <= self.fields.keys():
+            return data
+        # Preserve the setting on requests from an older job form.
+        if not any(self.add_prefix(key) in self.data for key in ("open_to_international", "international_stage")):
+            data["international_stage"] = self.instance.international_stage
+        elif not data.get("open_to_international"):
+            data["international_stage"] = ""
+        elif not data.get("international_stage") and not self.has_error("international_stage"):
+            self.add_error("international_stage", "Select the registration stage you can consider.")
+        return data
+
+
+class JobForm(StyledFormMixin, InternationalJobForm):
     relocation_assistance = forms.ChoiceField(
         choices=[("", "Select…")] + list(YES_NO_SELECT),
         required=True,
@@ -315,6 +354,8 @@ class JobForm(StyledFormMixin, forms.ModelForm):
             "apply_via",
             "apply_email",
             "apply_url",
+            "open_to_international",
+            "international_stage",
             "expiry_date",
         )
 

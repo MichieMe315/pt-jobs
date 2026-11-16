@@ -1,4 +1,8 @@
 {% extends "admin/workspace/record_editor.html" %}
-{% block object-tools-items %}{% if profile_add_job_url %}<li><a href="{{ profile_add_job_url }}">Add job for this employer</a></li>{% endif %}{{ block.super }}{% endblock %}
+{% block object-tools-items %}
+{% if employer_jobs != None %}<li><a href="#employer-jobs">Jobs</a></li>{% endif %}
+{% if employer_packages != None or employer_invoices != None %}<li><a href="#employer-purchases">Purchases</a></li>{% endif %}{% if profile_add_job_url %}<li><a href="{{ profile_add_job_url }}">Add job for this employer</a></li>{% endif %}{{ block.super }}{% endblock %}
 {% block editor_banner %}{% if profile_needs_approval %}<section class="pt-editor-banner"><strong>Waiting for approval</strong><p>Review the saved profile before approving. To approve with your edits, use Save and approve below.</p><form method="post" action="{{ profile_approve_url }}">{% csrf_token %}<button type="submit" class="button">Approve saved profile</button></form></section>{% endif %}{% endblock %}
 {% block submit_buttons_bottom %}{{ block.super }}{% if profile_needs_approval %}<div class="submit-row"><input type="submit" name="_saveapprove" value="Save and approve"></div>{% endif %}{% endblock %}
+
+{% block after_related_objects %}{{ block.super }}{% include "admin/board/employer_records.html" %}{% endblock %}

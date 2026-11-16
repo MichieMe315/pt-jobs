@@ -1,7 +1,9 @@
+from .international_jobs import job_feed
 from . import catalogue
 from django.urls import path
 from . import views, country_views, planner_views
 urlpatterns=[
+ path("international/jobs/", job_feed, name="mobility_international_jobs"),
  path('resources/mine/',views.resource_library,name='mobility_resource_library'),
  path('resources/payment-confirmation/',views.product_success,name='mobility_product_success'),
  path('international/resources/<slug:slug>/',catalogue.detail,name='mobility_product_detail_legacy'),

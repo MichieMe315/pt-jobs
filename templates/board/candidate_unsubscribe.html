@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Candidate email preferences{% endblock %}
+{% block content %}
+<div class="container py-4">
+<h1>Candidate email preferences</h1>
+{% if invalid %}<p>This unsubscribe link is invalid.</p>
+{% elif done %}<p>You’re unsubscribed from candidate marketing emails.</p>
+{% else %}<p>Stop receiving Physiotherapy Jobs Canada candidate marketing emails.</p>
+<form method="post">{% csrf_token %}<button type="submit" class="btn btn-primary">Unsubscribe</button></form>{% endif %}
+</div>
+{% endblock %}

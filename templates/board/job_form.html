@@ -98,6 +98,17 @@
  </div>
 
  <div class="mb-3">
+ {{ form.open_to_international }} {{ form.open_to_international.label_tag }}
+ <div class="form-text">{{ form.open_to_international.help_text }}</div>
+ {{ form.open_to_international.errors }}
+ </div>
+ <div class="mb-3" data-international-stage-row>
+ {{ form.international_stage.label_tag }} {{ form.international_stage }}
+ {{ form.international_stage.errors }}
+ </div>
+ {{ form.media }}
+
+ <div class="mb-3">
  <label class="form-label">Expiry Date</label>
  <input
  type="date"

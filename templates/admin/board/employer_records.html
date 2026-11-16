@@ -1,0 +1,39 @@
+{% if employer_jobs != None %}
+<section class="pt-editor-section pt-dashboard-panel" id="employer-jobs">
+<header><h2>Jobs · {{ employer_jobs.paginator.count }}</h2></header>
+<div class="pt-dashboard-table-wrap"><table class="pt-dashboard-table">
+<thead><tr><th>Posting</th><th>Status</th><th>Posted</th><th>Expires</th></tr></thead>
+<tbody>{% for job in employer_jobs %}<tr>
+<td><a href="{% url 'admin:board_job_change' job.pk %}">{{ job.title }}</a></td>
+<td>{% if job.is_expired %}Expired{% elif job.is_active %}Published{% else %}Inactive{% endif %}</td>
+<td>{{ job.posting_date|date:"M j, Y" }}</td><td>{{ job.expiry_date|date:"M j, Y"|default:"—" }}</td>
+</tr>{% empty %}<tr><td colspan="4">No jobs for this employer.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% include "admin/board/employer_records_pager.html" with page=employer_jobs links=jobs_links only %}
+</section>
+{% endif %}
+{% if employer_packages != None or employer_invoices != None %}
+<section class="pt-editor-section pt-dashboard-panel" id="employer-purchases">
+<header><h2>Purchases</h2></header>
+{% if employer_packages != None %}
+<div class="pt-dashboard-table-wrap"><table class="pt-dashboard-table">
+<caption>Purchased packages</caption><thead><tr><th>Package</th><th>Purchased</th><th>Credits left</th><th>Expires</th></tr></thead>
+<tbody>{% for purchase in employer_packages %}<tr>
+<td><a href="{% url 'admin:board_purchasedpackage_change' purchase.pk %}">{{ purchase.package }}</a></td>
+<td>{{ purchase.purchased_at|date:"M j, Y" }}</td><td>{{ purchase.credits_remaining }} / {{ purchase.credits_granted }}</td>
+<td>{{ purchase.expires_at|date:"M j, Y"|default:"—" }}</td>
+</tr>{% empty %}<tr><td colspan="4">No purchased packages.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% include "admin/board/employer_records_pager.html" with page=employer_packages links=package_links only %}
+{% endif %}
+{% if employer_invoices != None %}
+<div class="pt-dashboard-table-wrap"><table class="pt-dashboard-table">
+<caption>Invoices</caption><thead><tr><th>Invoice</th><th>Date</th><th>Status</th><th>Amount</th></tr></thead>
+<tbody>{% for invoice in employer_invoices %}<tr><td><a href="{% url 'admin:board_invoice_change' invoice.pk %}">Invoice #{{ invoice.pk }}</a></td>
+<td>{{ invoice.order_date|date:"M j, Y" }}</td><td>{{ invoice.get_status_display }}</td><td>{{ invoice.amount_display }} {{ invoice.currency }}</td>
+</tr>{% empty %}<tr><td colspan="4">No invoices.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% include "admin/board/employer_records_pager.html" with page=employer_invoices links=invoice_links only %}
+{% endif %}
+</section>
+{% endif %}

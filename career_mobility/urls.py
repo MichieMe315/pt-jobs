@@ -1,3 +1,4 @@
+from .international_jobs import job_feed
 from . import catalogue
 from .research_library import library as research_library
 from django.urls import path
@@ -7,6 +8,7 @@ from .usage import record_usage
 from .relocation_pdf import relocation_comparison_pdf
 from .salary_save import save_salary_comparison, load_salary_comparison
 urlpatterns=[
+ path("international/jobs/", job_feed, name="mobility_international_jobs"),
  path('resources/mine/',views.resource_library,name='mobility_resource_library'),
  path('resources/payment-confirmation/',views.product_success,name='mobility_product_success'),
  path('my-offer-review/',views.offer_review,name='mobility_offer_review'),

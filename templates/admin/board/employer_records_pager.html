@@ -1,0 +1,5 @@
+{% if page.has_other_pages %}<nav class="ops-pager" aria-label="Related records pages">
+{% if links.previous %}<a href="{{ links.previous }}">Previous</a>{% endif %}
+<span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+{% if links.next %}<a href="{{ links.next }}">Next</a>{% endif %}
+</nav>{% endif %}

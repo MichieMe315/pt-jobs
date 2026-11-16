@@ -395,65 +395,54 @@ class EmployerAdmin(ApprovalListMixin, ProfileApprovalMixin, RecordSearchMixin, 
     def last_payment(self,obj):return obj._last_paid
 
     # Buttons
-    readonly_fields = ("view_employer_jobs", "view_employer_packages", "review_possible_duplicates")
+    readonly_fields = ("review_possible_duplicates",)
 
     fieldsets = (
         ('Company profile', {'fields': ('company_name','location','logo','company_description')}),
         ('Contact', {'fields': (('name','email'),('phone','website'))}),
         ('Account and credits', {'fields': ('user',('is_approved','login_active'),'credits','approved_at')}),
-        ('Related records', {'fields': ('view_employer_jobs','view_employer_packages','review_possible_duplicates')}),
+        ('Duplicate review', {'fields': ('review_possible_duplicates',)}),
         ('Legacy description', {'fields': ('description',)}),
     )
 
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
-        from .operations import can_view, record_url
+        from .operations import can_view
         obj = self.get_object(request, object_id) if object_id else None
         context = dict(extra_context or {})
-        groups = []
-        if obj and can_view(request.user, Job):
-            jobs = obj.jobs.order_by('-posting_date','-pk')[:5]
-            groups.append({'title':'Recent postings','empty':'No postings yet.','url':reverse('admin:board_job_changelist')+f'?employer__id__exact={obj.pk}',
-                           'rows':[{'label':j.title,'url':record_url(request,j),'detail':j.location} for j in jobs]})
-        if obj and can_view(request.user, Invoice):
-            invoices = Invoice.objects.filter(employer=obj).order_by('-order_date','-pk')[:5]
-            groups.append({'title':'Recent invoices','empty':'No invoices yet.',
-                           'rows':[{'label':f'Invoice #{i.pk}','url':record_url(request,i),'detail':i.get_status_display()} for i in invoices]})
-        context['related_activity'] = groups
+        if obj:
+            from django.core.paginator import Paginator
+
+            def page(queryset, key):
+                return Paginator(queryset, 20).get_page(request.GET.get(key))
+
+            def pager(current, key, anchor):
+                links = {}
+                for direction, exists, get_number in (
+                    ('previous', current.has_previous, current.previous_page_number),
+                    ('next', current.has_next, current.next_page_number),
+                ):
+                    if exists():
+                        query = request.GET.copy()
+                        query[key] = get_number()
+                        links[direction] = '?' + query.urlencode() + '#' + anchor
+                return links
+
+            if can_view(request.user, Job):
+                jobs = page(obj.jobs.order_by('-posting_date', '-pk'), 'jobs_page')
+                context.update(employer_jobs=jobs, jobs_links=pager(jobs, 'jobs_page', 'employer-jobs'))
+            if can_view(request.user, PurchasedPackage):
+                packages = page(obj.purchases.select_related('package').order_by('-purchased_at', '-pk'), 'packages_page')
+                context.update(employer_packages=packages,
+                               package_links=pager(packages, 'packages_page', 'employer-purchases'))
+            if can_view(request.user, Invoice):
+                invoices = page(Invoice.objects.filter(employer=obj).order_by('-order_date', '-pk'), 'invoices_page')
+                context.update(employer_invoices=invoices,
+                               invoice_links=pager(invoices, 'invoices_page', 'employer-purchases'))
         if obj:
             job_admin = self.admin_site._registry.get(Job)
             if job_admin and job_admin.has_add_permission(request):
                 context['profile_add_job_url'] = reverse('admin:board_job_add') + '?' + urlencode({'employer':obj.pk})
         return super().changeform_view(request,object_id,form_url,context)
-
-    def view_employer_jobs(self, obj):
-        if not obj or not obj.pk:
-            return "-"
-        try:
-            url = reverse("admin:board_job_changelist")
-        except NoReverseMatch:
-            return "-"
-        return format_html(
-            '<a class="button" href="{}?employer__id__exact={}">View Employer Jobs</a>',
-            url,
-            obj.pk,
-        )
-
-    view_employer_jobs.short_description = "Jobs"
-
-    def view_employer_packages(self, obj):
-        if not obj or not obj.pk:
-            return "-"
-        try:
-            url = reverse("admin:board_purchasedpackage_changelist")
-        except NoReverseMatch:
-            return "-"
-        return format_html(
-            '<a class="button" href="{}?employer__id__exact={}">View Employer Packages</a>',
-            url,
-            obj.pk,
-        )
-
-    view_employer_packages.short_description = "Packages"
 
     @admin.display(description='Profile')
     def profile_completeness(self, obj):
@@ -471,7 +460,7 @@ class EmployerAdmin(ApprovalListMixin, ProfileApprovalMixin, RecordSearchMixin, 
         value=obj.email if kind=='employer-email' else obj.company_name
         if not (value or '').strip():return 'Add an email or company name to review matches.'
         url=reverse('admin:operations_duplicates')+'?'+urlencode({'kind':kind,'q':value.strip().lower()})
-        return format_html('<a class="button" href="{}">Review matching profiles</a>',url)
+        return format_html('<a class="ops-button" href="{}">Review matching profiles</a>',url)
 
     def save_model(self, request, obj, form, change):
         """
@@ -539,8 +528,8 @@ class JobSeekerAdmin(ApprovalListMixin, ProfileApprovalMixin, RecordSearchMixin,
     list_display_links = ("id", "email", "first_name")
     search_fields = ("email", "user__email", "user__username", "first_name", "last_name", "position_desired", "current_location")
     list_filter = (ApprovalStatusFilter, "registered_in_canada", "require_sponsorship", "open_to_relocate", "opportunity_type", "login_active")
-    # Match the STJC review queue: pending profiles first, newest within each group.
-    ordering = ("is_approved", "-created_at", "-id")
+    # Signup date is the default regardless of approval status.
+    ordering = ("-created_at", "-id")
 
     @admin.display(description='Registered', ordering='created_at')
     def registered_at(self, obj):
@@ -622,14 +611,18 @@ class JobLifecycleFilter(admin.SimpleListFilter):
         return queryset
 
 
+from .forms import InternationalJobForm
+
+
 @admin.register(Job)
 class JobAdmin(RecordSearchMixin, RecordsDataAdmin):
+    form = InternationalJobForm
     change_form_template = 'admin/board/job/change_form.html'
     fieldsets = (
         ('Posting', {'fields': ('title','employer','location','job_type','description')}),
         ('Compensation and relocation', {'fields': ('compensation_type',('compensation_min','compensation_max'),'relocation_assistance')}),
         ('Applications', {'fields': ('apply_via','apply_email','apply_url')}),
-        ('International candidates', {'fields': (('international_stage','international_support'),)}),
+        ('International candidates', {'fields': ('open_to_international','international_stage')}),
         ('Publication', {'fields': (('posting_date','expiry_date'),('is_active','is_featured'))}),
         ('Advanced and legacy', {'fields': ('source','views_count','expiry_email_sent')}),
     )
@@ -651,7 +644,7 @@ class JobAdmin(RecordSearchMixin, RecordsDataAdmin):
     )
     list_display_links = ("id", "title")
     search_fields = ("title", "employer__company_name", "employer__name", "employer__email", "location", "description")
-    list_filter = (JobLifecycleFilter, "is_active", "job_type", "compensation_type", "source", "international_stage", "international_support")
+    list_filter = (JobLifecycleFilter, "is_active", "job_type", "compensation_type", "source", "international_stage")
     ordering = ("-posting_date", "-id")
 
     def get_queryset(self, request):
@@ -1042,3 +1035,6 @@ install_operations_urls()
 from .marketing import admin_contacts as _marketing_contacts_admin
 
 from . import admin_section_admin  # Register the operations models.
+
+# Register campaign admin before the root URLconf builds admin.site.urls.
+from .marketing import candidates as _candidate_campaign_admin

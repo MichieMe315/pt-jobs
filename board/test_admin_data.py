@@ -46,6 +46,24 @@ class AdminDataFlowTests(TestCase):
         self.assertRedirects(response, url + '?q=Example&approval_status=pending&per_page=25',
                              fetch_redirect_response=False)
 
+    def test_job_seeker_default_order_uses_signup_date_across_statuses(self):
+        from datetime import timedelta
+        from django.utils import timezone
+
+        newest = JobSeeker.objects.create(
+            user=get_user_model().objects.create_user('new-approved-candidate'),
+            first_name='New', is_approved=True,
+        )
+        JobSeeker.objects.filter(pk=self.candidate.pk).update(
+            created_at=timezone.now() - timedelta(days=10), updated_at=timezone.now(),
+        )
+        response = self.client.get(reverse('admin:board_jobseeker_changelist'))
+        self.assertEqual([item.pk for item in response.context['cl'].result_list],
+                         [newest.pk, self.candidate.pk])
+        response = self.client.get(reverse('admin:operations_records', args=['candidates']))
+        self.assertEqual([item['id'] for item in response.context['rows']],
+                         [newest.pk, self.candidate.pk])
+
     def test_candidate_account_search_and_approval_sort(self):
         users = get_user_model().objects
         self.person.email = 'pending@sorting.example'

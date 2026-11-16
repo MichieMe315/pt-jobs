@@ -1,0 +1,9 @@
+{% extends "admin/change_list.html" %}
+{% block topbar_title %}Email Marketing{% endblock %}
+{% block content_title %}
+<header class="pt-dashboard-heading"><div><h1>Email Marketing</h1><p>Draft, preview and deliver emails to candidates who opted in.</p></div>
+{% if perms.board.view_employer %}<a class="ops-button" href="{% url 'admin:marketing_contacts' %}">Employer contacts</a>{% endif %}</header>
+<section class="pt-dashboard-panel pt-today"><header><h2>Candidate audiences</h2></header><div class="pt-mini-metrics">
+{% for label, count in audiences %}<div><strong>{{ count }}</strong><span>{{ label }}</span></div>{% endfor %}
+</div></section>
+{% endblock %}

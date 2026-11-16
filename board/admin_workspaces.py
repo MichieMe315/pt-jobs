@@ -72,6 +72,7 @@ WORKSPACES = {
   ('Source reviews','Review updates before publishing reference data.','career_mobility.DataSourceReview','admin:career_mobility_datasourcereview_changelist',(),''),
  ]),
  'marketing': ('Marketing & website','Manage outreach, email templates and website settings.', [
+  ('Candidate campaigns','Review audiences, draft and deliver candidate email.','board.CandidateCampaign','admin:board_candidatecampaign_changelist',(),''),
   ('Employer contacts','Search employers, organize audiences and prepare outreach.','board.Employer','admin:marketing_contacts',(),''),
   ('Email templates','Edit the templates used by site notifications.','board.EmailTemplate','admin:board_emailtemplate_changelist',(),''),
   ('Website settings','Manage branding, navigation settings and other site defaults.','board.SiteSettings','admin:board_sitesettings_changelist',(),''),

@@ -204,7 +204,7 @@ def records(request,kind):
     if kind not in RECORDS:raise Http404
     model,label,fields,search=RECORDS[kind]
     qs,form=filtered_records(request,kind)
-    default_sort = '-created_at' if kind == 'employers' else '-id'
+    default_sort = '-created_at' if kind in ('employers', 'candidates') else '-id'
     sort = request.GET.get('sort', default_sort)
     if sort not in set(fields) | {'-' + field for field in fields}:
         sort = default_sort

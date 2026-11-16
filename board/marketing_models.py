@@ -49,3 +49,36 @@ class MarketingDraft(models.Model):
     notes=models.TextField(blank=True)
     updated_at=models.DateTimeField(auto_now=True)
     def __str__(self):return self.name
+
+
+class CandidateCampaign(models.Model):
+    AUDIENCES = (
+        ('all', 'All opted-in candidates'),
+        ('jobseekers', 'Canadian job board candidates'),
+        ('international', 'International planner candidates'),
+    )
+    name = models.CharField(max_length=150)
+    audience = models.CharField(max_length=20, choices=AUDIENCES, default='all')
+    subject = models.CharField(max_length=200)
+    body = models.TextField()
+    queued_at = models.DateTimeField(null=True, blank=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at', '-pk']
+
+    def __str__(self):
+        return self.name
+
+
+class CandidateCampaignDelivery(models.Model):
+    campaign = models.ForeignKey(CandidateCampaign, related_name='deliveries', on_delete=models.CASCADE)
+    email = models.EmailField()
+    status = models.CharField(max_length=12, default='pending', choices=[
+        ('pending', 'Pending'), ('sending', 'Sending'), ('sent', 'Sent'),
+        ('failed', 'Failed'), ('skipped', 'No longer eligible'),
+    ])
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['campaign', 'email'], name='unique_candidate_campaign_email')]

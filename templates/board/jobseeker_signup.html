@@ -105,6 +105,11 @@
  </div>
 
  <div class="mb-3">
+ {{ form.marketing_consent }} {{ form.marketing_consent.label_tag }}
+ <div class="form-text">Optional. You can unsubscribe at any time.</div>
+ {{ form.marketing_consent.errors }}
+ </div>
+ <div class="mb-3">
  <label class="form-label" for="{{ form.resume.id_for_label }}">Upload Resume</label>
  {{ form.resume }}{{ form.resume.errors }}
  </div>

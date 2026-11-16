@@ -7,7 +7,7 @@
 <title>{% block title %}{{ title|default:"Administration" }} · Physiotherapy Jobs Canada{% endblock %}</title>
 <link rel="stylesheet" href="{% static 'admin/css/base.css' %}">
 {% block extrastyle %}<link rel="stylesheet" href="{% static 'board/admin-workspace.css' %}"><link rel="stylesheet" href="{% static 'board/admin-shell.css' %}"><link rel="stylesheet" href="{% static 'board/admin-records.css' %}">{% endblock %}
-<link rel="stylesheet" href="{% static 'board/ptjc-operations.css' %}?v=33">
+<link rel="stylesheet" href="{% static 'board/ptjc-operations.css' %}?v=34">
 {% block extrahead %}<script src="{% static 'board/admin-navigation.js' %}" defer></script>{% endblock %}
 </head>
 <body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}" data-admin-utc-offset="{% now 'Z' %}">

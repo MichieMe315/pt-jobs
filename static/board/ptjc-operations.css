@@ -121,3 +121,39 @@ body,body.login{margin:0;background:#fff;color:var(--ink);font:14px/1.45 Inter,u
 .pt-catalogue-product:has(.pt-status.success){border-inline-start:4px solid #319264}
 
 .admin-shell .pt-sidebar-visible{min-height:0;overflow:auto}
+
+/* Pair text and fill on admin controls so the general link rule cannot override one alone. */
+#content.admin-content :is(a.button, .ops-primary, input[type=submit], input[type=button]),
+#content.admin-content .submit-row a:not(.deletelink) {
+  color:#fff!important;background:#3546ba;border-color:#3546ba;
+}
+#content.admin-content :is(a.button, .ops-primary, input[type=submit], input[type=button]):is(:hover,:focus-visible),
+#content.admin-content .submit-row a:not(.deletelink):is(:hover,:focus-visible) {
+  color:#fff!important;background:#2638a2;border-color:#2638a2;
+}
+#content.admin-content .submit-row a.deletelink {color:#fff!important;background:#a52734}
+#content.admin-content .submit-row a.deletelink:is(:hover,:focus-visible) {color:#fff!important;background:#811e28}
+#content.admin-content :is(.paginator,.ops-pager) {
+  color:#293444;background:#fff;flex-wrap:wrap;overflow:visible;
+}
+#content.admin-content :is(.paginator,.ops-pager) a:not(.showall),
+#content.admin-content .paginator .this-page {
+  display:inline-flex;align-items:center;justify-content:center;min-width:32px;
+  min-height:32px;padding:0 7px;box-sizing:border-box;border:1px solid #a6afbd;
+  border-radius:4px;line-height:1.2;text-decoration:none;
+}
+#content.admin-content :is(.paginator,.ops-pager) a:not(.showall) {
+  color:#25349a!important;background:#fff;
+}
+#content.admin-content :is(.paginator,.ops-pager) a:not(.showall):is(:hover,:focus-visible) {
+  color:#fff!important;background:#2638a2;border-color:#2638a2;
+}
+#content.admin-content .paginator .this-page {
+  color:#fff;background:#3546ba;border-color:#3546ba;
+}
+#content.admin-content .paginator a.showall {
+  color:#25349a;background:transparent;text-decoration:underline;
+}
+#content.admin-content :is(a.button,.ops-button,.object-tools a,.paginator a,.ops-pager a,button,input[type=submit]):focus-visible {
+  outline:2px solid #2638a2;outline-offset:2px;
+}

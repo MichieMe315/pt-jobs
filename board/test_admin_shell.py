@@ -171,8 +171,8 @@ class AdminShellTests(TestCase):
     def test_custom_editors_preserve_record_forms_and_related_permissions(self):
         employer_page = self.client.get(reverse('admin:board_employer_change',args=[self.employer.pk]))
         self.assertContains(employer_page,'pt-editor-grid')
-        self.assertContains(employer_page,'Recent postings')
-        self.assertContains(employer_page,'Recent invoices')
+        self.assertContains(employer_page,'id="employer-jobs"')
+        self.assertContains(employer_page,'id="employer-purchases"')
         self.assertContains(employer_page,'Add job for this employer')
         job = self.client.get(reverse('admin:board_job_change',args=[self.job.pk]))
         self.assertContains(job,'International candidates')

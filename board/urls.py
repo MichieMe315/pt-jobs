@@ -1,3 +1,4 @@
+from .marketing import candidates as candidate_marketing
 from . import admin_sections
 # board/urls.py
 from django.contrib.auth import views as auth_views
@@ -7,6 +8,9 @@ from . import views as v
 from .seo_pages import career_hub, career_landing
 
 urlpatterns = [
+    path("candidate-email/unsubscribe/<str:token>/", candidate_marketing.unsubscribe, name="candidate_marketing_unsubscribe"),
+    path("candidate-email/preferences/", candidate_marketing.preferences, name="candidate_marketing_preferences"),
+
     path("pages/<slug:slug>/", admin_sections.website_page, name="website_page"),
     path("affiliates/", admin_sections.affiliate_apply, name="affiliate_apply"),
     path("refer/<slug:code>/", admin_sections.affiliate_link, name="affiliate_link"),
