@@ -557,8 +557,6 @@ def login_view(request: HttpRequest) -> HttpResponse:
                 return redirect("jobseeker_dashboard")
             return redirect("home")
 
-        messages.error(request, "Please correct the errors below.")
-
     return render(request, "board/login.html", {"sitesettings": ss, "form": form})
 
 
@@ -664,15 +662,27 @@ def jobseeker_signup(request: HttpRequest) -> HttpResponse:
     form = JobSeekerSignUpForm(request.POST or None, request.FILES or None)
     from .admin_sections import signup_questions, save_signup
     extra = signup_questions(form, "jobseeker")
-    next_url = request.GET.get("next", "")
+    next_url = request.POST.get("next") or request.GET.get("next", "")
+    if not url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+        next_url = ""
     from ptjc_resumes.offers import signup_pdf_price
-    context = {"sitesettings": ss, "form": form}
+    context = {"sitesettings": ss, "form": form, "next_url": next_url}
     if url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
         context["resume_signup_price"] = signup_pdf_price(next_url, "canadian")
 
     if request.method == "POST" and form.is_valid():
         try:
-            user = save_signup(request, form, extra, allow_referral=False)
+            from urllib.parse import urlsplit
+            from django.db import transaction
+            with transaction.atomic():
+                user = save_signup(request, form, extra, allow_referral=False)
+                resume_claim = reverse("ptjc_canadian_resumes:canadian_claim")
+                saved = None
+                if urlsplit(next_url).path == resume_claim:
+                    from ptjc_resumes.canadian_editor import save_guest_to_account
+                    saved = save_guest_to_account(request, user)
+                    if saved:
+                        next_url = ""
         except IntegrityError:
             # Prevent 500 on duplicate email (show error only on submit)
             form.add_error(
@@ -691,11 +701,9 @@ def jobseeker_signup(request: HttpRequest) -> HttpResponse:
         )
 
         messages.success(request, "Account created. Your job seeker account requires admin approval before login.")
-        if request.GET.get("next") and url_has_allowed_host_and_scheme(
-            request.GET["next"], allowed_hosts={request.get_host()}, require_https=request.is_secure()
-        ):
+        if next_url:
             from urllib.parse import urlencode
-            return redirect(reverse("login") + "?" + urlencode({"next": request.GET["next"]}))
+            return redirect(reverse("login") + "?" + urlencode({"next": next_url}))
         return redirect("login")
 
     return render(request, "board/jobseeker_signup.html", context)
@@ -1509,6 +1517,9 @@ def jobseeker_dashboard(request: HttpRequest) -> HttpResponse:
     if not _enforce_approval_or_logout(request):
         return redirect("login")
 
+    from ptjc_resumes.canadian_editor import KEY as guest_resume_key
+    from ptjc_resumes.models import ResumeDraft
+
     ss = _sitesettings()
     js = request.user.jobseeker
     resumes = Resume.objects.filter(jobseeker=js).order_by("-created_at", "-id")
@@ -1532,6 +1543,10 @@ def jobseeker_dashboard(request: HttpRequest) -> HttpResponse:
         {
             "sitesettings": ss,
             "jobseeker": js,
+            "builder_resumes": ResumeDraft.objects.filter(
+                owner=request.user, template__key="canadian-professional", template__is_enabled=True,
+            ).only("pk", "title", "updated_at").order_by("-updated_at"),
+            "has_guest_resume": bool(request.session.get(guest_resume_key)),
             "resumes": resumes,
             "applications": applications,
             "upload_form": upload_form,

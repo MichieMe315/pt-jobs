@@ -16,7 +16,7 @@ from .ad_context import placement
 from .models import ResumeDraft, ResumeTemplate
 from .offers import LAYOUTS, available_offers, layout_access
 from .pdf import render_pdf
-from .schema import DEFAULT_ORDER, normalize
+from .schema import DEFAULT_ORDER, PROVINCES, REGISTRATION, normalize
 from .specialties import TRACKS
 
 KEY = 'canadian_guest_resume'
@@ -47,6 +47,7 @@ def workspace(request, draft, *, public):
         'claim_url': reverse(NS + 'claim') if public else '',
         'tracks': {k: list(v) for k, v in TRACKS.items()}, 'order': DEFAULT_ORDER,
         'sources': [], 'paid': paid,
+        'registration_provinces': PROVINCES, 'registration_statuses': REGISTRATION,
         'paid_layouts': [] if public else [key for key in LAYOUTS if layout_access(request.user, draft.template, key)],
     }
     template = ResumeTemplate.objects.filter(key='canadian-professional', is_enabled=True).first() if public else draft.template
@@ -129,6 +130,21 @@ def guest_preview(request):
     return response
 
 
+def save_guest_to_account(request, user):
+    """Attach the browser draft to the new account before approval or login."""
+    draft = request.session.get(KEY)
+    if not draft:
+        return None
+    template = ResumeTemplate.objects.filter(key='canadian-professional', is_enabled=True).first()
+    if not template:
+        return None
+    record, _ = ResumeDraft.objects.get_or_create(pk=uuid.UUID(draft['id']), owner=user, defaults={
+        'template': template, 'title': draft['title'], 'data': normalize(draft['data']),
+    })
+    request.session.pop(KEY, None)
+    return record
+
+
 @never_cache
 @canadian.canadian_account
 @require_http_methods(['GET', 'POST'])
@@ -142,8 +158,7 @@ def claim(request):
     existing = ResumeDraft.objects.filter(pk=pk, owner=request.user).exists()
     if not existing and ResumeDraft.objects.filter(owner=request.user, template__key='canadian-professional').count() >= 30:
         return HttpResponse('Delete an unused draft before saving another.', status=400)
-    ResumeDraft.objects.get_or_create(pk=pk, owner=request.user, defaults={
-        'template': canadian.template(), 'title': draft['title'], 'data': normalize(draft['data']),
-    })
-    request.session.pop(KEY, None)
-    return redirect(NS + 'edit', pk=pk)
+    record = save_guest_to_account(request, request.user)
+    if record is None:
+        return HttpResponse('The Canadian resume template is unavailable. Your draft is still in this browser.', status=503)
+    return redirect(NS + 'edit', pk=record.pk)
