@@ -1,0 +1,43 @@
+{% extends "admin/base_site.html" %}
+{% block content_title %}{% endblock %}
+{% block content %}
+<div class="ops-shell pt-task-workspace">
+  <header class="pt-dashboard-heading">
+    <div><h1>International dashboard</h1><p>Review new accounts and manage the International portal.</p></div>
+  </header>
+  {% if counts %}
+  <section class="pt-dashboard-panel">
+    <header><h2>Candidate accounts</h2></header>
+    <div class="pt-mini-metrics">
+      <div><strong>{{ counts.total }}</strong><span>Total accounts</span></div>
+      <div><strong>{{ counts.recent }}</strong><span>New in the last 7 days</span></div>
+      <div><strong>{{ counts.verified }}</strong><span>Email verified</span></div>
+      <div><strong>{{ counts.unverified }}</strong><span>Awaiting email verification</span></div>
+    </div>
+  </section>
+  <section class="pt-dashboard-panel">
+    <header><h2>Recent signups</h2><a href="{% url 'admin:career_mobility_internationalprofile_changelist' %}">Search and sort all profiles</a></header>
+    <div class="pt-dashboard-table-wrap">
+      <table class="pt-dashboard-table">
+        <thead><tr><th scope="col">Account</th><th scope="col">Education country</th><th scope="col">Destination</th><th scope="col">Signed up</th><th scope="col">Email status</th></tr></thead>
+        <tbody>
+          {% for row in signups %}
+          <tr>
+            <td>{% if row.url %}<a href="{{ row.url }}">{{ row.profile.user.email|default:row.profile.user.username }}</a>{% else %}{{ row.profile.user.email|default:row.profile.user.username }}{% endif %}</td>
+            <td>{{ row.profile.country_of_education|default:"—" }}</td>
+            <td>{{ row.profile.destination_province|default:"Undecided" }}</td>
+            <td>{{ row.profile.created_at|date:"M j, Y, g:i A" }}</td>
+            <td>{% if row.profile.email_is_verified %}Verified{% else %}Awaiting verification{% endif %}</td>
+          </tr>
+          {% empty %}<tr><td colspan="5">No International accounts yet.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {% endif %}
+  <section class="pt-workspace-group">
+    <h2>Manage the International portal</h2>
+    {% include "admin/workspace/task_links_grid.html" with links=workspace.links only %}
+  </section>
+</div>
+{% endblock %}

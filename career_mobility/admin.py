@@ -10,9 +10,16 @@ from .store_admin import BundleItemInline
 class InternationalProfileAdmin(admin.ModelAdmin):
     change_form_template = 'admin/workspace/record_editor.html'
     readonly_fields=("email_verified_at","email_verified_address","verification_sent_at")
-    list_display=("user","country_of_education","residence_country","destination_province","application_history","marketing_consent")
+    list_display=("user","country_of_education","residence_country","destination_province","application_history","marketing_consent","verified","created_at")
     list_filter=("country_of_education","residence_country","destination_province","marketing_consent")
-    search_fields=("user__email","user__username")
+    search_fields=("user__email","user__username","user__first_name","user__last_name",
+                   "country_of_education","residence_country","destination_province")
+    list_select_related = ('user',)
+    ordering = ('-created_at', '-pk')
+
+    @admin.display(boolean=True, description="Email verified")
+    def verified(self, obj):
+        return obj.email_is_verified
 
 @admin.register(ReferenceCost)
 class ReferenceCostAdmin(admin.ModelAdmin):

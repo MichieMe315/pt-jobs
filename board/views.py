@@ -425,6 +425,12 @@ def contact(request):
         email = (request.POST.get("email") or "").strip()
         message = (request.POST.get("message") or "").strip()
 
+        from .contact_spam import is_blocked_contact
+        if is_blocked_contact(email, message):
+            return render(request, "board/contact.html", {
+                "error": "Stop spamming contact forms. Get a real job. Your message was not sent.",
+            }, status=400)
+
         # Block common SEO spam contact-form pitches
         spam_phrases = [
             "technical seo",

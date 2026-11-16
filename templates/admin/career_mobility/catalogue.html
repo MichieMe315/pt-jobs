@@ -30,9 +30,9 @@
     <ol>{% for row in live_rows %}{% if row.studio %}{% with p=row.studio.product %}<li>{% if p %}<a href="{% url 'admin:career_mobility_digitalproduct_change' p.pk %}">{{ p.title }}</a>{% else %}{{ row.studio.title }}{% endif %}{% if row.studio.key == 'canadian-resume' or row.studio.key == 'international-resume' %} · Résumé builder{% endif %}</li>{% endwith %}{% else %}<li><a href="{% url 'admin:career_mobility_digitalproduct_change' row.product.pk %}">{{ row.product.title }}</a></li>{% endif %}{% empty %}<li>No public listings.</li>{% endfor %}</ol>
 
   </section>
-  {% if editors %}<details class="pt-catalogue-maintenance"><summary>Online editors and visibility</summary><ul>
+  {% if editors %}<section class="pt-catalogue-maintenance"><h3>Online editors and visibility</h3><ul>
     {% for editor in editors %}<li><a href="{% url 'admin:career_mobility_storefrontstudio_change' editor.pk %}">{{ editor.title }}</a> · {{ editor.status }}{% if editor.linked_product %} · <a href="{% url 'admin:career_mobility_digitalproduct_change' editor.linked_product.pk %}">{{ editor.linked_product.title }}</a>{% endif %} · <a href="{{ editor.href }}" target="_blank" rel="noopener">Open editor ↗</a></li>{% endfor %}
-  </ul></details>{% endif %}
+  </ul></section>{% endif %}
   <nav class="pt-catalogue-actions" aria-label="Product status">
     <a class="ops-button" href="?audience={{ audience }}&amp;status=all"{% if not status %} aria-current="page"{% endif %}>All · {{ counts.total }}</a>
     <a class="ops-button" href="?audience={{ audience }}&amp;status=published"{% if status == "published" %} aria-current="page"{% endif %}>Listed products</a>
@@ -71,10 +71,10 @@
     <span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
     {% if page.has_next %}<a class="ops-button" href="?{{ query }}{% if query %}&amp;{% endif %}page={{ page.next_page_number }}">Next</a>{% endif %}
   </nav>{% endif %}
-  <details class="pt-catalogue-maintenance"><summary>Catalogue tools</summary>
+  <section class="pt-catalogue-maintenance"><h3>Catalogue tools</h3>
     <div class="pt-catalogue-actions"><a href="{% url 'admin:career_mobility_digitalproduct_changelist' %}">Table view</a><a href="{% url 'admin:career_mobility_digitalproduct_duplicates' %}">Review possible duplicate products</a></div>
     {% if can_import_resumes %}<form method="post" action="{% url 'admin:career_mobility_digitalproduct_resume_import' %}">{% csrf_token %}<button class="ops-button">Import résumé packages as drafts</button></form>{% endif %}
     {% if can_import %}<form method="post" action="{% url 'admin:career_mobility_digitalproduct_import' %}">{% csrf_token %}<button class="ops-button">Import older mixed collection as a draft</button></form>{% endif %}
-  </details>
+  </section>
 </div>
 {% endblock %}

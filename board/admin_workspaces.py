@@ -65,6 +65,7 @@ WORKSPACES = {
  ]),
  'international': ('International','Manage the International portal.', [
   ('International profiles','Review candidates and their registration pathway information.','career_mobility.InternationalProfile','admin:career_mobility_internationalprofile_changelist',(),''),
+  ('Signup activity','See when international candidates created accounts.','career_mobility.InternationalActivity','admin:career_mobility_internationalactivity_changelist',(),'?action__exact=account_created'),
   ('Country sponsorships','Publish sponsor placements by country.','career_mobility.InternationalSponsor','admin:career_mobility_internationalsponsor_changelist',(),''),
   ('Résumé and planner ads','Manage the advertising placement for the editors and planner.','ptjc_resumes.ResumeAdPlacement','admin:ptjc_resumes_resumeadplacement_changelist',(),''),
   ('Country resources','Manage the resources associated with each country.','career_mobility.CountryResourceCollection','admin:career_mobility_countryresourcecollection_changelist',(),''),
@@ -106,6 +107,32 @@ def workspace(request, key):
     space=next((row for row in visible_workspaces(request.user) if row['key']==key),None)
     if not space:
         raise PermissionDenied
+    if key == 'international':
+        from career_mobility.models import InternationalProfile
+        from .operations import can_view, queryset_for, record_url
+        from django.db.models import Count, F, Q
+        from django.utils import timezone
+        from datetime import timedelta
+
+        counts, signups = None, None
+        if can_view(request.user, InternationalProfile):
+            profiles = queryset_for(request, InternationalProfile)
+            verified = Q(email_verified_at__isnull=False) & (
+                Q(email_verified_address='') | Q(email_verified_address__iexact=F('user__email'))
+            )
+            counts = profiles.aggregate(
+                total=Count('pk'), verified=Count('pk', filter=verified),
+                recent=Count('pk', filter=Q(created_at__gte=timezone.now() - timedelta(days=7))),
+            )
+            counts['unverified'] = counts['total'] - counts['verified']
+            signups = [
+                {'profile': profile, 'url': record_url(request, profile)}
+                for profile in profiles.select_related('user').order_by('-created_at', '-pk')[:15]
+            ]
+        return render(request, 'admin/workspace/international_dashboard.html', {
+            **admin.site.each_context(request), 'title': 'International dashboard',
+            'workspace': space, 'counts': counts, 'signups': signups,
+        })
     queues=[]
     if key=='people':
         from .operations import can_view, queryset_for, record_url

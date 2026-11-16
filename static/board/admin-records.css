@@ -22,9 +22,9 @@
 #changelist.pt-list-body .pt-list-controls{background:var(--darkened-bg);padding:12px 16px;border-bottom:1px solid var(--hairline-color)}
 #changelist.pt-list-body #toolbar{border:0;padding:0;background:transparent;margin:0 0 .75rem}
 #changelist.pt-list-body #changelist-filter{position:static;float:none;width:auto;margin:0;padding:.65rem 0;flex-wrap:wrap;background:transparent;display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:10px}
-#changelist.pt-list-body #changelist-filter details{min-width:0;margin:0}
+#changelist.pt-list-body #changelist-filter section{min-width:0;margin:0}
 #changelist.pt-list-body #changelist-filter-extra-actions{grid-column:1/-1;display:flex;gap:1rem}
-.pt-list-filters>summary{cursor:pointer;font-weight:650}
+.pt-list-filters>h2{margin:.5rem 0;font-size:1rem}
 .pt-list-table{overflow:auto;min-width:0}
 #changelist.pt-list-body .results{margin:0}
 #changelist.pt-list-body .actions{display:flex;align-items:center;flex-wrap:wrap;gap:.4rem;padding:.7rem .9rem}

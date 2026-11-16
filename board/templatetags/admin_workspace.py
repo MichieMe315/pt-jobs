@@ -157,3 +157,38 @@ def workspace_dashboard(context):
         'recent_jobs':Job.objects.select_related('employer').annotate(application_total=Count('applications')).order_by('-posting_date','-pk')[:8] if can_view(user,Job) else None,
         'recent_orders':Invoice.objects.select_related('employer').order_by('-order_date','-pk')[:6] if can_view(user,Invoice) else None,
         'recent_applications':Application.objects.select_related('job','job__employer','jobseeker').order_by('-created_at','-pk')[:6] if can_view(user,Application) else None}
+
+
+@register.inclusion_tag("admin/workspace/home_cards.html", takes_context=True)
+def admin_home_cards(context):
+    """STJC's section layout, using only the PTJC tools the user can access."""
+    from django.urls import reverse
+    from board.admin_workspaces import visible_workspaces
+
+    request = context["request"]
+    sections = admin_sections(request)
+    links = {item["label"]: item for section in sections
+             for item in section.get("children", [section])}
+    for space in visible_workspaces(request.user):
+        for item in space["links"]:
+            links.setdefault(item["label"], item)
+    definitions = (
+        ("Site Settings & Branding", ("Appearance", "Content", "Settings")),
+        ("Registration & Users", ("Listing Fields", "Users and staff access", "Permission groups", "Review accounts")),
+        ("Employers", ("Employer Profiles", "Employer approvals")),
+        ("Job Seekers & Résumés", ("Job Seeker Profiles", "Job seeker approvals", "Resumes", "Résumé builders")),
+        ("Jobs & Applications", ("Job Postings", "Applications", "Job Alerts")),
+        ("Billing & Employer Products", ("Job posting packages", "Purchased packages", "Invoices", "Job posting discount codes", "Paid job publication")),
+        ("Email Campaigns", ("Email Marketing", "Email Templates", "Email Logs")),
+        ("Affiliate Program", ("Affiliates", "Partner applications", "Commissions and payouts")),
+        ("International", ("International", "International profiles", "Signup activity", "Country resources")),
+        ("Digital Products", ("Digital products", "Digital orders", "Discounts and promotions", "Digital checkout status")),
+        ("Migration & Imports", ("Import & Export", "Advanced")),
+        ("Career Tools", ("Calculator usage",)),
+    )
+    cards = []
+    for title, labels in definitions:
+        visible = [links[label] for label in labels if label in links]
+        if visible:
+            cards.append({"title": title, "links": visible})
+    return {"cards": cards, "website_url": reverse("home")}

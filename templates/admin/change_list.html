@@ -26,14 +26,14 @@
 {% block search %}{% search_form cl %}{% endblock %}
 {% block date_hierarchy %}{% if cl.date_hierarchy %}{% date_hierarchy cl %}{% endif %}{% endblock %}
 {% block filters %}{% if cl.has_filters %}
-<details class="pt-list-filters"{% if cl.has_active_filters %} open{% endif %}><summary>Filters{% if cl.has_active_filters %} · active{% endif %}</summary>
+<section class="pt-list-filters"><h2>Filters</h2>
 <nav id="changelist-filter" aria-label="Filter records">
 {% if cl.is_facets_optional or cl.has_active_filters %}<div id="changelist-filter-extra-actions">
 {% if cl.is_facets_optional %}{% if cl.add_facets %}<a href="{{ cl.remove_facet_link }}">Hide counts</a>{% else %}<a href="{{ cl.add_facet_link }}">Show counts</a>{% endif %}{% endif %}
 {% if cl.has_active_filters %}<a href="{{ cl.clear_all_filters_qs }}">Clear filters</a>{% endif %}</div>{% endif %}
 {% for spec in cl.filter_specs %}{% admin_list_filter cl spec %}{% endfor %}
 </nav>
-</details>
+</section>
 {% endif %}{% endblock %}
 </div>
 <form id="changelist-form" method="post"{% if cl.formset and cl.formset.is_multipart %} enctype="multipart/form-data"{% endif %} novalidate>{% csrf_token %}

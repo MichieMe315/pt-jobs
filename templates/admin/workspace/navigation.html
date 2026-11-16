@@ -1,7 +1,7 @@
 {% load static %}
 <aside class="pt-sidebar" aria-label="Administration navigation">
 <a class="admin-brand" href="{% url 'admin:index' %}"><span class="brand-badge">PT</span><span>Physiotherapy Jobs Canada<small>Admin</small></span></a>
-<details class="pt-sidebar-menu" open><summary>Menu</summary>
+<div class="pt-sidebar-visible">
 <nav id="admin-navigation">
 {% for section in sections %}
 {% if section.children %}
@@ -12,6 +12,6 @@
 <a class="nav-parent{% if section.current %} current{% endif %}" href="{{ section.url }}"{% if section.current %} aria-current="page"{% endif %}>{{ section.label }}</a>
 {% endif %}
 {% endfor %}
-</nav></details>
+</nav></div>
 <div class="sidebar-foot"><a href="{% url 'home' %}" target="_blank" rel="noopener">View website ↗</a><form method="post" action="{% url 'admin:logout' %}">{% csrf_token %}<button type="submit">Sign out</button></form></div>
 </aside>

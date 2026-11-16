@@ -17,9 +17,9 @@ from .models import Employer, JobSeeker, Job, Application, Invoice, JobAlert, Pu
 
 # Keep the familiar admin record types; no user/account types are combined.
 RECORDS = {
- 'employers': (Employer, 'Employers', ['id','company_name','email','location','credits','is_approved','login_active','created_at'], ['company_name','name','email','phone','website','location','user__username']),
- 'candidates': (JobSeeker, 'Job seekers', ['id','first_name','last_name','email','current_location','is_approved','login_active','created_at'], ['first_name','last_name','email','current_location','position_desired','user__username']),
- 'jobs': (Job, 'Job postings', ['id','title','employer__company_name','location','posting_date','expiry_date','is_active'], ['title','employer__company_name','employer__email','location']),
+ 'employers': (Employer, 'Employers', ['id','company_name','email','location','credits','is_approved','login_active','created_at'], ['company_name','name','email','phone','website','location','user__username','user__email']),
+ 'candidates': (JobSeeker, 'Job seekers', ['id','first_name','last_name','email','current_location','is_approved','login_active','created_at'], ['first_name','last_name','email','current_location','position_desired','user__username','user__email']),
+ 'jobs': (Job, 'Job postings', ['id','title','employer__company_name','location','posting_date','expiry_date','is_active'], ['title','description','employer__company_name','employer__name','employer__email','location']),
  'applications': (Application, 'Applications', ['id','job__title','jobseeker__email','created_at'], ['job__title','job__employer__company_name','jobseeker__email','jobseeker__first_name','jobseeker__last_name']),
  'billing': (Invoice, 'Invoices', ['id','employer__company_name','amount','currency','status','processor','order_date'], ['employer__company_name','employer__email','processor_reference','discount_code']),
  'alerts': (JobAlert, 'Job alerts', ['id','email','q','location','active','created_at'], ['email','q','location']),
@@ -168,7 +168,7 @@ def filtered_records(request, kind):
         elif status=='disabled':qs=qs.filter(login_active=False)
     elif kind=='jobs':
         if status=='active':qs=qs.filter(is_active=True).filter(Q(expiry_date__isnull=True)|Q(expiry_date__gte=today))
-        elif status=='inactive':qs=qs.filter(is_active=False)
+        elif status=='inactive':qs=qs.filter(is_active=False).filter(Q(expiry_date__isnull=True)|Q(expiry_date__gte=today))
         elif status=='expired':qs=qs.filter(expiry_date__lt=today)
     elif kind=='billing' and status:qs=qs.filter(status=status)
     elif kind=='alerts' and status:qs=qs.filter(active=status=='active')
@@ -204,8 +204,10 @@ def records(request,kind):
     if kind not in RECORDS:raise Http404
     model,label,fields,search=RECORDS[kind]
     qs,form=filtered_records(request,kind)
-    sort=request.GET.get('sort','-id')
-    if sort not in set(fields)|{'-'+f for f in fields}:sort='-id'
+    default_sort = '-created_at' if kind == 'employers' else '-id'
+    sort = request.GET.get('sort', default_sort)
+    if sort not in set(fields) | {'-' + field for field in fields}:
+        sort = default_sort
     qs=qs.order_by(sort,'-pk')
     if request.GET.get('export')=='csv':
         if form.errors:return HttpResponse('Correct the filters before exporting.',status=400,content_type='text/plain')

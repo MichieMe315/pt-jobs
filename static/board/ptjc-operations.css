@@ -119,3 +119,5 @@ body,body.login{margin:0;background:#fff;color:var(--ink);font:14px/1.45 Inter,u
 .pt-catalogue-product .pt-status{border-radius:999px;padding:.25rem .65rem;background:#fff2ce;color:#704900}
 .pt-catalogue-product .pt-status.success{background:#d9f6e5;color:#175a39}
 .pt-catalogue-product:has(.pt-status.success){border-inline-start:4px solid #319264}
+
+.admin-shell .pt-sidebar-visible{min-height:0;overflow:auto}

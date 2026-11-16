@@ -386,8 +386,8 @@ class EmployerAdmin(ApprovalListMixin, ProfileApprovalMixin, RecordSearchMixin, 
     list_display_links = ("id", "company_name", "email")
     search_fields = ("company_name", "name", "email", "phone", "website", "location", "user__email", "user__username", "marketing_profile__tags", "marketing_profile__city")
     list_filter = (ApprovalStatusFilter, "login_active", EmployerProvinceFilter, EmployerCommunityFilter, EmployerHiringFilter)
-    # Employers needing approval/reapproval first; newest profile changes first.
-    ordering = ("is_approved", "-updated_at", "-id")
+    # Sort by signup date; edits must not bring an older account to the top.
+    ordering = ("-created_at", "-id")
 
     def get_queryset(self,request):
         from .marketing.contacts import annotate_employers

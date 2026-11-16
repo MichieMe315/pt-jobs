@@ -52,6 +52,29 @@ class AdminDataFlowTests(TestCase):
         response = self.client.get(url, {'q': 'sorting.example', 'approval_status': 'pending'})
         self.assertEqual([row.pk for row in response.context['cl'].result_list], [self.candidate.pk])
 
+    def test_employer_lists_show_new_signups_before_recently_edited_old_accounts(self):
+        from datetime import timedelta
+        from django.utils import timezone
+
+        newest = Employer.objects.create(
+            user=get_user_model().objects.create_user('new-employer'),
+            company_name='New Clinic', is_approved=True,
+        )
+        now = timezone.now()
+        Employer.objects.filter(pk=self.employer.pk).update(
+            created_at=now - timedelta(days=5), updated_at=now,
+        )
+        Employer.objects.filter(pk=newest.pk).update(
+            created_at=now - timedelta(days=1), updated_at=now - timedelta(days=1),
+        )
+        page = self.client.get(reverse('admin:board_employer_changelist'))
+        self.assertEqual([obj.pk for obj in page.context['cl'].result_list], [newest.pk, self.employer.pk])
+        url = reverse('admin:operations_records', args=['employers'])
+        page = self.client.get(url)
+        self.assertEqual([row['id'] for row in page.context['rows']], [newest.pk, self.employer.pk])
+        page = self.client.get(url, {'sort': 'created_at'})
+        self.assertEqual([row['id'] for row in page.context['rows']], [self.employer.pk, newest.pk])
+
     def test_exports_contain_selected_records_and_escape_formulas(self):
         self.employer.company_name = '=1+1'
         self.employer.save(update_fields=['company_name'])

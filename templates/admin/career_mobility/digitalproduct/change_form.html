@@ -20,9 +20,9 @@
       <a class="product-button product-primary" href="{% url 'admin:career_mobility_digitalproduct_review' original.pk %}">Preview and files</a>
       {% if original.is_online_builder or original.has_editable_preview %}<a class="product-button" href="{% url 'admin:career_mobility_digitalproduct_demo' original.pk %}" target="_blank" rel="noopener">{% if original.includes_resume_builder %}Open interactive resume builder ↗{% else %}Try editor ↗{% endif %}</a>{% endif %}
       {% if original.is_published %}<a class="product-button" href="{% url 'mobility_product_detail' original.slug %}" target="_blank" rel="noopener">View this product in the shop ↗</a>{% endif %}
-      <details><summary>More actions</summary><div class="product-actions">      <a class="product-button" href="{% url 'admin:career_mobility_digitalproduct_history' original.pk %}">Change history</a>
+      <section><h3>More actions</h3><div class="product-actions">      <a class="product-button" href="{% url 'admin:career_mobility_digitalproduct_history' original.pk %}">Change history</a>
       {% if perms.career_mobility.view_storediscount or perms.career_mobility.change_storediscount %}<a class="product-button" href="{% url 'admin:career_mobility_storediscount_changelist' %}">Manage discounts</a>{% endif %}
-      </div></details>
+      </div></section>
     </div>
   </div>
 </section>
@@ -38,19 +38,19 @@
 </div>
 {% for fieldset in adminform %}
   {% if forloop.counter > 2 %}
-    <details class="pt-editor-section product-edit-details"{% if errors or add %} open{% endif %}>
-      <summary>{{ fieldset.name }}</summary>
-      {% include "admin/includes/fieldset.html" with heading_level=2 prefix="fieldset" id_prefix=0 id_suffix=forloop.counter0 %}</details>
+    <section class="pt-editor-section product-edit-details">
+      <h3>{{ fieldset.name }}</h3>
+      {% include "admin/includes/fieldset.html" with heading_level=2 prefix="fieldset" id_prefix=0 id_suffix=forloop.counter0 %}</section>
   {% endif %}
 {% endfor %}
 {% endblock %}
 {% block inline_field_sets %}
 {% for inline_admin_formset in inline_admin_formsets %}
   {% if inline_admin_formset.opts.verbose_name_plural == 'Additional listing images' %}
-  <details class="pt-editor-section product-edit-details"{% if errors %} open{% endif %}>
-    <summary>Additional listing images</summary>
+  <section class="pt-editor-section product-edit-details">
+    <h3>Additional listing images</h3>
     {% include inline_admin_formset.opts.template %}
-  </details>
+  </section>
   {% else %}
     {% include inline_admin_formset.opts.template %}
   {% endif %}

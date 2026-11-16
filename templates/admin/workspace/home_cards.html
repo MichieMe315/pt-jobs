@@ -1,0 +1,31 @@
+<style>
+.admin-home{max-width:1280px;margin:0 auto;padding:12px 0 32px}
+.admin-hero{background:linear-gradient(135deg,#20252b,#303942);color:#fff;padding:24px 28px;border-radius:12px;margin-bottom:22px}
+.admin-hero h1{margin:0 0 7px;color:#fff}.admin-hero p{margin:0;color:#dfe5ea}
+.quick-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px;margin-bottom:28px}
+.quick-card{border:1px solid #d8dde2;border-radius:10px;background:#fff;padding:18px;box-shadow:0 2px 5px rgba(0,0,0,.04)}
+.quick-card h2{font-size:17px;margin:0 0 10px}.quick-card p{color:#66717b;margin:0 0 12px;font-size:13px}
+.quick-card a{display:block;padding:6px 0;text-decoration:none;font-weight:600}
+.primary-card{border-top:4px solid #d9271c}
+.admin-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}
+.admin-actions a{background:#fff;color:#20252b;padding:8px 13px;border-radius:6px;font-weight:700;text-decoration:none}
+.native-admin{margin-top:28px}.native-admin h2{margin-bottom:14px}
+</style>
+<div class="admin-home">
+  <header class="admin-hero">
+    <h1>Physiotherapy Jobs Canada Administration</h1>
+    <p>Manage registrations, employers, job seekers, jobs, billing and site content.</p>
+    <div class="admin-actions">
+      <a href="#operational-dashboard">Operational Dashboard</a>
+      <a href="{{ website_url }}" target="_blank" rel="noopener">View Website</a>
+    </div>
+  </header>
+  <div class="quick-grid">
+    {% for card in cards %}
+    <section class="quick-card{% if forloop.first %} primary-card{% endif %}">
+      <h2>{{ card.title }}</h2>
+      {% for item in card.links %}<a href="{{ item.url }}">{{ item.label }}</a>{% endfor %}
+    </section>
+    {% endfor %}
+  </div>
+</div>
