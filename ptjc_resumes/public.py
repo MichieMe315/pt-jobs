@@ -64,26 +64,42 @@ def preview(request):
     draft=session_draft(request)
     response=HttpResponse(render_pdf(normalize(draft['data']),preview=True),content_type='application/pdf');response['Cache-Control']='private, no-store';response['Content-Disposition']='inline; filename="resume-preview.pdf"';return response
 
+def save_guest_to_account(request, user):
+    """Copy the browser draft into the owner's account, independent of cookies."""
+    draft = request.session.get(KEY)
+    if not draft:
+        return None
+    template = ResumeTemplate.objects.filter(key='international-professional', is_enabled=True).first()
+    if template is None:
+        return None
+    pk = uuid.UUID(draft['id'])
+    record, _ = ResumeDraft.objects.get_or_create(
+        pk=pk, owner=user,
+        defaults={'template': template, 'title': draft['title'], 'data': normalize(draft['data'])},
+    )
+    request.session.pop(KEY, None)
+    return record
+
+
 @never_cache
 @international_only
 @require_http_methods(['GET','POST'])
 def claim(request):
-    if not request.user.international_pt_profile.email_is_verified:return redirect('mobility_verify_pending')
-    if request.method=='GET':return render(request,'ptjc_resumes/claim.html')
-    draft=request.session.get(KEY)
-    if not draft:return redirect('ptjc_resumes:index')
-    template=ResumeTemplate.objects.filter(key='international-professional',is_enabled=True).first()
-    if not template:return HttpResponse('The resume template is not available yet.',status=503)
-    if ResumeDraft.objects.filter(owner=request.user).count()>=30:return HttpResponse('Delete an unused draft before saving another.',status=400)
+    if not request.user.international_pt_profile.email_is_verified:
+        return redirect('mobility_verify_pending')
+    if request.method == 'GET':
+        return render(request, 'ptjc_resumes/claim.html')
+    draft = request.session.get(KEY)
+    if not draft:
+        return redirect('ptjc_resumes:index')
     from django.db import transaction
     from django.contrib.auth import get_user_model
     with transaction.atomic():
         get_user_model().objects.select_for_update().get(pk=request.user.pk)
-        # A stable public-draft identifier makes claim POST replays idempotent.
-        claimed=request.session.get('claimed_public_resumes',{})
-        pk=claimed.get(draft['id'])
-        record=ResumeDraft.objects.filter(pk=pk,owner=request.user).first() if pk else None
-        if record is None:
-            record,_=ResumeDraft.objects.get_or_create(pk=uuid.UUID(draft['id']),owner=request.user,defaults={'template':template,'title':draft['title'],'data':normalize(draft['data'])})
-        claimed[draft['id']]=str(record.pk);request.session['claimed_public_resumes']=dict(list(claimed.items())[-30:]);request.session.pop(KEY,None)
-    return redirect('ptjc_resumes:edit',pk=record.pk)
+        if (not ResumeDraft.objects.filter(pk=uuid.UUID(draft['id']), owner=request.user).exists()
+                and ResumeDraft.objects.filter(owner=request.user).count() >= 30):
+            return HttpResponse('Delete an unused draft before saving another.', status=400)
+        record = save_guest_to_account(request, request.user)
+    if record is None:
+        return HttpResponse('The resume template is not available yet. Your draft remains in this browser.', status=503)
+    return redirect('ptjc_resumes:edit', pk=record.pk)

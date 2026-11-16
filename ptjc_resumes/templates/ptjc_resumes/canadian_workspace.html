@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block title %}Canadian résumé builder | Physiotherapy Jobs Canada{% endblock %}
-{% block extra_head %}<link rel="stylesheet" href="{% static 'ptjc_resumes/builder.css' %}?v=67">{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'ptjc_resumes/builder.css' %}?v=69">{% endblock %}
 {% block content %}{% if user.jobseeker %}<a class="btn btn-outline-secondary btn-sm mt-3" href="{% url 'jobseeker_dashboard' %}">Back to my job seeker profile</a>{% endif %}
 
 {% include 'ptjc_resumes/_editor_workspace.html' %}{% endblock %}

@@ -16,7 +16,7 @@ from .ad_context import placement
 from .models import ResumeDraft, ResumeTemplate
 from .offers import LAYOUTS, available_offers, layout_access
 from .pdf import render_pdf
-from .schema import DEFAULT_ORDER, PROVINCES, REGISTRATION, normalize
+from .schema import DEFAULT_ORDER, PROVINCES, normalize
 from .specialties import TRACKS
 
 KEY = 'canadian_guest_resume'
@@ -47,7 +47,7 @@ def workspace(request, draft, *, public):
         'claim_url': reverse(NS + 'claim') if public else '',
         'tracks': {k: list(v) for k, v in TRACKS.items()}, 'order': DEFAULT_ORDER,
         'sources': [], 'paid': paid,
-        'registration_provinces': PROVINCES, 'registration_statuses': REGISTRATION,
+        'registration_provinces': PROVINCES,
         'paid_layouts': [] if public else [key for key in LAYOUTS if layout_access(request.user, draft.template, key)],
     }
     template = ResumeTemplate.objects.filter(key='canadian-professional', is_enabled=True).first() if public else draft.template

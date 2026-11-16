@@ -146,10 +146,47 @@ function canadianFields(p){
     p.append(label,select,el('p',cfg.tracks[select.value]?.[1]||cfg.tracks.general[1],'help'));
     field(p,'target_role','Target role (optional)',110);field(p,'extra_heading','Custom section heading (optional)',80);field(p,'extra_text','Custom section content (optional)',1200,'textarea');field(p,'summary','Professional summary',1800,'textarea');
   }
-  if(step===1){field(p,'home_registration','Canadian regulator, class and registration number (if held)',500,'textarea');specialtyPicker(p)}
+  if(step===1){registrationFields(p);specialtyPicker(p)}
   if(step===2)repeat(p,'canadian_experience','Clinical role');
   if(step===3)repeat(p,'education','Qualification');
   if(step===4)repeat(p,'development','Course or certification');
+}
+function registrationText(){
+  if(!cfg.canadian||!data.registration_province)return data.home_registration||'';
+  return [data.registration_province,data.regulator,data.registration_class,
+          data.registration_number?'Registration no. '+data.registration_number:''].filter(Boolean).join(' · ');
+}
+function registrationFields(parent){
+  const box=el('fieldset',undefined,'registration-fields');
+  box.append(el('legend','Canadian physiotherapy registration'));
+  box.append(el('p','If you hold Canadian registration, enter the details exactly as shown on your regulator’s public register. Otherwise leave these fields blank.','help'));
+  const label=el('label','Province or territory of registration'),select=el('select');
+  label.htmlFor=select.id='registration-province';
+  const empty=el('option','Select a province or territory');empty.value='';select.append(empty);
+  for(const name of cfg.registration_provinces||[]){const option=el('option',name);option.value=name;select.append(option);}
+  select.value=data.registration_province||'';
+  select.onchange=()=>{
+    const prior=data.registration_province;
+    data.registration_province=select.value;
+    if(select.value==='Ontario'&&!data.regulator)data.regulator='College of Physiotherapists of Ontario';
+    if(prior==='Ontario'&&select.value!=='Ontario'&&data.regulator==='College of Physiotherapists of Ontario')data.regulator='';
+    renderFields();mark();
+  };
+  box.append(label,select);
+  if(data.registration_province){
+    field(box,'regulator','Regulatory college or authority',160);
+    field(box,'registration_class','Registration class or licence category (optional)',160);
+    field(box,'registration_number','Registration number (optional)',80);
+    if(data.registration_province==='Ontario'){
+      const register=el('a','Check the Ontario public register');
+      register.href='https://portal.collegept.org/public-register/';register.target='_blank';register.rel='noopener';box.append(register);
+    }
+  }else if(data.home_registration){
+    box.append(el('p','Previously saved registration: '+data.home_registration,'help'));
+    const clear=el('button','Remove previously saved registration');clear.type='button';
+    clear.onclick=()=>{data.home_registration='';renderFields();mark()};box.append(clear);
+  }
+  parent.append(box);
 }
 function specialtyPicker(parent){let box=el('fieldset',undefined,'specialty-picker');box.append(el('legend','Clinical interests and experience'));box.append(el('p','Select only areas you can describe from your own experience. These are interests, not specialist credentials.','help'));const options=el('div',undefined,'specialty-options');box.append(options);for(const name of ['Musculoskeletal','Sports rehabilitation','Pelvic health','Paediatrics','Neurological rehabilitation','Vestibular rehabilitation','Concussion rehabilitation','Older adults','Cardiorespiratory','Intensive care','Oncology rehabilitation','Lymphoedema care','Hand therapy','Persistent pain','Post-operative rehabilitation','Amputee rehabilitation','Occupational rehabilitation','Community care','Home care','Adaptive equipment and seating']){let label=el('label'),check=el('input');check.type='checkbox';check.checked=(data.specialties||'').split(', ').includes(name);check.onchange=()=>{let items=(data.specialties||'').split(', ').filter(Boolean).filter(x=>x!==name);if(check.checked)items.push(name);data.specialties=items.join(', ');const custom=box.querySelector('input[type=text]');if(custom)custom.value=data.specialties;mark()};label.append(check,document.createTextNode(name));options.append(label)}field(box,'specialties','Add or edit your clinical interests',600);parent.append(box)}
 function bulletExamples(parent,row){let d=el('details',undefined,'example');d.append(el('summary','Add an example, then make it your own'));for(const text of ['Assessed mobility and functional goals, documented findings and reviewed progress with the care team.','Taught and adapted home exercises to suit patient goals, understanding and available equipment.','Contributed to discharge planning and coordinated follow-up with the multidisciplinary team.','Explained treatment plans and self-management strategies to patients and caregivers.']){let b=el('button',text,'bullet-example');b.type='button';b.onclick=()=>{const next=[row.bullets||'',text].filter(Boolean).join('\n');if(next.length>2500){alertError('This entry has reached its text limit. Edit an existing point first.');return}row.bullets=next;mark();renderFields()};d.append(b)}d.append(el('p','Use an example only if it reflects work you actually did. Replace it with your own wording and details.','help'));parent.append(d)}
@@ -158,6 +195,12 @@ function navigateStep(next) {
   if (!Number.isInteger(next) || next < 0 || next > lastStep || next === step) return;
   step = next;
   renderFields();
+  const heading = $('fields').querySelector('h2');
+  if (heading) {
+    heading.tabIndex = -1;
+    heading.focus({preventScroll: true});
+    heading.scrollIntoView({block: 'start'});
+  }
   const url = cfg.step_urls?.[next];
   if (url) {
     // Browser history limits must not prevent editing a different section.
@@ -174,7 +217,7 @@ function state(text,unsaved=false){$('save-state').textContent=text;$('save-stat
 function field(parent,key,label,max=180,type='text',target=data,help=''){let box=el('div'),id='field-'+key+'-'+Math.random().toString(36).slice(2,8),l=el('label',label);l.htmlFor=id;let input=el(type==='textarea'?'textarea':'input');input.id=id;if(type!=='textarea')input.type=type;input.maxLength=max;const examples={setting:'Example: Outpatient MSK · adults and older adults',bullets:'Example: Assessed mobility and functional goals, documented findings and progressed home exercises under the role’s local scope.',language:'Example: English',proficiency:'Example: Professional working proficiency',evidence:'Example: IELTS Academic · test date · scores (if relevant)',course:'Example: Vestibular rehabilitation course',provider:'Course provider or institution',completed:'Month and year'};if(examples[key])input.placeholder=examples[key];input.value=target[key]||'';if(key==='email')input.autocomplete='email';if(key==='name')input.autocomplete='name';input.addEventListener('input',()=>{target[key]=input.value;mark()});box.append(l,input);if(help)box.append(el('p',help,'help'));parent.append(box);return input}
 function choice(parent,key,label,help=''){let box=el('div'),l=el('label',label),s=el('select');s.id='choice-'+key;l.htmlFor=s.id;let initial=el('option','Choose your current status');initial.value='';s.append(initial);for(let v of cfg.choices[key]){let o=el('option',v);o.value=v;s.append(o)}s.value=data[key]||'';s.onchange=()=>{data[key]=s.value;mark();renderFields()};box.append(l,s);if(help)box.append(el('p',help,'help'));parent.append(box)}
 function example(parent,title,text){let d=el('details',undefined,'example');d.append(el('summary',title),el('p',text));parent.append(d)}
-function repeat(parent,key,label){let rows=data[key]||[];data[key]=rows;rows.forEach((r,i)=>{let section=el('section',undefined,'repeat');section.append(el('h3',label+' '+(i+1)));for(let [k,l,max,t] of groups[key]){field(section,k,l,max,t||'text',r);if(k==='bullets')bulletExamples(section,r);} let tools=el('div',undefined,'repeat-tools');for(let [text,delta] of [['Move up',-1],['Move down',1]]){let b=el('button',text);b.type='button';b.disabled=i+delta<0||i+delta>=rows.length;b.onclick=()=>{[rows[i],rows[i+delta]]=[rows[i+delta],rows[i]];mark();renderFields()};tools.append(b)}let remove=el('button','Remove');remove.type='button';remove.onclick=()=>{if(Object.values(r).some(Boolean)&&!confirm('Remove this entry from the draft?'))return;rows.splice(i,1);mark();renderFields()};tools.append(remove);section.append(tools);parent.append(section)});let add=el('button','+ Add '+label.toLowerCase(),'add');add.type='button';add.disabled=rows.length>=20;add.onclick=()=>{rows.push(Object.fromEntries(groups[key].map(([k])=>[k,''])));mark();renderFields()};parent.append(add)}
+function repeat(parent,key,label){let rows=data[key]||[];data[key]=rows;rows.forEach((r,i)=>{let section=el('section',undefined,'repeat');section.append(el('h3',label+' '+(i+1)));for(let [k,l,max,t] of groups[key]){field(section,k,l,max,t||'text',r);if(k==='bullets')bulletExamples(section,r);} let tools=el('div',undefined,'repeat-tools');for(let [text,delta] of [['Move up',-1],['Move down',1]]){let b=el('button',text);b.type='button';b.disabled=i+delta<0||i+delta>=rows.length;b.onclick=()=>{[rows[i],rows[i+delta]]=[rows[i+delta],rows[i]];renderFields();mark()};tools.append(b)}let remove=el('button','Remove');remove.type='button';remove.onclick=()=>{if(Object.values(r).some(Boolean)&&!confirm('Remove this entry from the draft?'))return;rows.splice(i,1);renderFields();mark()};tools.append(remove);section.append(tools);parent.append(section)});let add=el('button','+ Add '+label.toLowerCase(),'add');add.type='button';add.disabled=rows.length>=20;add.onclick=()=>{rows.push(Object.fromEntries(groups[key].map(([k])=>[k,''])));mark();renderFields()};parent.append(add)}
 let completionErrors=cfg.completion_errors||[];
 function showCompletion(){
   const panel=$('completion');
@@ -196,10 +239,50 @@ if(step===5){example(p,'Keep employment and supervised training separate','A pla
 if(step===6)repeat(p,'development','Course or certification');if(step===7)repeat(p,'languages','Language');
 if(step===8){let l=el('label'),c=el('input');c.type='checkbox';c.checked=!!data.show_availability;c.onchange=()=>{data.show_availability=c.checked;mark()};l.append(c,document.createTextNode('Include availability on my resume'));p.append(l);field(p,'work_authorization','Current work authorization wording (optional)',300,'textarea');field(p,'relocation','Relocation availability or location preferences (optional)',300,'textarea');p.append(el('p','Only enter status you can accurately describe. Leave sensitive immigration identifiers out of the resume.','help'));}
 }
-if(step===lastStep){field(p,'extra_heading','Custom section heading (optional)',80);field(p,'extra_text','Custom section content (optional)',1200,'textarea');for(let [i,key] of data.section_order.entries()){let hasContent=key==='summary'?!!data.summary:key==='status'?lines().length>0:key==='home_registration'?!!data.home_registration:key==='availability'?!!data.show_availability:Array.isArray(data[key])&&data[key].some(r=>Object.values(r).some(Boolean));if(!hasContent)continue;let row=el('div',undefined,'order-row');row.append(el('span',orderNames[key]));let tools=el('div');for(let delta of [-1,1]){let b=el('button',delta<0?'↑':'↓');b.type='button';b.setAttribute('aria-label',(delta<0?'Move up ':'Move down ')+orderNames[key]);b.disabled=i+delta<0||i+delta>=data.section_order.length;b.onclick=()=>{[data.section_order[i],data.section_order[i+delta]]=[data.section_order[i+delta],data.section_order[i]];mark();renderFields()};tools.append(b)}row.append(tools);p.append(row)}p.append(el('p','Check dates, qualifications and registration details. Empty sections are left out. Open the PDF proof to check page breaks.','help'));}
+if(step===lastStep){
+  const order=el('section',undefined,'review-section-order');
+  order.append(el('h3','Arrange résumé sections'));
+  const visible=data.section_order.filter(key=>{
+    if((data.hidden_sections||[]).includes(key))return false;
+    if(key==='summary')return !!data.summary;
+    if(key==='status')return lines().length>0;
+    if(key==='home_registration')return !!registrationText();
+    if(key==='availability')return !!data.show_availability;
+    return Array.isArray(data[key])&&data[key].some(r=>Object.values(r).some(Boolean));
+  });
+  if(!visible.length)order.append(el('p','Sections appear here after you add content.','help'));
+  visible.forEach((key,i)=>{
+    const row=el('div',undefined,'order-row'),tools=el('div',undefined,'repeat-tools');
+    row.append(el('span',orderNames[key]));
+    for(const [label,delta] of [['Move up',-1],['Move down',1]]){
+      const button=el('button',label);
+      button.type='button';
+      button.disabled=i+delta<0||i+delta>=visible.length;
+      button.setAttribute('aria-label',label+' '+orderNames[key]);
+      button.dataset.orderKey=key;
+      button.dataset.direction=String(delta);
+      button.onclick=()=>{
+        const a=data.section_order.indexOf(key), b=data.section_order.indexOf(visible[i+delta]);
+        [data.section_order[a],data.section_order[b]]=[data.section_order[b],data.section_order[a]];
+        renderFields();
+        mark();
+        const moved=$('fields').querySelector('[data-order-key="'+key+'"][data-direction="'+delta+'"]');
+        if(moved&&!moved.disabled)moved.focus();
+      };
+      tools.append(button);
+    }
+    row.append(tools);order.append(row);
+  });
+  p.append(order);
+  const custom=el('section',undefined,'review-custom-section');
+  custom.append(el('h3','Optional custom section'));
+  field(custom,'extra_heading','Custom section heading (optional)',80);
+  field(custom,'extra_text','Custom section content (optional)',1200,'textarea');
+  p.append(custom,el('p','Check dates, qualifications and registration details. Open the PDF proof to check page breaks.','help'));
+}
 showCompletion();const purchasePanel=document.querySelector('.purchase');if(purchasePanel)purchasePanel.hidden=false;$('mobile-section').value=String(step);$('previous').disabled=step===0;$('next').textContent=step===lastStep?'Save draft':'Next section';[...$('steps').children].forEach((b,i)=>{b.classList.toggle('active',i===step);if(i===step)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')});}
 function lines(){let rows=[];if(cfg.canadian)return rows;if(data.destination)rows.push('Intended destination: '+data.destination);if(data.show_assessment_details&&data.pathway&&data.pathway!=='Not selected')rows.push('Assessment route: '+data.pathway);if(data.show_assessment_details&&data.assessment)rows.push('Credential assessment: '+data.assessment+(data.assessment_detail?' — '+data.assessment_detail:''));if(data.show_assessment_details&&data.pathway==='Comparability'&&data.pet&&data.pet!=='Not applicable / not confirmed')rows.push('PET: '+data.pet+(data.pet_detail?' — '+data.pet_detail:''));if(data.show_assessment_details&&data.exam&&data.exam!=='Not applicable / not confirmed')rows.push('Examination: '+data.exam+(data.exam_date?' · '+data.exam_date:'')+(data.exam_detail?' — '+data.exam_detail:''));if(data.canadian_registration)rows.push('Canadian registration: '+(data.canadian_registration==='Registration held — enter exact class and conditions'?[data.regulator,data.registration_class,data.registration_number?'Registration '+data.registration_number:'',data.registration_conditions].filter(Boolean).join(' | '):data.canadian_registration));return rows}
-function preview(){samplePreview();let root=$('resume');root.dataset.audience=cfg.canadian?'canadian':'international';root.dataset.layout=data.layout||'classic';root.dataset.palette=data.palette||'original';root.dataset.typeface=data.typeface||'original';root.style.setProperty('--custom-resume-accent',data.accent_colour||'');const headerColour=data.header_colour||'';root.style.setProperty('--custom-resume-header',headerColour);let headerInk=data.accent_colour||'';if(!headerInk&&/^#[0-9a-f]{6}$/i.test(headerColour)){const [r,g,b]=headerColour.slice(1).match(/../g).map(x=>parseInt(x,16));if(.2126*r+.7152*g+.0722*b<127.5)headerInk='#ffffff'}root.style.setProperty('--custom-resume-header-ink',headerInk);root.replaceChildren(el('h2',data.name||'Your name'));let contact=[data.location,data.email,data.phone,data.profile_url].filter(Boolean).join(' | ');if(contact)root.append(el('p',contact,'meta'));const role=cfg.canadian?data.target_role:data.experience.find(row=>row.role)?.role;if(role)root.append(el('p',role,'resume-role'));if(data.education_country)root.append(el('p','Physiotherapy education: '+data.education_country,'meta'));if(data.specialties)root.append(el('p','Clinical interests: '+data.specialties,'meta'));let nonempty=false,currentKey;const sec=(title,nodes)=>{if(!nodes.length)return;nonempty=true;const section=el('section',undefined,'resume-section');section.dataset.section=currentKey;section.append(el('h3',title),...nodes);root.append(section)};for(let k of data.section_order){if((data.hidden_sections||[]).includes(k))continue;currentKey=k;if(k==='summary'&&data.summary)sec(orderNames[k],[el('p',data.summary)]);if(k==='status')sec(data.show_assessment_details?orderNames[k]:'Canadian registration',lines().map(x=>el('p',x)));if(k==='experience'||k==='canadian_experience'){let nodes=[];for(let r of data[k]){if(!Object.values(r).some(Boolean))continue;nodes.push(el('h4',[r.role,r.employer].filter(Boolean).join(' | ')),el('p',[k==='canadian_experience'?r.location:[r.location,r.country].filter(Boolean).join(', '),r.dates,r.setting].filter(Boolean).join(' · '),'meta'));let ul=el('ul');(r.bullets||'').split('\n').filter(x=>x.trim()).forEach(t=>ul.append(el('li',t.trim().replace(/^[•-]\s*/,''))));nodes.push(ul)}sec(orderNames[k],nodes)}if(k==='education')sec(orderNames[k],data.education.filter(r=>Object.values(r).some(Boolean)).map(r=>el('p',[r.degree,r.institution,r.country,r.completed].filter(Boolean).join(' | '))));if(k==='placements'){let nodes=[];for(let r of data.placements){if(!Object.values(r).some(Boolean))continue;nodes.push(el('h4',[r.institution,r.location,r.country,r.dates].filter(Boolean).join(' | ')));if(r.setting||r.hours)nodes.push(el('p',[r.setting,r.hours?r.hours+' documented supervised hours':''].filter(Boolean).join(' | '),'meta'));if(r.contribution)nodes.push(el('p',r.contribution))}sec(orderNames[k],nodes)}if(k==='home_registration'&&data.home_registration)sec(orderNames[k],[el('p',data.home_registration)]);if(k==='development')sec(orderNames[k],data.development.filter(r=>Object.values(r).some(Boolean)).map(r=>el('p',[r.course,r.provider,r.completed].filter(Boolean).join(' | '))));if(k==='languages')sec(orderNames[k],data.languages.filter(r=>Object.values(r).some(Boolean)).map(r=>el('p',[r.language,r.proficiency,r.evidence].filter(Boolean).join(' | '))));if(k==='availability'&&data.show_availability)sec(orderNames[k],[data.work_authorization?el('p','Work authorization: '+data.work_authorization):null,data.relocation?el('p','Relocation / availability: '+data.relocation):null].filter(Boolean));}if(data.extra_text){currentKey='custom';sec(data.extra_heading||'Additional information',[el('p',data.extra_text)]);}if(!nonempty)root.append(el('p','Add your details to see the resume take shape.','empty'));if(data.portrait){const photo=el('img',undefined,'resume-portrait');photo.src=data.portrait;photo.alt='';photo.style.maxWidth=(data.portrait_size||64)+'px';root.children[0].before(photo);}if(['clinical','editorial','sidebar'].includes(data.layout)){
+function preview(){samplePreview();let root=$('resume');root.dataset.audience=cfg.canadian?'canadian':'international';root.dataset.layout=data.layout||'classic';root.dataset.palette=data.palette||'original';root.dataset.typeface=data.typeface||'original';root.style.setProperty('--custom-resume-accent',data.accent_colour||'');const headerColour=data.header_colour||'';root.style.setProperty('--custom-resume-header',headerColour);let headerInk=data.accent_colour||'';if(!headerInk&&/^#[0-9a-f]{6}$/i.test(headerColour)){const [r,g,b]=headerColour.slice(1).match(/../g).map(x=>parseInt(x,16));if(.2126*r+.7152*g+.0722*b<127.5)headerInk='#ffffff'}root.style.setProperty('--custom-resume-header-ink',headerInk);root.replaceChildren(el('h2',data.name||'Your name'));let contact=[data.location,data.email,data.phone,data.profile_url].filter(Boolean).join(' | ');if(contact)root.append(el('p',contact,'meta'));const role=cfg.canadian?data.target_role:data.experience.find(row=>row.role)?.role;if(role)root.append(el('p',role,'resume-role'));if(data.education_country)root.append(el('p','Physiotherapy education: '+data.education_country,'meta'));if(data.specialties)root.append(el('p','Clinical interests: '+data.specialties,'meta'));let nonempty=false,currentKey;const sec=(title,nodes)=>{if(!nodes.length)return;nonempty=true;const section=el('section',undefined,'resume-section');section.dataset.section=currentKey;section.append(el('h3',title),...nodes);root.append(section)};for(let k of data.section_order){if((data.hidden_sections||[]).includes(k))continue;currentKey=k;if(k==='summary'&&data.summary)sec(orderNames[k],[el('p',data.summary)]);if(k==='status')sec(data.show_assessment_details?orderNames[k]:'Canadian registration',lines().map(x=>el('p',x)));if(k==='experience'||k==='canadian_experience'){let nodes=[];for(let r of data[k]){if(!Object.values(r).some(Boolean))continue;nodes.push(el('h4',[r.role,r.employer].filter(Boolean).join(' | ')),el('p',[k==='canadian_experience'?r.location:[r.location,r.country].filter(Boolean).join(', '),r.dates,r.setting].filter(Boolean).join(' · '),'meta'));let ul=el('ul');(r.bullets||'').split('\n').filter(x=>x.trim()).forEach(t=>ul.append(el('li',t.trim().replace(/^[•-]\s*/,''))));nodes.push(ul)}sec(orderNames[k],nodes)}if(k==='education')sec(orderNames[k],data.education.filter(r=>Object.values(r).some(Boolean)).map(r=>el('p',[r.degree,r.institution,r.country,r.completed].filter(Boolean).join(' | '))));if(k==='placements'){let nodes=[];for(let r of data.placements){if(!Object.values(r).some(Boolean))continue;nodes.push(el('h4',[r.institution,r.location,r.country,r.dates].filter(Boolean).join(' | ')));if(r.setting||r.hours)nodes.push(el('p',[r.setting,r.hours?r.hours+' documented supervised hours':''].filter(Boolean).join(' | '),'meta'));if(r.contribution)nodes.push(el('p',r.contribution))}sec(orderNames[k],nodes)}if(k==='home_registration'&&registrationText())sec(orderNames[k],[el('p',registrationText())]);if(k==='development')sec(orderNames[k],data.development.filter(r=>Object.values(r).some(Boolean)).map(r=>el('p',[r.course,r.provider,r.completed].filter(Boolean).join(' | '))));if(k==='languages')sec(orderNames[k],data.languages.filter(r=>Object.values(r).some(Boolean)).map(r=>el('p',[r.language,r.proficiency,r.evidence].filter(Boolean).join(' | '))));if(k==='availability'&&data.show_availability)sec(orderNames[k],[data.work_authorization?el('p','Work authorization: '+data.work_authorization):null,data.relocation?el('p','Relocation / availability: '+data.relocation):null].filter(Boolean));}if(data.extra_text){currentKey='custom';sec(data.extra_heading||'Additional information',[el('p',data.extra_text)]);}if(!nonempty)root.append(el('p','Add your details to see the resume take shape.','empty'));if(data.portrait){const photo=el('img',undefined,'resume-portrait');photo.src=data.portrait;photo.alt='';photo.style.maxWidth=(data.portrait_size||64)+'px';root.children[0].before(photo);}if(['clinical','editorial','sidebar'].includes(data.layout)){
   const side=el('div',undefined,'resume-sidebar'), content=el('div',undefined,'resume-main'), identity=el('div',undefined,'resume-identity');
   const nameNode=root.querySelector("h2");
   for(const node of [...root.children]){

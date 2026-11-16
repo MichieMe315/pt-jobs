@@ -15,7 +15,7 @@ SOURCES = [
 ]
 PALETTES = ('original', 'slate', 'navy', 'plum', 'grayscale', 'forest', 'teal', 'berry', 'clay', 'cobalt')
 TYPEFACES = ('original', 'serif', 'sans', 'helvetica', 'times', 'mono', 'italic')
-SCALARS = {'palette':12,'typeface':12,'accent_colour':7,'header_colour':7,'extra_heading':80,'extra_text':1200,'name':120,'email':180,'phone':80,'location':180,'profile_url':300,'summary':1800,'education_country':100,'destination':80,'pathway':100,'assessment':100,'assessment_detail':500,'pet':100,'pet_detail':500,'exam':100,'exam_detail':500,'exam_date':10,'canadian_registration':100,'regulator':160,'registration_class':160,'registration_number':80,'registration_conditions':500,'work_authorization':300,'relocation':300,'home_registration':500,'layout':30,'specialties':600,'practice_track':40,'target_role':110}
+SCALARS = {'palette':12,'typeface':12,'accent_colour':7,'header_colour':7,'extra_heading':80,'extra_text':1200,'name':120,'email':180,'phone':80,'location':180,'profile_url':300,'summary':1800,'education_country':100,'destination':80,'pathway':100,'assessment':100,'assessment_detail':500,'pet':100,'pet_detail':500,'exam':100,'exam_detail':500,'exam_date':10,'canadian_registration':100,'registration_province':80,'regulator':160,'registration_class':160,'registration_number':80,'registration_conditions':500,'work_authorization':300,'relocation':300,'home_registration':500,'layout':30,'specialties':600,'practice_track':40,'target_role':110}
 LISTS = {
  'education': {'degree':180,'institution':180,'country':100,'completed':80},
  'experience': {'role':160,'employer':180,'country':100,'location':180,'dates':100,'setting':180,'bullets':2500},
@@ -70,7 +70,7 @@ def normalize(payload):
                 except ValueError: raise ValidationError('Placement hours must be a non-negative documented number.')
             if any(clean.values()):result.append(clean)
         out[key]=result
-    for key,values in [('destination',PROVINCES),('pathway',PATHWAYS),('canadian_registration',REGISTRATION),('assessment',ASSESSMENT),('pet',PET),('exam',EXAM)]:
+    for key,values in [('destination',PROVINCES),('registration_province',PROVINCES),('pathway',PATHWAYS),('canadian_registration',REGISTRATION),('assessment',ASSESSMENT),('pet',PET),('exam',EXAM)]:
         if out[key] and out[key] not in values: raise ValidationError(f'{key}: choose one of the listed options.')
     if out['exam_date']:
         from datetime import date

@@ -320,3 +320,9 @@
 .resume-workspace .purchase .resume-pdf-option + .resume-pdf-option{margin-top:0}
 .resume-workspace .purchase{margin-top:1rem;padding:1rem 0 0}
 .resume-workspace .purchase > h2{margin:0 0 .65rem}
+
+.resume-workspace #fields>h2{scroll-margin-top:6rem}
+.resume-workspace .repeat-tools{display:flex;flex-wrap:wrap;gap:.5rem}
+.resume-workspace .order-row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.5rem}
+.resume-workspace .registration-fields,.resume-workspace .review-section-order,.resume-workspace .review-custom-section{margin-block:1rem}
+.resume-workspace #draft-name-field:not([hidden]){margin-block:1rem}

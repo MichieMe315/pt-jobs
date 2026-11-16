@@ -206,8 +206,16 @@ def render_pdf(d, preview=False, example=False, canadian=False):
                 if detail:parts.append(P(detail,small))
                 if r.get('contribution'):parts.append(P(r['contribution']))
             section('Supervised clinical education',parts)
-        elif key=='home_registration' and d.get('home_registration'):
-            section(column_labels[key],[P(d['home_registration'])],key=key,side_values=[d['home_registration']])
+        elif key=='home_registration':
+            registration = d.get('home_registration', '')
+            if canadian and d.get('registration_province'):
+                number = d.get('registration_number')
+                registration = ' · '.join(value for value in (
+                    d['registration_province'], d.get('regulator'), d.get('registration_class'),
+                    f'Registration no. {number}' if number else '',
+                ) if value)
+            if registration:
+                section(column_labels[key], [P(registration)], key=key, side_values=[registration])
         elif key=='development':
             values = [' · '.join(filter(None,[r.get('course'),r.get('provider'),r.get('completed')])) for r in d.get('development',[])]
             section(column_labels[key],[P(v) for v in values],key=key,side_values=values)

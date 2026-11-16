@@ -195,8 +195,13 @@ def signup(request):
         if key in request.GET:initial[key]=request.GET[key][:100]
     form=InternationalSignupForm(request.POST or None, initial=initial)
     if request.method=="POST" and form.is_valid():
+        from urllib.parse import urlsplit
         with transaction.atomic():
             user=form.save()
+            if urlsplit(next_url).path == reverse('ptjc_resumes:claim'):
+                from ptjc_resumes.public import save_guest_to_account
+                if save_guest_to_account(request, user):
+                    next_url = ''
         login(request,user)
         from .planner_views import apply_pending
         apply_pending(request,user.international_pt_profile,update_answers=False)
