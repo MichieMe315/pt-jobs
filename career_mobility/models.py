@@ -316,7 +316,7 @@ class CalculatorUsageEvent(models.Model):
 
 class InternationalActivity(models.Model):
     ACTIONS = [(x, x.replace('_', ' ').capitalize()) for x in (
-        'account_created', 'signed_in', 'signed_out', 'planner_viewed', 'country_viewed',
+        'account_created', 'signed_in', 'signed_out', 'planner_viewed', 'planner_generated', 'planner_saved', 'country_viewed',
         'resources_viewed', 'dashboard_viewed', 'profile_updated', 'checklist_completed',
         'checklist_reopened', 'checklist_downloaded', 'country_guide_downloaded',
         'checkout_started', 'purchase_confirmed', 'product_downloaded')]
@@ -326,6 +326,7 @@ class InternationalActivity(models.Model):
     education_country = models.CharField(max_length=100, blank=True)
     residence_country = models.CharField(max_length=100, blank=True)
     page_country = models.CharField(max_length=100, blank=True)
+    destination_province = models.CharField(max_length=100, blank=True)
     subject = models.CharField(max_length=160, blank=True)
     visit_hash = models.CharField(max_length=64, blank=True, editable=False)
     event_key = models.CharField(max_length=120, null=True, blank=True, unique=True, editable=False)

@@ -1,4 +1,4 @@
-"""Named international account activity, kept separate from job seeker records."""
+"""International planner and account activity, separate from job seeker records."""
 import logging
 import uuid
 from django.conf import settings
@@ -13,7 +13,8 @@ def enabled():
     return getattr(settings,'INTERNATIONAL_PLANNER_ENABLED',False) or os.environ.get('INTERNATIONAL_PLANNER_ENABLED', '0').lower() in ('1','true','yes')
 
 
-def record(request, action, *, profile=None, page_country='', subject='', event_key=None):
+def record(request, action, *, profile=None, page_country='', subject='', event_key=None,
+           education_country=None, destination_province=''):
     user=getattr(request,'user',None)
     if getattr(user, 'is_staff', False) or (profile and profile.user.is_staff):
         return
@@ -26,7 +27,9 @@ def record(request, action, *, profile=None, page_country='', subject='', event_
         request.session['international_visit'] = str(uuid.uuid4())
     from .geolocation import visitor_country
     values = dict(profile=profile, action=action, visitor_country=visitor_country(request),
-        education_country=profile.country_of_education if profile else '',
+        education_country=(education_country if education_country is not None else
+                           profile.country_of_education if profile else '')[:100],
+        destination_province=destination_province[:100],
         residence_country=profile.residence_country if profile else '',
         page_country=page_country[:100], subject=subject[:160],
         visit_hash=salted_hmac('ptjc.international', request.session['international_visit'], algorithm='sha256').hexdigest())
@@ -39,3 +42,8 @@ def record(request, action, *, profile=None, page_country='', subject='', event_
                 InternationalActivity.objects.create(**values)
     except DatabaseError:
         logging.getLogger(__name__).warning('International activity storage unavailable', exc_info=True)
+
+
+def record_planner_result(request, action, answers):
+    record(request, action, education_country=answers.country_of_education,
+           destination_province=answers.destination_province or 'Undecided')

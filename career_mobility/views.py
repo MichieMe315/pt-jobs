@@ -166,6 +166,7 @@ def international_landing(request):
 def international(request):
     from .countries import COUNTRIES
     from .planning import from_answers
+    from .international_activity import record, record_planner_result
     from .country_content import get_country
     from urllib.parse import urlencode
     profile=getattr(request.user,'international_pt_profile',None)
@@ -174,8 +175,11 @@ def international(request):
     if request.GET.get('build'):
         try:
             answers=from_answers(request.GET);country=get_country(answers.country_of_education)
+            record_planner_result(request, 'planner_generated', answers)
             return redirect(reverse('mobility_country',args=[country['slug']])+'?'+urlencode({k:v for k,v in initial.items() if k!='country'}))
         except ValueError as exc:error=str(exc)
+    if request.method == 'GET' and not error:
+        record(request, 'planner_viewed')
     return render(request,'career_mobility/international.html',{'international_ad':international_placement(),'country_options':COUNTRIES,'provinces':__import__('career_mobility.forms',fromlist=['PROVINCES']).PROVINCES,'answers':initial,'error':error})
 
 def signup(request):

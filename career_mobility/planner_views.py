@@ -5,6 +5,7 @@ from django.views.decorators.http import require_GET,require_POST
 from django.contrib.auth.decorators import login_required
 from .planning import build,from_answers
 from .models import InternationalChecklistItem
+from .international_activity import record_planner_result
 FIELDS=('country_of_education','destination_province','application_history','registered_in_education_country')
 def snapshot(answers):return {f:getattr(answers,f) for f in FIELDS}
 def apply_pending(request,profile,*,update_answers=True):
@@ -24,6 +25,7 @@ def preview(request):
     from django.urls import reverse
     plan['country_url']=reverse('mobility_country',args=[plan['country']['slug']]) if plan['country'] else ''
     plan['signup']=snapshot(profile)
+    record_planner_result(request, 'planner_generated', profile)
     return JsonResponse(plan)
 @require_POST
 def capture(request):
@@ -37,6 +39,7 @@ def capture(request):
     request.session['international_pending']={'answers':snapshot(answers),'completed':completed}
     if profile:
         apply_pending(request,profile)
+        record_planner_result(request, 'planner_saved', answers)
         return redirect('mobility_international_dashboard')
     return redirect('mobility_international_login' if request.POST.get('account_action')=='login' else 'mobility_international_signup')
 @login_required

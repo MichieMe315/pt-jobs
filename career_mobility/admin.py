@@ -452,8 +452,8 @@ from .models import InternationalActivity, CountryResourceCollection
 
 @admin.register(InternationalActivity)
 class InternationalActivityAdmin(admin.ModelAdmin):
-    list_display=('created_at','person','action','visitor_country','education_country','residence_country','page_country','subject')
-    list_filter=('action','visitor_country','education_country','residence_country','page_country','created_at')
+    list_display=('created_at','person','action','visitor_country','education_country','residence_country','destination_province','page_country','subject')
+    list_filter=('action','visitor_country','education_country','residence_country','destination_province','page_country','created_at')
     search_fields=('profile__user__email','profile__user__username','subject')
     date_hierarchy='created_at'
     list_select_related=('profile__user',)
@@ -472,7 +472,27 @@ class InternationalActivityAdmin(admin.ModelAdmin):
         if not self.has_view_permission(request):raise PermissionDenied
         qs=self.get_changelist_instance(request).get_queryset(request)
         totals=qs.aggregate(actions=Count('pk'),accounts=Count('profile_id',distinct=True),signups=Count('pk',filter=Q(action='account_created')),purchases=Count('pk',filter=Q(action='purchase_confirmed')),downloads=Count('pk',filter=Q(action__in=['country_guide_downloaded','product_downloaded','checklist_downloaded'])))
-        return super().changelist_view(request,extra_context={'activity_totals':totals,**(extra_context or {})})
+        totals.update(qs.aggregate(
+            planner_views=Count('pk', filter=Q(action='planner_viewed')),
+            planner_results=Count('pk', filter=Q(action='planner_generated')),
+            guest_results=Count('pk', filter=Q(action='planner_generated', profile__isnull=True)),
+            planner_saves=Count('pk', filter=Q(action='planner_saved')),
+        ))
+        results = qs.filter(action='planner_generated')
+        breakdowns = [
+            (label, results.order_by().values(name).annotate(total=Count('pk')).order_by('-total', name)[:10], name)
+            for label, name in (
+                ('Visitor country (estimated)', 'visitor_country'),
+                ('Country of education', 'education_country'),
+                ('Destination province or territory', 'destination_province'),
+            )
+        ]
+        return super().changelist_view(request, extra_context={
+            'activity_totals': totals,
+            'planner_breakdowns': [(label, [(row[name] or 'Unknown', row['total']) for row in rows])
+                                   for label, rows, name in breakdowns],
+            **(extra_context or {}),
+        })
 
 from .countries import COUNTRIES as EDUCATION_COUNTRIES
 from .country_content import get_country as education_country
