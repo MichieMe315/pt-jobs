@@ -2,7 +2,7 @@
 {% block content %}
 <p><a href="{% url 'admin:career_mobility_digitalproduct_catalogue' %}">← Digital products</a></p>
 <form method="get" class="pt-grid-toolbar pt-operations-toolbar">
-<label>Period <select name="days"><option value="7"{% if days == '7' %} selected{% endif %}>7 days</option><option value="30"{% if days == '30' %} selected{% endif %}>30 days</option><option value="90"{% if days == '90' %} selected{% endif %}>90 days</option></select></label>
+<label>Period <select name="days"><option value="all"{% if days == 'all' %} selected{% endif %}>All time</option><option value="7"{% if days == '7' %} selected{% endif %}>7 days</option><option value="30"{% if days == '30' %} selected{% endif %}>30 days</option><option value="90"{% if days == '90' %} selected{% endif %}>90 days</option></select></label>
 <label>Account <select name="role"><option value="">All accounts</option>{% for key,label in accounts %}<option value="{{ key }}"{% if key == role %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
 <label>Product <select name="product"><option value="">All products</option>{% for p in products %}<option value="{{ p.pk }}"{% if p.pk|stringformat:'s' == selected_product %} selected{% endif %}>{{ p.title }}</option>{% endfor %}</select></label>
 <button type="submit" class="ops-button ops-primary">Filter</button><a class="ops-button" href="{{ request.path }}">Clear</a></form>

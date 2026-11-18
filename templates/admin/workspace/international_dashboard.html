@@ -1,14 +1,101 @@
 {% extends "admin/base_site.html" %}
 {% block topbar_title %}International{% endblock %}
 {% block content_title %}{% endblock %}
+{% block extrastyle %}{{ block.super }}
+<style>
+.pt-international{max-width:1560px;margin:0 auto;box-sizing:border-box}
+.pt-international *{box-sizing:border-box}
+.pt-international .intl-heading,.pt-international .intl-toolbar,.pt-international .intl-panel-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.pt-international .intl-heading{margin-bottom:20px}
+.pt-international h1{margin:0 0 6px;font-size:28px}
+.pt-international h2{margin:0;font-size:18px}
+.pt-international p{margin:6px 0 0}
+.pt-international .intl-toolbar{padding:14px 18px;background:var(--body-bg,#fff);border:1px solid var(--hairline-color,#dce1e8);border-radius:8px;margin-bottom:16px}
+.pt-international .intl-period{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0}
+.pt-international select{min-height:38px;min-width:160px}
+.pt-international .intl-button{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 14px;border:1px solid #344f73;border-radius:5px;background:#244b74!important;color:#fff!important;font-weight:600;text-decoration:none;cursor:pointer;white-space:normal}
+.pt-international .intl-button.secondary{background:var(--body-bg,#fff)!important;color:var(--body-fg,#1d2939)!important;border-color:var(--hairline-color,#c7d0dc)}
+.pt-international .intl-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.pt-international .intl-metric{padding:18px;border:1px solid var(--hairline-color,#dce1e8);border-radius:8px;background:var(--body-bg,#fff);min-width:0}
+.pt-international .intl-metric strong{display:block;font-size:30px;line-height:1.2;margin:8px 0}
+.pt-international .intl-metric span{display:block;font-weight:600}
+.pt-international .intl-note{margin-bottom:20px}
+.pt-international .intl-countries{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:20px}
+.pt-international .intl-panel{border:1px solid var(--hairline-color,#dce1e8);border-radius:8px;background:var(--body-bg,#fff);overflow:hidden;min-width:0;margin-bottom:20px}
+.pt-international .intl-countries .intl-panel{margin:0}
+.pt-international .intl-panel-heading{padding:16px}
+.pt-international .pt-dashboard-table-wrap{width:100%;overflow-x:auto}
+.pt-international table{width:100%;border-collapse:collapse;margin:0}
+.pt-international th,.pt-international td{padding:12px 14px;text-align:left;vertical-align:top;border-bottom:1px solid var(--hairline-color,#dce1e8)}
+.pt-international .intl-number{text-align:right}
+.pt-international .intl-empty{padding:20px 14px}
+.pt-international .intl-management{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 24px;padding:0 18px}
+.pt-international .intl-management a{display:block;padding:16px 0;border-bottom:1px solid var(--hairline-color,#dce1e8);text-decoration:none}
+.pt-international .intl-management strong,.pt-international .intl-management span{display:block}
+.pt-international .intl-management span{margin-top:5px;color:var(--body-fg,#344054);font-weight:400}
+.pt-international .pt-dashboard-panel{margin-bottom:20px}
+.pt-international .pt-dashboard-panel>header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+@media(max-width:1000px){.pt-international .intl-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.pt-international .intl-countries{grid-template-columns:1fr}}
+@media(max-width:600px){.pt-international .intl-management{grid-template-columns:1fr}.pt-international .intl-toolbar{align-items:flex-start}.pt-international h1{font-size:24px}.pt-international .intl-metric{padding:12px}}
+</style>
+{% endblock %}
 {% block content %}
-<div class="ops-shell pt-task-workspace">
-  <header class="pt-dashboard-heading">
-    <div><h1>International dashboard</h1><p>Review new accounts and manage the International portal.</p></div>
+<div class="ops-shell pt-international">
+  <header class="intl-heading">
+    <div><h1>International dashboard</h1><p>Planner activity, visitor countries and candidate accounts.</p></div>
   </header>
+  {% if planner %}
+  <div class="intl-toolbar">
+    <form method="get" class="intl-period">
+      <label for="planner-days"><strong>Reporting period</strong></label>
+      <select id="planner-days" name="days">
+        <option value="all"{% if planner.days == 'all' %} selected{% endif %}>All time</option>
+        <option value="7"{% if planner.days == '7' %} selected{% endif %}>Last 7 days</option>
+        <option value="30"{% if planner.days == '30' %} selected{% endif %}>Last 30 days</option>
+        <option value="90"{% if planner.days == '90' %} selected{% endif %}>Last 90 days</option>
+      </select>
+      <button type="submit" class="intl-button">Apply</button>
+    </form>
+    <a class="intl-button secondary" href="{{ planner.activity_url }}">Search all activity</a>
+  </div>
+  <section aria-label="Planner activity" class="intl-metrics">
+    <div class="intl-metric"><span>Planner page views</span><strong>{{ planner.totals.views }}</strong></div>
+    <div class="intl-metric"><span>Plans generated</span><strong>{{ planner.totals.plans }}</strong></div>
+    <div class="intl-metric"><span>Plans without an account</span><strong>{{ planner.totals.guest_plans }}</strong></div>
+    <div class="intl-metric"><span>New accounts</span><strong>{{ planner.totals.signups }}</strong></div>
+  </section>
+  <p class="intl-note">{% if planner.days == 'all' %}All recorded activity.{% else %}Last {{ planner.days }} days.{% endif %} Plans count even when visitors do not save or register. Counts are actions, not unique people.</p>
+  <div class="intl-countries">
+    {% for group in planner.countries %}
+    <section class="intl-panel">
+      <header class="intl-panel-heading"><h2>{{ group.label }}</h2></header>
+      <div class="pt-dashboard-table-wrap">
+        <table><thead><tr><th scope="col">Top 10 locations</th><th scope="col" class="intl-number">Plans</th></tr></thead>
+          <tbody>{% for row in group.rows %}
+            <tr><th scope="row">{{ row.location }}</th><td class="intl-number">{{ row.total }}</td></tr>
+          {% empty %}<tr><td colspan="2" class="intl-empty">No plans recorded for this period.</td></tr>{% endfor %}</tbody>
+        </table>
+      </div>
+    </section>
+    {% endfor %}
+  </div>
+  <p class="intl-note">Browsing country is an approximate network location. Education country and destination come from planner selections. Unknown means the location was unavailable.</p>
+  <section class="intl-panel">
+    <header class="intl-panel-heading"><h2>Latest activity</h2><a href="{{ planner.activity_url }}">View all activity</a></header>
+    <div class="pt-dashboard-table-wrap">
+      <table><thead><tr><th scope="col">When</th><th scope="col">Activity</th><th scope="col">Account</th><th scope="col">Browsing country</th><th scope="col">Education country</th><th scope="col">Destination</th></tr></thead>
+        <tbody>{% for event in planner.recent %}
+          <tr><td>{{ event.created_at|date:"M j, Y, g:i A" }}</td><td>{{ event.get_action_display }}</td>
+            <td>{% if event.profile_id %}{{ event.profile.user.email|default:event.profile.user.username }}{% else %}No linked account{% endif %}</td>
+            <td>{{ event.visitor_country|default:"Unknown" }}</td><td>{{ event.education_country|default:"—" }}</td><td>{{ event.destination_province|default:"—" }}</td></tr>
+        {% empty %}<tr><td colspan="6" class="intl-empty">No activity recorded for this period. Earlier untracked visits cannot be recovered.</td></tr>{% endfor %}</tbody>
+      </table>
+    </div>
+  </section>
+  {% endif %}
   {% if counts %}
   <section class="pt-dashboard-panel">
-    <header><h2>Candidate accounts</h2></header>
+    <header><h2>Candidate accounts · all time</h2></header>
     <div class="pt-mini-metrics">
       <div><strong>{{ counts.total }}</strong><span>Total accounts</span></div>
       <div><strong>{{ counts.recent }}</strong><span>New in the last 7 days</span></div>
@@ -17,7 +104,7 @@
     </div>
   </section>
   <section class="pt-dashboard-panel">
-    <header><h2>Recent signups</h2><a href="{% url 'admin:career_mobility_internationalprofile_changelist' %}">Search and sort all profiles</a></header>
+    <header><h2>Latest candidate accounts</h2><a href="{% url 'admin:career_mobility_internationalprofile_changelist' %}">Search and sort all profiles</a></header>
     <div class="pt-dashboard-table-wrap">
       <table class="pt-dashboard-table">
         <thead><tr><th scope="col">Account</th><th scope="col">Education country</th><th scope="col">Destination</th><th scope="col">Signed up</th><th scope="col">Email status</th></tr></thead>
@@ -36,9 +123,14 @@
     </div>
   </section>
   {% endif %}
-  <section class="pt-workspace-group">
-    <h2>Manage the International portal</h2>
-    {% include "admin/workspace/task_links_grid.html" with links=workspace.links only %}
+
+  <section class="intl-panel">
+    <header class="intl-panel-heading"><h2>Manage the International portal</h2></header>
+    <nav class="intl-management" aria-label="International management">
+      {% for item in workspace.links %}
+        <a href="{{ item.url }}"><strong>{{ item.label }}</strong><span>{{ item.description }}</span></a>
+      {% endfor %}
+    </nav>
   </section>
 </div>
 {% endblock %}

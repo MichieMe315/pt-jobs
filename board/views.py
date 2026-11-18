@@ -1976,9 +1976,24 @@ def admin_dashboard(request: HttpRequest) -> HttpResponse:
         raise PermissionDenied
 
     today = timezone.localdate()
-    period = request.GET.get("period", "today")
+    period = request.GET.get("period", "all")
 
-    if period == "7":
+    if period == "all":
+        from django.db.models import Min
+        from .operations import can_view
+        earliest = [
+            model.objects.aggregate(first=Min(field))['first']
+            for model, field in ((Job, 'created_at'), (Application, 'created_at'),
+                (Employer, 'created_at'), (JobSeeker, 'created_at'),
+                (JobAlert, 'created_at'), (Invoice, 'order_date'))
+            if can_view(request.user, model)
+        ]
+        start = min([timezone.localtime(value).date() for value in earliest if value] + [today])
+        end = today
+    elif period == "90":
+        start = today - timedelta(days=89)
+        end = today
+    elif period == "7":
         start = today - timedelta(days=6)
         end = today
     elif period == "30":

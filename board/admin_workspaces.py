@@ -65,7 +65,7 @@ WORKSPACES = {
  ]),
  'international': ('International','Manage the International portal.', [
   ('International profiles','Review candidates and their registration pathway information.','career_mobility.InternationalProfile','admin:career_mobility_internationalprofile_changelist',(),''),
-  ('Signup activity','See when international candidates created accounts.','career_mobility.InternationalActivity','admin:career_mobility_internationalactivity_changelist',(),'?action__exact=account_created'),
+  ('Planner and account activity','Search planner visits, countries, signups and downloads.','career_mobility.InternationalActivity','admin:career_mobility_internationalactivity_changelist',(),''),
   ('Country sponsorships','Publish sponsor placements by country.','career_mobility.InternationalSponsor','admin:career_mobility_internationalsponsor_changelist',(),''),
   ('Résumé and planner ads','Manage the advertising placement for the editors and planner.','ptjc_resumes.ResumeAdPlacement','admin:ptjc_resumes_resumeadplacement_changelist',(),''),
   ('Country resources','Manage the resources associated with each country.','career_mobility.CountryResourceCollection','admin:career_mobility_countryresourcecollection_changelist',(),''),
@@ -109,7 +109,7 @@ def workspace(request, key):
     if not space:
         raise PermissionDenied
     if key == 'international':
-        from career_mobility.models import InternationalProfile
+        from career_mobility.models import InternationalProfile, InternationalActivity
         from .operations import can_view, queryset_for, record_url
         from django.db.models import Count, F, Q
         from django.utils import timezone
@@ -130,9 +130,39 @@ def workspace(request, key):
                 {'profile': profile, 'url': record_url(request, profile)}
                 for profile in profiles.select_related('user').order_by('-created_at', '-pk')[:15]
             ]
+        planner = None
+        if can_view(request.user, InternationalActivity):
+            days = request.GET.get('days', 'all')
+            if days not in ('all', '7', '30', '90'):
+                days = 'all'
+            activity = InternationalActivity.objects.all()
+            if days != 'all':
+                activity = activity.filter(created_at__gte=timezone.now() - timedelta(days=int(days)))
+            totals = activity.aggregate(
+                views=Count('pk', filter=Q(action='planner_viewed')),
+                plans=Count('pk', filter=Q(action='planner_generated')),
+                guest_plans=Count('pk', filter=Q(action='planner_generated', profile__isnull=True)),
+                signups=Count('pk', filter=Q(action='account_created')),
+            )
+            generated = activity.filter(action='planner_generated')
+            countries = []
+            for label, field in (
+                ('Browsing country', 'visitor_country'),
+                ('Country of education', 'education_country'),
+                ('Destination province or territory', 'destination_province'),
+            ):
+                rows = generated.order_by().values(field).annotate(
+                    total=Count('pk')).order_by('-total', field)[:10]
+                countries.append({'label': label, 'rows': [
+                    {'location': row[field] or 'Unknown', 'total': row['total']} for row in rows]})
+            planner = {
+                'days': days, 'totals': totals, 'countries': countries,
+                'activity_url': reverse('admin:career_mobility_internationalactivity_changelist'),
+                'recent': activity.select_related('profile__user').order_by('-created_at', '-pk')[:10],
+            }
         return render(request, 'admin/workspace/international_dashboard.html', {
             **admin.site.each_context(request), 'title': 'International dashboard',
-            'workspace': space, 'counts': counts, 'signups': signups,
+            'workspace': space, 'counts': counts, 'signups': signups, 'planner': planner,
         })
     queues=[]
     if key=='people':

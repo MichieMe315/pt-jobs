@@ -338,11 +338,14 @@ def activity_report(request, modeladmin):
 
     if not modeladmin.has_view_permission(request):
         raise PermissionDenied
-    days = request.GET.get('days', '30')
-    days = int(days) if days in ('7', '30', '90') else 30
+    days = request.GET.get('days', 'all')
+    if days not in ('all', '7', '30', '90'):
+        days = 'all'
     product = request.GET.get('product', '')
     role = request.GET.get('role', '')
-    qs = ProductActivity.objects.filter(created_at__gte=timezone.now() - timedelta(days=days))
+    qs = ProductActivity.objects.all()
+    if days != 'all':
+        qs = qs.filter(created_at__gte=timezone.now() - timedelta(days=int(days)))
     if product.isdecimal() and len(product) < 10:
         qs = qs.filter(product_id=int(product))
     if role in dict(ACCOUNTS) or role == 'guest':

@@ -408,9 +408,12 @@ class CalculatorUsageAdmin(admin.ModelAdmin):
         from django.utils import timezone
         if not self.has_view_permission(request):
             raise PermissionDenied
-        all_time = request.GET.get('days') == 'all'
+        period = request.GET.get('days', 'all')
+        if period not in ('all', '1', '7', '30', '90', '365'):
+            period = 'all'
+        all_time = period == 'all'
         try:
-            days = int(request.GET.get('days', '30'))
+            days = int(period)
         except (TypeError, ValueError):
             days = 30
         if days not in (1, 7, 30, 90, 365):

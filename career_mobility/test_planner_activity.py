@@ -42,3 +42,36 @@ class PlannerActivityTests(TestCase):
         self.assertFalse(InternationalActivity.objects.exists())
         self.assertEqual(self.client.get(url, self.answers).status_code, 200)
         self.assertEqual(InternationalActivity.objects.filter(action='planner_generated').count(), 1)
+
+    def test_dashboard_all_time_includes_older_unsaved_plans(self):
+        from datetime import timedelta
+        from django.utils import timezone
+        admin = get_user_model().objects.create_superuser('dashboard-admin')
+        self.client.force_login(admin)
+        event = InternationalActivity.objects.create(
+            action='planner_generated', education_country='Philippines',
+            visitor_country='United Arab Emirates', destination_province='British Columbia')
+        InternationalActivity.objects.filter(pk=event.pk).update(
+            created_at=timezone.now() - timedelta(days=400))
+        url = reverse('admin:task_workspace', args=['international'])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['planner']['days'], 'all')
+        self.assertEqual(response.context['planner']['totals']['guest_plans'], 1)
+        self.assertContains(response, 'Philippines')
+        self.assertNotContains(response, '?action__exact=account_created')
+        self.assertEqual(self.client.get(url, {'days': '7'}).context[
+            'planner']['totals']['plans'], 0)
+        self.assertEqual(self.client.get(url, {'days': 'invalid'}).context[
+            'planner']['totals']['plans'], 1)
+
+    def test_dashboard_hides_activity_without_view_permission(self):
+        from django.contrib.auth.models import Permission
+        staff = get_user_model().objects.create_user('profiles-only', is_staff=True)
+        staff.user_permissions.add(Permission.objects.get(
+            content_type__app_label='career_mobility', codename='view_internationalprofile'))
+        self.client.force_login(staff)
+        response = self.client.get(reverse('admin:task_workspace', args=['international']))
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(response.context['planner'])
+        self.assertNotContains(response, 'Search all activity')

@@ -6,9 +6,11 @@
 <header class="pt-dashboard-heading"><div><h1>Performance Reports</h1><p>Job board activity and sales for {{ start|date:"M j, Y" }}–{{ end|date:"M j, Y" }}.</p></div></header>
 <form method="get" class="pt-grid-toolbar pt-operations-toolbar">
 <div class="ops-field"><label for="report-period">Period</label><select id="report-period" name="period">
+<option value="all"{% if period == 'all' %} selected{% endif %}>All time</option>
 <option value="today"{% if period == 'today' %} selected{% endif %}>Today</option>
 <option value="7"{% if period == '7' %} selected{% endif %}>Last 7 days</option>
 <option value="30"{% if period == '30' %} selected{% endif %}>Last 30 days</option>
+<option value="90"{% if period == '90' %} selected{% endif %}>Last 90 days</option>
 <option value="custom"{% if period == 'custom' %} selected{% endif %}>Custom</option>
 </select></div>
 <div class="ops-field"><label for="report-start">Custom start</label><input id="report-start" type="date" name="start" value="{{ start|date:'Y-m-d' }}"></div>
